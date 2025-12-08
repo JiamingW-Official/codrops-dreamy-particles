@@ -305,6 +305,50 @@ input[type="date"]:focus {
   pointer-events: none;
 }
 
+/* --- Liquid Glass Date Picker --- */
+.flatpickr-input {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #fff !important;
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  width: 100%;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.flatpickr-input:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+}
+
+.flatpickr-input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+/* Hide default arrow if using native picker on mobile, though flatpickr usually handles text input */
+.flatpickr-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+/* Initial hidden state for loader */
+body.is-loading .flatpickr-input {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .stat-card {
   display: flex;
   justify-content: space-between;
@@ -392,27 +436,25 @@ body {
   z-index: 10;
 
   display: grid;
-  grid-template-columns: 320px 1fr 320px;
-  /* Sidebar layout */
-  grid-template-rows: auto 1fr auto;
+  /* Changed to 2 columns: Sidebar (fixed) | Content (rest) */
+  grid-template-columns: 350px 1fr;
+  grid-template-rows: auto auto auto 1fr;
+  /* Header, Hero, Controls, Info (flexible) */
   padding: var(--space-lg);
   gap: var(--space-md);
   box-sizing: border-box;
 }
 
-/* Header Reimagined */
+/* Header */
 .header {
   grid-column: 1 / -1;
   display: flex;
   justify-content: space-between;
   align-items: center;
-
-  /* Glass */
   background: transparent;
   border-bottom: 1px solid var(--glass-border);
   padding-bottom: var(--space-sm);
   margin: 0;
-  /* Grid handles spacing */
 }
 
 .header h1 {
@@ -429,7 +471,9 @@ body {
   color: var(--text-muted);
 }
 
-/* Market Hero Stats (Left Sidebar) */
+/* Left Sidebar Stack */
+
+/* 1. Market Hero Stats */
 .market-hero {
   grid-column: 1;
   grid-row: 2;
@@ -440,7 +484,6 @@ body {
   flex-direction: column;
   gap: var(--space-sm);
 
-  /* Glass Card */
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
@@ -449,6 +492,43 @@ body {
   padding: var(--space-md);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
+
+/* 2. Controls */
+.controls {
+  grid-column: 1;
+  grid-row: 3;
+  pointer-events: auto;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+/* 3. Info Card (Moved to Left) */
+.info-card {
+  grid-column: 1;
+  grid-row: 4;
+  /* Below controls */
+  pointer-events: auto;
+  align-self: start;
+
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+
+  /* Ensure it doesn't overflow if screen short */
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+/* Rest of styles remain same... */
 
 .stat-group {
   display: flex;
@@ -482,7 +562,6 @@ body {
 .change-pill {
   padding: 0.2rem 0.6rem;
   border-radius: 4px;
-  /* Rational small radius */
   font-size: 0.9rem;
   background: rgba(255, 255, 255, 0.05);
 }
@@ -493,37 +572,6 @@ body {
 
 .change-pill.negative {
   color: var(--color-down);
-}
-
-/* Controls (Grid placement) */
-.controls {
-  grid-column: 1;
-  grid-row: 3;
-  pointer-events: auto;
-
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-}
-
-/* Info Card (Right Sidebar) */
-.info-card {
-  grid-column: 3;
-  grid-row: 2 / 4;
-  /* Span down */
-  pointer-events: auto;
-  align-self: start;
-
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
-
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
 }
 
 .data-row {
@@ -561,7 +609,6 @@ body {
   margin-bottom: 0.8rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px dotted var(--glass-border);
-
   color: var(--text-muted);
   text-decoration: none;
   font-size: 0.85rem;
@@ -574,7 +621,7 @@ body {
   border-bottom-color: var(--text-muted);
 }
 
-/* Flatpickr Custom Override for Rational System */
+/* Flatpickr Custom Override */
 .flatpickr-calendar {
   background: rgba(5, 5, 5, 0.6) !important;
   backdrop-filter: blur(25px) !important;
@@ -591,14 +638,11 @@ body {
   font-weight: 600 !important;
 }
 
-/* Hide original HTML structure layout issues */
-/* We will restructure HTML next */
-
-/* Responsive */
+/* Responsive: Stack vertically on mobile */
 @media (max-width: 900px) {
   .ui-layer {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto auto;
+    grid-template-rows: auto;
     padding: var(--space-sm);
   }
 
@@ -609,5 +653,6 @@ body {
     grid-column: 1;
     grid-row: auto;
     width: 100%;
+    margin-bottom: var(--space-sm);
   }
 }

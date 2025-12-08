@@ -171,118 +171,185 @@ export default class Mask extends Handler {
   }
 
   updateVisualization(data) {
-    if (!this.gpgpu) return;
+    if (!data) return;
 
-    // Store data for continuous animation in update()
-    this.currentData = data;
+    const s = data.marketChangePercent; // Direction
+    const vix = data.vix || 20; // Uncertainty
+    const fg = data.fearGreedIndex || 50; // Emotion
+    const volRatio = data.volumeRatio || 1.0; // Heat
+    const yieldVal = data.tenYearYield || 4.0; // Atmosphere
 
-    // 1. GENERATIVE HSL COLOR ALGORITHM
-    // We create a unique "Fingerprint" color for each day.
+    // --- 1. DETERMINE MOOD STATE ---
+    let moodHue, moodSat, moodLight;
+    let moodName = "Neutral";
 
-    // HUE: Mapped to Market Sentiment (The "Mood")
-    // -1.0 (Crash) -> 270 (Deep Purple)
-    // 0.0 (Neutral) -> 210 (Silver/Blue)
-    // 1.0 (Rally) -> 45 (Gold)
-
-    let hue = 210; // Neutral default
-    if (data.sentiment < 0) {
-      // Bearish: 210 -> 270
-      hue = 210 - (data.sentiment * -1.0) * 60; // 210 + 60 = 270? Wait math: 210 + (abs * 60)
-      hue = 210 + (Math.abs(data.sentiment) * 60);
+    if (s >= 0) {
+      // --- BULLISH STATES ---
+      if (s > 1.0 && vix < 20) {
+        // EUPHORIA (Perfect conditions)
+        moodName = "Euphoria";
+        moodHue = 45; // Gold/Yellow
+        moodSat = 95;
+        moodLight = 60;
+      } else if (s > 0.5 && yieldVal < 4.0) {
+        // HEALTHY GROWTH (Low stress)
+        moodName = "Growth";
+        moodHue = 160; // Emerald/Teal
+        moodSat = 80;
+        moodLight = 50;
+      } else if (yieldVal > 4.2) {
+        // CAUTION (Gains but high yields/stress)
+        moodName = "Caution";
+        moodHue = 60; // Olive/Amber
+        moodSat = 70;
+        moodLight = 45;
+      } else {
+        // STANDARD DAY
+        moodName = "Steady";
+        moodHue = 180; // Cyan/Teal
+        moodSat = 65;
+        moodLight = 45;
+      }
     } else {
-      // Bullish: 210 -> 45 (wrap around? No, let's go 210 -> 180 -> 100 -> 45)
-      // Let's use a lerp logic.
-      // sentiment 0 -> 210. sentiment 1 -> 45.
-      // dist is 165deg. 
-      hue = 210 - (data.sentiment * 165);
+      // --- BEARISH STATES ---
+      if (s < -1.5 || vix > 30) {
+        // PANIC (Crash or High Fear)
+        moodName = "Panic";
+        moodHue = 340; // Hot Magenta/Red
+        moodSat = 95;
+        moodLight = 45;
+      } else if (Math.abs(s) < 0.2 && vix > 25) {
+        // CONFUSION (Flat but volatile)
+        moodName = "Confusion";
+        moodHue = 260; // Foggy Purple
+        moodSat = 40;
+        moodLight = 50;
+      } else if (s < -1.0 && volRatio < 0.8) {
+        // DESPAIR (Drop with low interest)
+        moodName = "Despair";
+        moodHue = 240; // Desaturated Violet
+        moodSat = 30; // Drained
+        moodLight = 30; // Dark
+      } else {
+        // CORRECTION (Normal drop)
+        moodName = "Correction";
+        moodHue = 220; // Slate Blue
+        moodSat = 50;
+        moodLight = 40;
+      }
     }
 
-    // SATURATION: Mapped to Volatility (The "Clarity")
-    // High Volatility -> Lower Saturation (Muddy/Stormy)
-    // Low Volatility -> High Saturation (Clear/Crystal)
-    let saturation = 100 - (data.volatility * 100);
-    saturation = Math.max(20, Math.min(90, saturation)); // Clamp
+    // --- 2. APPLY MODIFIERS ---
 
-    // LIGHTNESS: Mapped to Fear & Greed (The "Energy")
-    // Extreme Fear (low index) -> Darker
-    // Extreme Greed (high index) -> Brighter
-    let lightness = data.fearGreedIndex; // 0 to 100 directly map
-    lightness = Math.max(30, Math.min(95, lightness)); // Clamp to ensure visibility
+    // YIELD TEMPERATURE SHIFT
+    // High Yields (>4.0) -> Warmer (+Hue towards Yellow)
+    // Low Yields (<3.5) -> Cooler (-Hue towards Blue)
+    // We apply a subtle shift.
+    const tempShift = (yieldVal - 4.0) * 10; // +/- 10 degrees
+    // Don't shift Red/Magenta too much as it breaks meaning
+    if (moodHue > 100 && moodHue < 300) {
+      moodHue -= tempShift; // Higher yield = lower hue (Blue -> Teal -> Green -> Yellow) = Warmer for cool colors?
+      // Actually: Blue(240) -> Teal(180) -> Green(120) -> Yellow(60). So Subtracting Hue = Warmer.
+      // Yes. High Yield (4.5) -> shift -5. Low Yield (3.5) -> shift +5.
+    }
 
-    // Convert to THREE Color
-    let targetColor = new THREE.Color(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
+    // VOLUME HEAT (SATURATION BOOSTER)
+    // High Volume = More Intense
+    const heatFactor = (volRatio - 1.0) * 20; // +/- 20%
+    moodSat = Math.max(20, Math.min(100, moodSat + heatFactor));
 
+    // GREED BRIGHTNESS override
+    if (fg > 80) {
+      moodLight += 10;
+      moodSat += 10; // Glowing
+    }
+
+    // Micro-Variation based on Day
+    moodHue += (data.day % 5) * 2;
+
+
+    const finalColor = new THREE.Color(`hsl(${moodHue}, ${moodSat}%, ${moodLight}%)`);
+    // console.log(`Mood: ${moodName} | Color: ${moodHue.toFixed(0)}/${moodSat.toFixed(0)}/${moodLight.toFixed(0)}`);
+
+
+    // --- 3. PHYSICS & ATMOSPHERE ---
+    // (Retaining logic from previous plan but mapping to new vars)
+
+    const volumeFactor = volRatio;
+    const targetForce = 0.2 + (data.volatility * 0.8) + (volumeFactor * 0.2);
+    const targetNoiseFreq = 0.5 + (volumeFactor * 0.5);
+
+    const atmosphereWeight = Math.min(1.0, Math.max(0, (yieldVal - 3.0) / 2.0));
+    const targetAlpha = 0.04 + (atmosphereWeight * 0.05);
+
+    const greedFactor = fg / 100.0;
+    const moveSignificance = Math.abs(s);
+    const targetSize = 1.5 + (moveSignificance * 1.5) + (greedFactor * 1.0);
+
+    // --- TRANSITIONS ---
     gsap.to(this.params.color, {
-      r: targetColor.r, g: targetColor.g, b: targetColor.b,
-      duration: 3.5, ease: "power2.inOut",
-      onUpdate: () => { this.gpgpu.material.uniforms.uColor.value.copy(this.params.color); }
-    });
-
-    // 2. Force (Base force)
-    let targetForce = data.volatility * 2.0;
-    targetForce = Math.min(Math.max(targetForce, 0.2), 1.0);
-    this.currentBaseForce = targetForce; // Store base force
-
-    gsap.to(this.params, {
-      force: targetForce,
-      duration: 4.0, ease: "sine.inOut",
+      r: finalColor.r,
+      g: finalColor.g,
+      b: finalColor.b,
+      duration: 2.0,
+      ease: 'power2.out',
       onUpdate: () => {
-        // Note: update() loop will now handle force application to allow for pulsing
-        // But we still tween the parameter for UI feedback or fallback
+        if (this.gpgpu && this.gpgpu.material) {
+          this.gpgpu.material.uniforms.uColor.value.copy(this.params.color);
+        }
       }
     });
 
-    // 3. Size (Base size)
-    let strength = Math.abs(data.sentiment);
-    let targetSize = 1.0 + (strength * 3.0);
+    if (this.gpgpu && this.gpgpu.material) {
+      gsap.to(this.gpgpu.material.uniforms.uForce, {
+        value: targetForce,
+        duration: 2.5
+      });
+
+      gsap.to(this.gpgpu.material.uniforms.uParticleSize, {
+        value: targetSize,
+        duration: 2.5,
+        ease: 'back.out(1.0)'
+      });
+
+      gsap.to(this.params, {
+        minAlpha: targetAlpha,
+        duration: 2.0
+      });
+    }
+
     this.currentBaseSize = targetSize;
-
-    gsap.to(this.params, {
-      size: targetSize,
-      duration: 3.0, ease: "power3.out"
-    });
-
     if (this.particlesFolder) this.particlesFolder.controllers.forEach(c => c.updateDisplay());
   }
 
   update() {
     if (this.gpgpu) {
-      // Continuous modulation based on volatility
+      // Continuous modulation
       if (this.currentData) {
         const time = performance.now() * 0.001;
-        const volatility = this.currentData.volatility || 0.3;
-        const sentiment = this.currentData.sentiment || 0;
+        const vix = this.currentData.vix || 20;
 
-        // Effect 1: Size Pulsing (Heartbeat of the market)
-        // High volatility + Fear = Fast, erratic pulse
-        // High volatility + Greed = Slow, big swell
-        // Low volatility = Minimal pulse
+        // Pulse Speed: High VIX = Fast Hypervenilation. Low VIX = Slow Deep Breath.
+        let pulseSpeed = 1.0 + (vix / 10.0); // 2.0 to 5.0 rad/s
+        let pulseAmp = 0.4;
 
-        let pulseSpeed = volatility * 4.0;
-        let pulseAmp = volatility * 0.5;
-
-        // Greed (Positive Sentiment) makes swelling slower but larger 'breathing'
-        if (sentiment > 0.2) {
-          pulseSpeed *= 0.5; // Slower
-          pulseAmp *= 1.2;   // Bigger
+        // PANIC EFFECT: Fast jittery pulse
+        if (vix > 30) {
+          pulseSpeed = 8.0;
+          pulseAmp = 0.2; // Shallow fast breaths
         }
 
         const pulse = 1.0 + Math.sin(time * pulseSpeed) * pulseAmp;
 
-        // Apply pulsating size
-        // Base size is tweened in params.size, we multiply it
+        // Apply
         const finalSize = this.params.size * pulse;
         this.gpgpu.material.uniforms.uParticleSize.value = finalSize;
 
-        // Effect 2: Force Noise (Jitter)
-        // Add slight randomness to force on high volatility
-        if (volatility > 0.4) {
-          const jitter = (Math.random() - 0.5) * volatility * 0.2;
-          if (this.gpgpu.uniforms.velocityUniforms)
-            this.gpgpu.uniforms.velocityUniforms.uForce.value = this.params.force + jitter;
-        } else {
-          if (this.gpgpu.uniforms.velocityUniforms)
-            this.gpgpu.uniforms.velocityUniforms.uForce.value = this.params.force;
+        // Noise/Wobble on Force
+        if (this.gpgpu.uniforms.velocityUniforms) {
+          // Add noise based on VIX
+          const noise = (Math.random() - 0.5) * (vix / 100.0);
+          this.gpgpu.uniforms.velocityUniforms.uForce.value = this.params.force + noise;
         }
       } else {
         // Fallback if no data loaded yet

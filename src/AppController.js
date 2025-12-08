@@ -1,9 +1,8 @@
-
 import MarketDataService from './MarketDataService.js';
 import Mask from '../webgl/Mask.js';
 import flatpickr from 'flatpickr';
 
-class AppController {
+export default class AppController {
     constructor() {
         this.marketDataService = new MarketDataService();
         this.mask = null;
@@ -24,28 +23,41 @@ class AppController {
 
     async init() {
         // Wait for service to load data first, so we know what dates are valid
-        await this.marketDataService.init(); // note: ensure init returns promise or checks readiness
+        await this.marketDataService.init();
 
         // Get valid dates from service
         const validDates = Object.keys(this.marketDataService.dataMap || {});
+
+        // If no data loaded, we can't really proceed with correct dating, but we should verify.
+        if (validDates.length === 0) {
+            console.error("Critical: No market data found for calendar.");
+        }
+
         const todayStr = new Date().toISOString().split('T')[0];
 
         // Initialize Flatpickr
         this.picker = flatpickr(this.ui.datePickerInput, {
             dateFormat: "Y-m-d",
-            maxDate: "today",
-            defaultDate: "today",
+            // maxDate: "today", // Allow future just in case our data is ahead (timezone) or testing
+            defaultDate: validDates.sort().pop() || "today", // Default to last available data
             theme: "dark",
             disable: [
                 (date) => {
                     // Disable if date is NOT in our dataMap (e.g. weekends/holidays)
                     // We formatted keys as YYYY-MM-DD
-                    const dateKey = date.toISOString().split('T')[0];
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const dateKey = `${year}-${month}-${day}`;
+
+                    if (!this.marketDataService.dataMap) return true;
                     return !this.marketDataService.dataMap[dateKey];
                 }
             ],
             onChange: (selectedDates, dateStr, instance) => {
-                this.loadDate(selectedDates[0]);
+                if (selectedDates.length > 0) {
+                    this.loadDate(selectedDates[0]);
+                }
             }
         });
 
@@ -54,8 +66,14 @@ class AppController {
         // Initial load for today (or last valid day)
         // If today is Sunday, flatpickr defaultDate might pick it, but our disable rule flags it.
         // We should explicitly set to the last valid key in our map.
-        const lastValidDate = validDates.sort().pop() || todayStr;
-        this.picker.setDate(lastValidDate, true); // true = triggers onChange
+        const lastValidDate = validDates.sort().pop();
+        if (lastValidDate) {
+            this.picker.setDate(lastValidDate, true); // true = triggers onChange
+            console.log(`[Controller] Initializing to last valid date: ${lastValidDate}`);
+        } else {
+            console.warn("[Controller] No valid dates found. Initializing to today.");
+            this.loadDate(new Date());
+        }
     }
 
     setupEventListeners() {
@@ -68,15 +86,24 @@ class AppController {
 
 
     loadDate(date) {
-        // Attempt to get data. If missing (weekend/holiday), find nearest previous.
-        const originalDateStr = date.toISOString().split('T')[0];
+        // Fix: Use local date string instead of UTC to avoid timezone shifts
+        // date is a JS Date object from Flatpickr (which is 00:00 local time usually)
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const originalDateStr = `${year}-${month}-${day}`;
+
+        console.log(`[Debug] Requested Date: ${originalDateStr}`);
+
         let data = this.marketDataService.getDataForDate(date);
+        console.log(`[Debug] Data Found For: ${data.date}`);
 
         let isClosed = false;
-        let showedDateStr = data.date; // Always use the date from the data object
 
+        // Data service might return data for a different date if the requested one is empty
+        // We compare the date strings
         if (data.date !== originalDateStr) {
-            // Data returned is from a different date (weekend fallback)
+            console.warn(`[Debug] Mismatch! Requested ${originalDateStr} but got ${data.date}. Flagging as Closed.`);
             isClosed = true;
         }
 
@@ -156,10 +183,12 @@ class AppController {
                 a.href = link;
                 a.target = "_blank";
                 a.rel = "noopener noreferrer";
+                a.style.cursor = 'pointer';
             } else {
-                a.style.pointerEvents = 'none'; // Not clickable if no link
-                a.style.textDecoration = 'none';
-                a.style.color = 'rgba(255,255,255,0.7)';
+                a.href = "https://news.google.com/search?q=" + encodeURIComponent(text + " stock market");
+                a.target = "_blank";
+                a.rel = "noopener noreferrer";
+                a.style.cursor = 'pointer';
             }
 
             p.appendChild(a);
