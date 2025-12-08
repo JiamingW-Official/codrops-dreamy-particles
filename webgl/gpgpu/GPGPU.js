@@ -8,7 +8,7 @@ import vertexShader from './shaders/vertex.glsl';
 import fragmentShader from './shaders/fragment.glsl';
 
 export default class GPGPU {
-    constructor({ size, camera, renderer, mouse, scene, model, sizes, debug, params }) {
+    constructor({ size, camera, renderer, mouse, scene, model, sizes, debug, audio, webcam, params }) {
         this.camera = camera; // Camera
         this.renderer = renderer; // Renderer
         this.mouse = mouse; // Mouse, our cursor position
@@ -17,6 +17,8 @@ export default class GPGPU {
         this.size = size; // Amount of GPGPU particles
         this.model = model; // Mesh from which we will sample the particles
         this.debug = debug; // Debug
+        this.audio = audio; // Audio Handler
+        this.webcam = webcam; // Webcam Handler
         this.params = params; // Parameters for the GPGPU
 
         this.init();
@@ -56,6 +58,17 @@ export default class GPGPU {
         this.uniforms.velocityUniforms.uOriginalPosition = { value: positionTexture }
         this.uniforms.velocityUniforms.uTime = { value: 0 };
         this.uniforms.velocityUniforms.uForce = { value: this.params.force };
+        this.uniforms.velocityUniforms.uTapIntensity = { value: 0 };
+
+        // Audio Uniforms for Simulation
+        this.uniforms.velocityUniforms.uAudioBass = { value: 0 };
+        this.uniforms.velocityUniforms.uAudioMid = { value: 0 };
+        this.uniforms.velocityUniforms.uAudioHigh = { value: 0 };
+        this.uniforms.velocityUniforms.uAudioLevel = { value: 0 };
+
+        // Webcam Uniforms
+        this.uniforms.velocityUniforms.uWebcamTexture = { value: new THREE.Texture() };
+        this.uniforms.velocityUniforms.uWebcamEnabled = { value: 0 };
 
         this.gpgpuCompute.init();
     }
@@ -70,6 +83,13 @@ export default class GPGPU {
                 uColor: { value: this.params.color },
                 uMinAlpha: { value: this.params.minAlpha },
                 uMaxAlpha: { value: this.params.maxAlpha },
+
+                // Audio Uniforms for Rendering
+                uAudioBass: { value: 0 },
+                uAudioMid: { value: 0 },
+                uAudioHigh: { value: 0 },
+                uAudioLevel: { value: 0 },
+                uTime: { value: 0 },
             },
             vertexShader,
             fragmentShader,
@@ -105,6 +125,32 @@ export default class GPGPU {
 
 
     compute() {
+        // Update Audio Uniforms
+        if (this.audio && this.audio.ready) {
+            const { bass, mid, high, level } = this.audio.frequencyData;
+
+            this.uniforms.velocityUniforms.uAudioBass.value = bass;
+            this.uniforms.velocityUniforms.uAudioMid.value = mid;
+            this.uniforms.velocityUniforms.uAudioHigh.value = high;
+            this.uniforms.velocityUniforms.uAudioLevel.value = level;
+
+            this.material.uniforms.uAudioBass.value = bass;
+            this.material.uniforms.uAudioMid.value = mid;
+            this.material.uniforms.uAudioHigh.value = high;
+            this.material.uniforms.uAudioLevel.value = level;
+            this.material.uniforms.uAudioLevel.value = level;
+        }
+
+        // Update Webcam Uniforms
+        if (this.webcam && this.webcam.ready) {
+            this.uniforms.velocityUniforms.uWebcamTexture.value = this.webcam.texture;
+            this.uniforms.velocityUniforms.uWebcamEnabled.value = 1;
+        } else {
+            this.uniforms.velocityUniforms.uWebcamEnabled.value = 0;
+        }
+
+        this.material.uniforms.uTime.value += 0.01;
+
         this.gpgpuCompute.compute();
         this.events.update();
     }

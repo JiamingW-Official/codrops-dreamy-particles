@@ -4,6 +4,9 @@ varying vec3 vPosition;
 uniform float uParticleSize;
 uniform sampler2D uPositionTexture;
 
+uniform float uTime;
+uniform float uAudioBass;
+
 
 void main() {
 	vUv = uv;
@@ -14,6 +17,12 @@ void main() {
 
 
 	newpos.xyz = color.xyz;
+    
+    // Audio Vibration (Visual Only)
+    // Radial pulse mimicking the original physics push
+    vec3 direction = normalize(newpos);
+    float pulse = uAudioBass * 0.1; // Adjust intensity as needed
+    newpos += direction * pulse;
 
 	vPosition = newpos;
 

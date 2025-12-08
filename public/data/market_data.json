@@ -1,0 +1,2818 @@
+{
+  "2025-06-06": {
+    "date": "2025-06-06",
+    "indexValue": 19529.95,
+    "marketChangePercent": 0.02,
+    "sp500Value": 6000.36,
+    "sp500Change": 0.22,
+    "fearGreedIndex": 86,
+    "sentiment": 0.37,
+    "volatility": 0.42,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.77,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-06-09": {
+    "date": "2025-06-09",
+    "indexValue": 19591.24,
+    "marketChangePercent": 0.09,
+    "sp500Value": 6005.88,
+    "sp500Change": 0.02,
+    "fearGreedIndex": 85,
+    "sentiment": 0.4,
+    "volatility": 0.43,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 17.16,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-06-10": {
+    "date": "2025-06-10",
+    "indexValue": 19714.99,
+    "marketChangePercent": 0.48,
+    "sp500Value": 6038.81,
+    "sp500Change": 0.48,
+    "fearGreedIndex": 86,
+    "sentiment": 0.6,
+    "volatility": 0.42,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.95,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-06-11": {
+    "date": "2025-06-11",
+    "indexValue": 19615.88,
+    "marketChangePercent": -0.83,
+    "sp500Value": 6022.24,
+    "sp500Change": -0.45,
+    "fearGreedIndex": 85,
+    "sentiment": -0.06,
+    "volatility": 0.43,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 17.26,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-06-12": {
+    "date": "2025-06-12",
+    "indexValue": 19662.49,
+    "marketChangePercent": 0.43,
+    "sp500Value": 6045.26,
+    "sp500Change": 0.59,
+    "fearGreedIndex": 83,
+    "sentiment": 0.54,
+    "volatility": 0.45,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 18.02,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-06-13": {
+    "date": "2025-06-13",
+    "indexValue": 19406.83,
+    "marketChangePercent": -0.23,
+    "sp500Value": 5976.97,
+    "sp500Change": -0.39,
+    "fearGreedIndex": 75,
+    "sentiment": 0.14,
+    "volatility": 0.52,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 20.82,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-06-16": {
+    "date": "2025-06-16",
+    "indexValue": 19701.21,
+    "marketChangePercent": 0.77,
+    "sp500Value": 6033.11,
+    "sp500Change": 0.48,
+    "fearGreedIndex": 80,
+    "sentiment": 0.68,
+    "volatility": 0.48,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 19.11,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-06-17": {
+    "date": "2025-06-17",
+    "indexValue": 19521.09,
+    "marketChangePercent": -0.54,
+    "sp500Value": 5982.72,
+    "sp500Change": -0.49,
+    "fearGreedIndex": 73,
+    "sentiment": -0.04,
+    "volatility": 0.54,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 21.6,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-06-18": {
+    "date": "2025-06-18",
+    "indexValue": 19546.27,
+    "marketChangePercent": 0.1,
+    "sp500Value": 5980.87,
+    "sp500Change": -0.12,
+    "fearGreedIndex": 77,
+    "sentiment": 0.32,
+    "volatility": 0.5,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 20.14,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-06-20": {
+    "date": "2025-06-20",
+    "indexValue": 19447.41,
+    "marketChangePercent": -0.98,
+    "sp500Value": 5967.84,
+    "sp500Change": -0.53,
+    "fearGreedIndex": 75,
+    "sentiment": -0.24,
+    "volatility": 0.52,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 20.62,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-06-23": {
+    "date": "2025-06-23",
+    "indexValue": 19630.97,
+    "marketChangePercent": 1.05,
+    "sp500Value": 6025.17,
+    "sp500Change": 0.93,
+    "fearGreedIndex": 78,
+    "sentiment": 0.8,
+    "volatility": 0.5,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 19.83,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-06-24": {
+    "date": "2025-06-24",
+    "indexValue": 19912.53,
+    "marketChangePercent": 0.52,
+    "sp500Value": 6092.18,
+    "sp500Change": 0.51,
+    "fearGreedIndex": 84,
+    "sentiment": 0.6,
+    "volatility": 0.44,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 17.48,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-06-25": {
+    "date": "2025-06-25",
+    "indexValue": 19973.55,
+    "marketChangePercent": -0.2,
+    "sp500Value": 6092.16,
+    "sp500Change": -0.2,
+    "fearGreedIndex": 86,
+    "sentiment": 0.26,
+    "volatility": 0.42,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.76,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-06-26": {
+    "date": "2025-06-26",
+    "indexValue": 20167.91,
+    "marketChangePercent": 0.53,
+    "sp500Value": 6141.02,
+    "sp500Change": 0.47,
+    "fearGreedIndex": 87,
+    "sentiment": 0.63,
+    "volatility": 0.41,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.59,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-06-27": {
+    "date": "2025-06-27",
+    "indexValue": 20273.46,
+    "marketChangePercent": 0.28,
+    "sp500Value": 6173.07,
+    "sp500Change": 0.36,
+    "fearGreedIndex": 87,
+    "sentiment": 0.51,
+    "volatility": 0.41,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.32,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-06-30": {
+    "date": "2025-06-30",
+    "indexValue": 20369.73,
+    "marketChangePercent": 0.05,
+    "sp500Value": 6204.95,
+    "sp500Change": 0.19,
+    "fearGreedIndex": 86,
+    "sentiment": 0.38,
+    "volatility": 0.42,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.73,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-07-01": {
+    "date": "2025-07-01",
+    "indexValue": 20202.89,
+    "marketChangePercent": -0.43,
+    "sp500Value": 6198.01,
+    "sp500Change": 0.17,
+    "fearGreedIndex": 86,
+    "sentiment": 0.14,
+    "volatility": 0.42,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.83,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-07-02": {
+    "date": "2025-07-02",
+    "indexValue": 20393.13,
+    "marketChangePercent": 1.03,
+    "sp500Value": 6227.42,
+    "sp500Change": 0.54,
+    "fearGreedIndex": 87,
+    "sentiment": 0.89,
+    "volatility": 0.42,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.64,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-07-03": {
+    "date": "2025-07-03",
+    "indexValue": 20601.1,
+    "marketChangePercent": 0.5,
+    "sp500Value": 6279.35,
+    "sp500Change": 0.53,
+    "fearGreedIndex": 87,
+    "sentiment": 0.62,
+    "volatility": 0.41,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.38,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-07-07": {
+    "date": "2025-07-07",
+    "indexValue": 20412.52,
+    "marketChangePercent": -0.38,
+    "sp500Value": 6229.98,
+    "sp500Change": -0.46,
+    "fearGreedIndex": 83,
+    "sentiment": 0.14,
+    "volatility": 0.44,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 17.79,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-07-08": {
+    "date": "2025-07-08",
+    "indexValue": 20418.46,
+    "marketChangePercent": -0.24,
+    "sp500Value": 6225.52,
+    "sp500Change": -0.14,
+    "fearGreedIndex": 86,
+    "sentiment": 0.24,
+    "volatility": 0.42,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.81,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-07-09": {
+    "date": "2025-07-09",
+    "indexValue": 20611.34,
+    "marketChangePercent": 0.43,
+    "sp500Value": 6263.26,
+    "sp500Change": 0.32,
+    "fearGreedIndex": 88,
+    "sentiment": 0.6,
+    "volatility": 0.4,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.94,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-07-10": {
+    "date": "2025-07-10",
+    "indexValue": 20630.66,
+    "marketChangePercent": -0.03,
+    "sp500Value": 6280.46,
+    "sp500Change": 0.22,
+    "fearGreedIndex": 89,
+    "sentiment": 0.38,
+    "volatility": 0.39,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.78,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-07-11": {
+    "date": "2025-07-11",
+    "indexValue": 20585.53,
+    "marketChangePercent": 0.11,
+    "sp500Value": 6259.75,
+    "sp500Change": 0.07,
+    "fearGreedIndex": 87,
+    "sentiment": 0.43,
+    "volatility": 0.41,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.4,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-07-14": {
+    "date": "2025-07-14",
+    "indexValue": 20640.33,
+    "marketChangePercent": 0.23,
+    "sp500Value": 6268.56,
+    "sp500Change": 0.21,
+    "fearGreedIndex": 85,
+    "sentiment": 0.47,
+    "volatility": 0.43,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 17.2,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-07-15": {
+    "date": "2025-07-15",
+    "indexValue": 20677.8,
+    "marketChangePercent": -0.7,
+    "sp500Value": 6243.76,
+    "sp500Change": -0.82,
+    "fearGreedIndex": 84,
+    "sentiment": -0.01,
+    "volatility": 0.43,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 17.38,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-07-16": {
+    "date": "2025-07-16",
+    "indexValue": 20730.49,
+    "marketChangePercent": 0.06,
+    "sp500Value": 6263.7,
+    "sp500Change": 0.15,
+    "fearGreedIndex": 85,
+    "sentiment": 0.38,
+    "volatility": 0.43,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 17.16,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-07-17": {
+    "date": "2025-07-17",
+    "indexValue": 20885.65,
+    "marketChangePercent": 0.6,
+    "sp500Value": 6297.36,
+    "sp500Change": 0.54,
+    "fearGreedIndex": 87,
+    "sentiment": 0.67,
+    "volatility": 0.41,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.52,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-07-18": {
+    "date": "2025-07-18",
+    "indexValue": 20895.65,
+    "marketChangePercent": -0.3,
+    "sp500Value": 6296.79,
+    "sp500Change": -0.26,
+    "fearGreedIndex": 87,
+    "sentiment": 0.22,
+    "volatility": 0.41,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.41,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-07-21": {
+    "date": "2025-07-21",
+    "indexValue": 20974.18,
+    "marketChangePercent": 0.07,
+    "sp500Value": 6305.6,
+    "sp500Change": 0.01,
+    "fearGreedIndex": 86,
+    "sentiment": 0.39,
+    "volatility": 0.42,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.65,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-07-22": {
+    "date": "2025-07-22",
+    "indexValue": 20892.69,
+    "marketChangePercent": -0.43,
+    "sp500Value": 6309.62,
+    "sp500Change": 0.05,
+    "fearGreedIndex": 87,
+    "sentiment": 0.16,
+    "volatility": 0.41,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.5,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-07-23": {
+    "date": "2025-07-23",
+    "indexValue": 21020.02,
+    "marketChangePercent": 0.26,
+    "sp500Value": 6358.91,
+    "sp500Change": 0.51,
+    "fearGreedIndex": 90,
+    "sentiment": 0.53,
+    "volatility": 0.38,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.37,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-07-24": {
+    "date": "2025-07-24",
+    "indexValue": 21057.96,
+    "marketChangePercent": -0.12,
+    "sp500Value": 6363.35,
+    "sp500Change": -0.08,
+    "fearGreedIndex": 90,
+    "sentiment": 0.34,
+    "volatility": 0.38,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.39,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-07-25": {
+    "date": "2025-07-25",
+    "indexValue": 21108.32,
+    "marketChangePercent": 0.23,
+    "sp500Value": 6388.64,
+    "sp500Change": 0.29,
+    "fearGreedIndex": 91,
+    "sentiment": 0.52,
+    "volatility": 0.37,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 14.93,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-07-28": {
+    "date": "2025-07-28",
+    "indexValue": 21178.58,
+    "marketChangePercent": 0.01,
+    "sp500Value": 6389.77,
+    "sp500Change": -0.12,
+    "fearGreedIndex": 91,
+    "sentiment": 0.42,
+    "volatility": 0.38,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.03,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-07-29": {
+    "date": "2025-07-29",
+    "indexValue": 21098.29,
+    "marketChangePercent": -0.89,
+    "sp500Value": 6370.86,
+    "sp500Change": -0.54,
+    "fearGreedIndex": 88,
+    "sentiment": -0.06,
+    "volatility": 0.4,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.98,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-07-30": {
+    "date": "2025-07-30",
+    "indexValue": 21129.67,
+    "marketChangePercent": -0.05,
+    "sp500Value": 6362.9,
+    "sp500Change": -0.29,
+    "fearGreedIndex": 90,
+    "sentiment": 0.37,
+    "volatility": 0.39,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.48,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-07-31": {
+    "date": "2025-07-31",
+    "indexValue": 21122.45,
+    "marketChangePercent": -1.56,
+    "sp500Value": 6339.39,
+    "sp500Change": -1.36,
+    "fearGreedIndex": 86,
+    "sentiment": -0.42,
+    "volatility": 0.42,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.72,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-08-01": {
+    "date": "2025-08-01",
+    "indexValue": 20650.13,
+    "marketChangePercent": -0.87,
+    "sp500Value": 6238.01,
+    "sp500Change": -0.78,
+    "fearGreedIndex": 76,
+    "sentiment": -0.17,
+    "volatility": 0.51,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 20.38,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-08-04": {
+    "date": "2025-08-04",
+    "indexValue": 21053.58,
+    "marketChangePercent": 0.96,
+    "sp500Value": 6329.94,
+    "sp500Change": 0.93,
+    "fearGreedIndex": 84,
+    "sentiment": 0.82,
+    "volatility": 0.44,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 17.52,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-08-05": {
+    "date": "2025-08-05",
+    "indexValue": 20916.55,
+    "marketChangePercent": -0.83,
+    "sp500Value": 6299.19,
+    "sp500Change": -0.59,
+    "fearGreedIndex": 83,
+    "sentiment": -0.09,
+    "volatility": 0.45,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 17.85,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-08-06": {
+    "date": "2025-08-06",
+    "indexValue": 21169.42,
+    "marketChangePercent": 1.02,
+    "sp500Value": 6345.06,
+    "sp500Change": 0.57,
+    "fearGreedIndex": 86,
+    "sentiment": 0.87,
+    "volatility": 0.42,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.77,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-08-07": {
+    "date": "2025-08-07",
+    "indexValue": 21242.7,
+    "marketChangePercent": -0.39,
+    "sp500Value": 6340.0,
+    "sp500Change": -0.54,
+    "fearGreedIndex": 87,
+    "sentiment": 0.18,
+    "volatility": 0.41,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.57,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-08-08": {
+    "date": "2025-08-08",
+    "indexValue": 21450.02,
+    "marketChangePercent": 0.63,
+    "sp500Value": 6389.45,
+    "sp500Change": 0.54,
+    "fearGreedIndex": 91,
+    "sentiment": 0.72,
+    "volatility": 0.38,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.15,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-08-11": {
+    "date": "2025-08-11",
+    "indexValue": 21385.4,
+    "marketChangePercent": -0.35,
+    "sp500Value": 6373.45,
+    "sp500Change": -0.25,
+    "fearGreedIndex": 88,
+    "sentiment": 0.21,
+    "volatility": 0.41,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.25,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-08-12": {
+    "date": "2025-08-12",
+    "indexValue": 21681.9,
+    "marketChangePercent": 0.81,
+    "sp500Value": 6445.76,
+    "sp500Change": 0.79,
+    "fearGreedIndex": 92,
+    "sentiment": 0.83,
+    "volatility": 0.37,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 14.73,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-08-13": {
+    "date": "2025-08-13",
+    "indexValue": 21713.14,
+    "marketChangePercent": -0.24,
+    "sp500Value": 6466.58,
+    "sp500Change": 0.06,
+    "fearGreedIndex": 93,
+    "sentiment": 0.31,
+    "volatility": 0.36,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 14.49,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-08-14": {
+    "date": "2025-08-14",
+    "indexValue": 21710.67,
+    "marketChangePercent": 0.28,
+    "sp500Value": 6468.54,
+    "sp500Change": 0.23,
+    "fearGreedIndex": 92,
+    "sentiment": 0.56,
+    "volatility": 0.37,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 14.83,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-08-15": {
+    "date": "2025-08-15",
+    "indexValue": 21622.98,
+    "marketChangePercent": -0.4,
+    "sp500Value": 6449.8,
+    "sp500Change": -0.43,
+    "fearGreedIndex": 91,
+    "sentiment": 0.21,
+    "volatility": 0.38,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.09,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-08-18": {
+    "date": "2025-08-18",
+    "indexValue": 21629.77,
+    "marketChangePercent": 0.06,
+    "sp500Value": 6449.15,
+    "sp500Change": 0.06,
+    "fearGreedIndex": 91,
+    "sentiment": 0.44,
+    "volatility": 0.37,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 14.99,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-08-19": {
+    "date": "2025-08-19",
+    "indexValue": 21314.95,
+    "marketChangePercent": -1.35,
+    "sp500Value": 6411.37,
+    "sp500Change": -0.54,
+    "fearGreedIndex": 90,
+    "sentiment": -0.28,
+    "volatility": 0.39,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.57,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-08-20": {
+    "date": "2025-08-20",
+    "indexValue": 21172.86,
+    "marketChangePercent": -0.46,
+    "sp500Value": 6395.78,
+    "sp500Change": -0.17,
+    "fearGreedIndex": 89,
+    "sentiment": 0.16,
+    "volatility": 0.39,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.69,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-08-21": {
+    "date": "2025-08-21",
+    "indexValue": 21100.31,
+    "marketChangePercent": -0.06,
+    "sp500Value": 6370.17,
+    "sp500Change": -0.17,
+    "fearGreedIndex": 87,
+    "sentiment": 0.34,
+    "volatility": 0.42,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.6,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-08-22": {
+    "date": "2025-08-22",
+    "indexValue": 21496.54,
+    "marketChangePercent": 1.69,
+    "sp500Value": 6466.91,
+    "sp500Change": 1.29,
+    "fearGreedIndex": 93,
+    "sentiment": 1.0,
+    "volatility": 0.36,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 14.22,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-08-25": {
+    "date": "2025-08-25",
+    "indexValue": 21449.29,
+    "marketChangePercent": -0.08,
+    "sp500Value": 6439.32,
+    "sp500Change": -0.28,
+    "fearGreedIndex": 92,
+    "sentiment": 0.38,
+    "volatility": 0.37,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 14.79,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-08-26": {
+    "date": "2025-08-26",
+    "indexValue": 21544.27,
+    "marketChangePercent": 0.47,
+    "sp500Value": 6465.94,
+    "sp500Change": 0.47,
+    "fearGreedIndex": 92,
+    "sentiment": 0.65,
+    "volatility": 0.37,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 14.62,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-08-27": {
+    "date": "2025-08-27",
+    "indexValue": 21590.14,
+    "marketChangePercent": 0.3,
+    "sp500Value": 6481.4,
+    "sp500Change": 0.3,
+    "fearGreedIndex": 92,
+    "sentiment": 0.57,
+    "volatility": 0.37,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 14.85,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-08-28": {
+    "date": "2025-08-28",
+    "indexValue": 21705.16,
+    "marketChangePercent": 0.4,
+    "sp500Value": 6501.86,
+    "sp500Change": 0.28,
+    "fearGreedIndex": 93,
+    "sentiment": 0.63,
+    "volatility": 0.36,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 14.43,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-08-29": {
+    "date": "2025-08-29",
+    "indexValue": 21455.55,
+    "marketChangePercent": -0.81,
+    "sp500Value": 6460.26,
+    "sp500Change": -0.45,
+    "fearGreedIndex": 90,
+    "sentiment": -0.0,
+    "volatility": 0.38,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.36,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-09-02": {
+    "date": "2025-09-02",
+    "indexValue": 21279.63,
+    "marketChangePercent": 0.92,
+    "sp500Value": 6415.54,
+    "sp500Change": 0.22,
+    "fearGreedIndex": 85,
+    "sentiment": 0.81,
+    "volatility": 0.43,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 17.17,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-09-03": {
+    "date": "2025-09-03",
+    "indexValue": 21497.73,
+    "marketChangePercent": 0.17,
+    "sp500Value": 6448.26,
+    "sp500Change": 0.04,
+    "fearGreedIndex": 87,
+    "sentiment": 0.45,
+    "volatility": 0.41,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.35,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-09-04": {
+    "date": "2025-09-04",
+    "indexValue": 21707.69,
+    "marketChangePercent": 0.78,
+    "sp500Value": 6502.08,
+    "sp500Change": 0.7,
+    "fearGreedIndex": 90,
+    "sentiment": 0.79,
+    "volatility": 0.38,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.3,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-09-05": {
+    "date": "2025-09-05",
+    "indexValue": 21700.39,
+    "marketChangePercent": -0.73,
+    "sp500Value": 6481.5,
+    "sp500Change": -0.73,
+    "fearGreedIndex": 91,
+    "sentiment": 0.04,
+    "volatility": 0.38,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.18,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-09-08": {
+    "date": "2025-09-08",
+    "indexValue": 21798.7,
+    "marketChangePercent": -0.03,
+    "sp500Value": 6495.15,
+    "sp500Change": -0.05,
+    "fearGreedIndex": 91,
+    "sentiment": 0.39,
+    "volatility": 0.38,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.11,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-09-09": {
+    "date": "2025-09-09",
+    "indexValue": 21879.49,
+    "marketChangePercent": 0.1,
+    "sp500Value": 6512.61,
+    "sp500Change": 0.14,
+    "fearGreedIndex": 91,
+    "sentiment": 0.46,
+    "volatility": 0.38,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.04,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-09-10": {
+    "date": "2025-09-10",
+    "indexValue": 21886.06,
+    "marketChangePercent": -0.43,
+    "sp500Value": 6532.04,
+    "sp500Change": -0.28,
+    "fearGreedIndex": 90,
+    "sentiment": 0.18,
+    "volatility": 0.38,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.35,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-09-11": {
+    "date": "2025-09-11",
+    "indexValue": 22043.07,
+    "marketChangePercent": 0.3,
+    "sp500Value": 6587.47,
+    "sp500Change": 0.5,
+    "fearGreedIndex": 92,
+    "sentiment": 0.57,
+    "volatility": 0.37,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 14.71,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-09-12": {
+    "date": "2025-09-12",
+    "indexValue": 22141.1,
+    "marketChangePercent": 0.28,
+    "sp500Value": 6584.29,
+    "sp500Change": -0.1,
+    "fearGreedIndex": 92,
+    "sentiment": 0.56,
+    "volatility": 0.37,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 14.76,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-09-15": {
+    "date": "2025-09-15",
+    "indexValue": 22348.75,
+    "marketChangePercent": 0.47,
+    "sp500Value": 6615.28,
+    "sp500Change": 0.18,
+    "fearGreedIndex": 89,
+    "sentiment": 0.63,
+    "volatility": 0.39,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.69,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-09-16": {
+    "date": "2025-09-16",
+    "indexValue": 22333.96,
+    "marketChangePercent": -0.28,
+    "sp500Value": 6606.76,
+    "sp500Change": -0.26,
+    "fearGreedIndex": 87,
+    "sentiment": 0.23,
+    "volatility": 0.41,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.36,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-09-17": {
+    "date": "2025-09-17",
+    "indexValue": 22261.33,
+    "marketChangePercent": -0.32,
+    "sp500Value": 6600.35,
+    "sp500Change": -0.07,
+    "fearGreedIndex": 89,
+    "sentiment": 0.23,
+    "volatility": 0.39,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.72,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-09-18": {
+    "date": "2025-09-18",
+    "indexValue": 22470.72,
+    "marketChangePercent": 0.14,
+    "sp500Value": 6631.96,
+    "sp500Change": 0.08,
+    "fearGreedIndex": 89,
+    "sentiment": 0.46,
+    "volatility": 0.39,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.7,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-09-19": {
+    "date": "2025-09-19",
+    "indexValue": 22631.48,
+    "marketChangePercent": 0.34,
+    "sp500Value": 6664.36,
+    "sp500Change": 0.26,
+    "fearGreedIndex": 90,
+    "sentiment": 0.57,
+    "volatility": 0.39,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.45,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-09-22": {
+    "date": "2025-09-22",
+    "indexValue": 22788.98,
+    "marketChangePercent": 0.81,
+    "sp500Value": 6693.75,
+    "sp500Change": 0.59,
+    "fearGreedIndex": 88,
+    "sentiment": 0.78,
+    "volatility": 0.4,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.1,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-09-23": {
+    "date": "2025-09-23",
+    "indexValue": 22573.47,
+    "marketChangePercent": -0.92,
+    "sp500Value": 6656.92,
+    "sp500Change": -0.53,
+    "fearGreedIndex": 87,
+    "sentiment": -0.09,
+    "volatility": 0.42,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.64,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-09-24": {
+    "date": "2025-09-24",
+    "indexValue": 22497.86,
+    "marketChangePercent": -0.7,
+    "sp500Value": 6637.97,
+    "sp500Change": -0.48,
+    "fearGreedIndex": 88,
+    "sentiment": 0.03,
+    "volatility": 0.4,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.18,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-09-25": {
+    "date": "2025-09-25",
+    "indexValue": 22384.7,
+    "marketChangePercent": 0.3,
+    "sp500Value": 6604.72,
+    "sp500Change": -0.05,
+    "fearGreedIndex": 86,
+    "sentiment": 0.51,
+    "volatility": 0.42,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.74,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-09-26": {
+    "date": "2025-09-26",
+    "indexValue": 22484.07,
+    "marketChangePercent": 0.36,
+    "sp500Value": 6643.7,
+    "sp500Change": 0.43,
+    "fearGreedIndex": 90,
+    "sentiment": 0.58,
+    "volatility": 0.38,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.29,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-09-29": {
+    "date": "2025-09-29",
+    "indexValue": 22591.15,
+    "marketChangePercent": -0.06,
+    "sp500Value": 6661.21,
+    "sp500Change": -0.01,
+    "fearGreedIndex": 88,
+    "sentiment": 0.35,
+    "volatility": 0.4,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.12,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-09-30": {
+    "date": "2025-09-30",
+    "indexValue": 22660.01,
+    "marketChangePercent": 0.35,
+    "sp500Value": 6688.46,
+    "sp500Change": 0.48,
+    "fearGreedIndex": 88,
+    "sentiment": 0.56,
+    "volatility": 0.41,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.28,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-01": {
+    "date": "2025-10-01",
+    "indexValue": 22755.16,
+    "marketChangePercent": 1.0,
+    "sp500Value": 6711.2,
+    "sp500Change": 0.69,
+    "fearGreedIndex": 87,
+    "sentiment": 0.87,
+    "volatility": 0.41,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.29,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-02": {
+    "date": "2025-10-02",
+    "indexValue": 22844.05,
+    "marketChangePercent": -0.18,
+    "sp500Value": 6715.35,
+    "sp500Change": -0.24,
+    "fearGreedIndex": 87,
+    "sentiment": 0.28,
+    "volatility": 0.42,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.63,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-03": {
+    "date": "2025-10-03",
+    "indexValue": 22780.51,
+    "marketChangePercent": -0.46,
+    "sp500Value": 6715.79,
+    "sp500Change": -0.09,
+    "fearGreedIndex": 86,
+    "sentiment": 0.13,
+    "volatility": 0.42,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.65,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-06": {
+    "date": "2025-10-06",
+    "indexValue": 22941.67,
+    "marketChangePercent": 0.21,
+    "sp500Value": 6740.28,
+    "sp500Change": 0.1,
+    "fearGreedIndex": 87,
+    "sentiment": 0.47,
+    "volatility": 0.41,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.37,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-07": {
+    "date": "2025-10-07",
+    "indexValue": 22788.36,
+    "marketChangePercent": -0.8,
+    "sp500Value": 6714.59,
+    "sp500Change": -0.47,
+    "fearGreedIndex": 85,
+    "sentiment": -0.05,
+    "volatility": 0.43,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 17.24,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-08": {
+    "date": "2025-10-08",
+    "indexValue": 23043.38,
+    "marketChangePercent": 0.84,
+    "sp500Value": 6753.72,
+    "sp500Change": 0.44,
+    "fearGreedIndex": 87,
+    "sentiment": 0.79,
+    "volatility": 0.41,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.3,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-09": {
+    "date": "2025-10-09",
+    "indexValue": 23024.63,
+    "marketChangePercent": -0.09,
+    "sp500Value": 6735.11,
+    "sp500Change": -0.38,
+    "fearGreedIndex": 87,
+    "sentiment": 0.33,
+    "volatility": 0.41,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.43,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-10": {
+    "date": "2025-10-10",
+    "indexValue": 22204.43,
+    "marketChangePercent": -3.64,
+    "sp500Value": 6552.51,
+    "sp500Change": -2.79,
+    "fearGreedIndex": 72,
+    "sentiment": -1.0,
+    "volatility": 0.54,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 21.66,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-13": {
+    "date": "2025-10-13",
+    "indexValue": 22694.61,
+    "marketChangePercent": 0.51,
+    "sp500Value": 6654.72,
+    "sp500Change": 0.49,
+    "fearGreedIndex": 80,
+    "sentiment": 0.56,
+    "volatility": 0.48,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 19.03,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-14": {
+    "date": "2025-10-14",
+    "indexValue": 22521.7,
+    "marketChangePercent": 0.6,
+    "sp500Value": 6644.31,
+    "sp500Change": 0.63,
+    "fearGreedIndex": 75,
+    "sentiment": 0.55,
+    "volatility": 0.52,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 20.81,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-15": {
+    "date": "2025-10-15",
+    "indexValue": 22670.08,
+    "marketChangePercent": -0.3,
+    "sp500Value": 6671.06,
+    "sp500Change": -0.26,
+    "fearGreedIndex": 75,
+    "sentiment": 0.1,
+    "volatility": 0.52,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 20.64,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-16": {
+    "date": "2025-10-16",
+    "indexValue": 22562.54,
+    "marketChangePercent": -0.89,
+    "sp500Value": 6629.07,
+    "sp500Change": -0.9,
+    "fearGreedIndex": 62,
+    "sentiment": -0.32,
+    "volatility": 0.63,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 25.31,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-17": {
+    "date": "2025-10-17",
+    "indexValue": 22679.97,
+    "marketChangePercent": 0.85,
+    "sp500Value": 6664.01,
+    "sp500Change": 0.77,
+    "fearGreedIndex": 75,
+    "sentiment": 0.67,
+    "volatility": 0.52,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 20.78,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-20": {
+    "date": "2025-10-20",
+    "indexValue": 22990.54,
+    "marketChangePercent": 0.64,
+    "sp500Value": 6735.13,
+    "sp500Change": 0.67,
+    "fearGreedIndex": 82,
+    "sentiment": 0.64,
+    "volatility": 0.46,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 18.23,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-21": {
+    "date": "2025-10-21",
+    "indexValue": 22953.67,
+    "marketChangePercent": -0.13,
+    "sp500Value": 6735.35,
+    "sp500Change": -0.02,
+    "fearGreedIndex": 83,
+    "sentiment": 0.26,
+    "volatility": 0.45,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 17.87,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-22": {
+    "date": "2025-10-22",
+    "indexValue": 22740.4,
+    "marketChangePercent": -0.87,
+    "sp500Value": 6699.4,
+    "sp500Change": -0.62,
+    "fearGreedIndex": 81,
+    "sentiment": -0.13,
+    "volatility": 0.47,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 18.6,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-23": {
+    "date": "2025-10-23",
+    "indexValue": 22941.8,
+    "marketChangePercent": 0.84,
+    "sp500Value": 6738.44,
+    "sp500Change": 0.52,
+    "fearGreedIndex": 85,
+    "sentiment": 0.77,
+    "volatility": 0.43,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 17.3,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-24": {
+    "date": "2025-10-24",
+    "indexValue": 23204.87,
+    "marketChangePercent": 0.27,
+    "sp500Value": 6791.69,
+    "sp500Change": 0.29,
+    "fearGreedIndex": 87,
+    "sentiment": 0.5,
+    "volatility": 0.41,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.37,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-27": {
+    "date": "2025-10-27",
+    "indexValue": 23637.46,
+    "marketChangePercent": 0.43,
+    "sp500Value": 6875.16,
+    "sp500Change": 0.43,
+    "fearGreedIndex": 89,
+    "sentiment": 0.6,
+    "volatility": 0.39,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.79,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-28": {
+    "date": "2025-10-28",
+    "indexValue": 23827.49,
+    "marketChangePercent": 0.26,
+    "sp500Value": 6890.89,
+    "sp500Change": -0.1,
+    "fearGreedIndex": 87,
+    "sentiment": 0.5,
+    "volatility": 0.41,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.42,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-29": {
+    "date": "2025-10-29",
+    "indexValue": 23958.47,
+    "marketChangePercent": -0.12,
+    "sp500Value": 6890.59,
+    "sp500Change": -0.29,
+    "fearGreedIndex": 86,
+    "sentiment": 0.3,
+    "volatility": 0.42,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.92,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-30": {
+    "date": "2025-10-30",
+    "indexValue": 23581.14,
+    "marketChangePercent": -0.89,
+    "sp500Value": 6822.34,
+    "sp500Change": -0.56,
+    "fearGreedIndex": 86,
+    "sentiment": -0.09,
+    "volatility": 0.42,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.91,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-10-31": {
+    "date": "2025-10-31",
+    "indexValue": 23724.96,
+    "marketChangePercent": -0.91,
+    "sp500Value": 6840.2,
+    "sp500Change": -0.57,
+    "fearGreedIndex": 84,
+    "sentiment": -0.11,
+    "volatility": 0.44,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 17.44,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-11-03": {
+    "date": "2025-11-03",
+    "indexValue": 23834.72,
+    "marketChangePercent": -0.49,
+    "sp500Value": 6851.97,
+    "sp500Change": -0.44,
+    "fearGreedIndex": 85,
+    "sentiment": 0.11,
+    "volatility": 0.43,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 17.17,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-11-04": {
+    "date": "2025-11-04",
+    "indexValue": 23348.64,
+    "marketChangePercent": -0.47,
+    "sp500Value": 6771.55,
+    "sp500Change": -0.25,
+    "fearGreedIndex": 80,
+    "sentiment": 0.07,
+    "volatility": 0.48,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 19.0,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-11-05": {
+    "date": "2025-11-05",
+    "indexValue": 23499.8,
+    "marketChangePercent": 0.61,
+    "sp500Value": 6796.29,
+    "sp500Change": 0.39,
+    "fearGreedIndex": 83,
+    "sentiment": 0.63,
+    "volatility": 0.45,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 18.01,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-11-06": {
+    "date": "2025-11-06",
+    "indexValue": 23053.99,
+    "marketChangePercent": -1.74,
+    "sp500Value": 6720.32,
+    "sp500Change": -0.99,
+    "fearGreedIndex": 79,
+    "sentiment": -0.58,
+    "volatility": 0.49,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 19.5,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-11-07": {
+    "date": "2025-11-07",
+    "indexValue": 23004.54,
+    "marketChangePercent": 0.49,
+    "sp500Value": 6728.8,
+    "sp500Change": 0.49,
+    "fearGreedIndex": 80,
+    "sentiment": 0.54,
+    "volatility": 0.48,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 19.08,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-11-10": {
+    "date": "2025-11-10",
+    "indexValue": 23527.17,
+    "marketChangePercent": 0.74,
+    "sp500Value": 6832.43,
+    "sp500Change": 0.69,
+    "fearGreedIndex": 84,
+    "sentiment": 0.71,
+    "volatility": 0.44,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 17.6,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-11-11": {
+    "date": "2025-11-11",
+    "indexValue": 23468.3,
+    "marketChangePercent": 0.26,
+    "sp500Value": 6846.61,
+    "sp500Change": 0.45,
+    "fearGreedIndex": 85,
+    "sentiment": 0.48,
+    "volatility": 0.43,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 17.28,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-11-12": {
+    "date": "2025-11-12",
+    "indexValue": 23406.46,
+    "marketChangePercent": -0.67,
+    "sp500Value": 6850.92,
+    "sp500Change": -0.25,
+    "fearGreedIndex": 84,
+    "sentiment": 0.01,
+    "volatility": 0.44,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 17.51,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-11-13": {
+    "date": "2025-11-13",
+    "indexValue": 22870.36,
+    "marketChangePercent": -1.69,
+    "sp500Value": 6737.49,
+    "sp500Change": -1.3,
+    "fearGreedIndex": 77,
+    "sentiment": -0.57,
+    "volatility": 0.5,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 20.0,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-11-14": {
+    "date": "2025-11-14",
+    "indexValue": 22900.59,
+    "marketChangePercent": 1.58,
+    "sp500Value": 6734.11,
+    "sp500Change": 0.93,
+    "fearGreedIndex": 78,
+    "sentiment": 1.0,
+    "volatility": 0.5,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 19.83,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-11-17": {
+    "date": "2025-11-17",
+    "indexValue": 22708.07,
+    "marketChangePercent": -0.35,
+    "sp500Value": 6672.41,
+    "sp500Change": -0.61,
+    "fearGreedIndex": 70,
+    "sentiment": 0.02,
+    "volatility": 0.56,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 22.38,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-11-18": {
+    "date": "2025-11-18",
+    "indexValue": 22432.85,
+    "marketChangePercent": -0.59,
+    "sp500Value": 6617.32,
+    "sp500Change": -0.36,
+    "fearGreedIndex": 64,
+    "sentiment": -0.15,
+    "volatility": 0.62,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 24.69,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-11-19": {
+    "date": "2025-11-19",
+    "indexValue": 22564.23,
+    "marketChangePercent": 0.47,
+    "sp500Value": 6642.16,
+    "sp500Change": 0.25,
+    "fearGreedIndex": 67,
+    "sentiment": 0.4,
+    "volatility": 0.59,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 23.66,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-11-20": {
+    "date": "2025-11-20",
+    "indexValue": 22078.05,
+    "marketChangePercent": -4.25,
+    "sp500Value": 6538.76,
+    "sp500Change": -2.96,
+    "fearGreedIndex": 59,
+    "sentiment": -1.0,
+    "volatility": 0.66,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 26.42,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-11-21": {
+    "date": "2025-11-21",
+    "indexValue": 22273.08,
+    "marketChangePercent": 0.5,
+    "sp500Value": 6602.99,
+    "sp500Change": 0.72,
+    "fearGreedIndex": 67,
+    "sentiment": 0.42,
+    "volatility": 0.59,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 23.43,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-11-24": {
+    "date": "2025-11-24",
+    "indexValue": 22872.01,
+    "marketChangePercent": 1.73,
+    "sp500Value": 6705.12,
+    "sp500Change": 1.03,
+    "fearGreedIndex": 76,
+    "sentiment": 1.0,
+    "volatility": 0.51,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 20.52,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-11-25": {
+    "date": "2025-11-25",
+    "indexValue": 23025.59,
+    "marketChangePercent": 0.98,
+    "sp500Value": 6765.88,
+    "sp500Change": 1.03,
+    "fearGreedIndex": 81,
+    "sentiment": 0.8,
+    "volatility": 0.46,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 18.56,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-11-26": {
+    "date": "2025-11-26",
+    "indexValue": 23214.69,
+    "marketChangePercent": 0.22,
+    "sp500Value": 6812.61,
+    "sp500Change": 0.28,
+    "fearGreedIndex": 85,
+    "sentiment": 0.46,
+    "volatility": 0.43,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 17.19,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-11-28": {
+    "date": "2025-11-28",
+    "indexValue": 23365.69,
+    "marketChangePercent": 0.32,
+    "sp500Value": 6849.09,
+    "sp500Change": 0.39,
+    "fearGreedIndex": 87,
+    "sentiment": 0.53,
+    "volatility": 0.41,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.35,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-12-01": {
+    "date": "2025-12-01",
+    "indexValue": 23275.92,
+    "marketChangePercent": 0.45,
+    "sp500Value": 6812.63,
+    "sp500Change": 0.0,
+    "fearGreedIndex": 85,
+    "sentiment": 0.57,
+    "volatility": 0.43,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 17.24,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-12-02": {
+    "date": "2025-12-02",
+    "indexValue": 23413.67,
+    "marketChangePercent": 0.15,
+    "sp500Value": 6829.37,
+    "sp500Change": -0.02,
+    "fearGreedIndex": 87,
+    "sentiment": 0.44,
+    "volatility": 0.41,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.59,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-12-03": {
+    "date": "2025-12-03",
+    "indexValue": 23454.09,
+    "marketChangePercent": 0.59,
+    "sp500Value": 6849.72,
+    "sp500Change": 0.51,
+    "fearGreedIndex": 88,
+    "sentiment": 0.68,
+    "volatility": 0.4,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.08,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-12-04": {
+    "date": "2025-12-04",
+    "indexValue": 23505.14,
+    "marketChangePercent": -0.09,
+    "sp500Value": 6857.12,
+    "sp500Change": -0.14,
+    "fearGreedIndex": 89,
+    "sentiment": 0.34,
+    "volatility": 0.39,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.78,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-12-05": {
+    "date": "2025-12-05",
+    "indexValue": 23578.13,
+    "marketChangePercent": 0.04,
+    "sp500Value": 6870.4,
+    "sp500Change": 0.06,
+    "fearGreedIndex": 90,
+    "sentiment": 0.42,
+    "volatility": 0.39,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 15.41,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  },
+  "2025-12-08": {
+    "date": "2025-12-08",
+    "indexValue": 23520.27,
+    "marketChangePercent": -0.5,
+    "sp500Value": 6839.86,
+    "sp500Change": -0.51,
+    "fearGreedIndex": 87,
+    "sentiment": 0.12,
+    "volatility": 0.42,
+    "headlines": [
+      {
+        "title": "Market Data Available - No specific news found",
+        "link": "#"
+      }
+    ],
+    "vix": 16.6,
+    "sources": [
+      "Nasdaq Composite (^IXIC) & S&P 500 (^GSPC) via Yahoo Finance",
+      "CBOE Volatility Index (^VIX) via Yahoo Finance",
+      "News Headlines via Google News Search"
+    ]
+  }
+}

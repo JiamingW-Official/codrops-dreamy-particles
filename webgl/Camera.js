@@ -1,6 +1,6 @@
 import Handler from './abstract/Handler.js';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
 
 
 export default class Camera extends Handler {
@@ -15,12 +15,17 @@ export default class Camera extends Handler {
     this.mouse = this.experience.mouse;
     this.debug = this.experience.debug;
 
-
+    this.moveForward = false;
+    this.moveBackward = false;
+    this.moveLeft = false;
+    this.moveRight = false;
+    this.moveUp = false;
+    this.moveDown = false;
 
     // Setup
 
     this.setupCamera();
-    this.setupOrbitControls();
+    this.setupControls();
   }
 
 
@@ -35,19 +40,78 @@ export default class Camera extends Handler {
 
   setupCamera() {
     this.target = new THREE.PerspectiveCamera(50, this.sizes.aspect, 0.1, 1000);
-    this.target.position.setZ(1.5);
+    this.target.position.setZ(3);
+    this.target.position.setY(0);
 
     this.scene.add(this.target);
+
+    // Dummy target for smooth controls
+    this.cameraTarget = new THREE.Object3D();
+    this.cameraTarget.position.copy(this.target.position);
+    this.cameraTarget.rotation.copy(this.target.rotation);
 
     this.resize();
   }
 
 
-  setupOrbitControls() {
-    this.orbitControls = new OrbitControls(this.target, this.canvas);
-    this.orbitControls.enableDamping = true;
-    this.orbitControls.enableZoom = false;
-    this.orbitControls.enablePan = false;
+  setupControls() {
+    // Control the dummy target instead of the actual camera
+    this.controls = new PointerLockControls(this.cameraTarget, this.canvas);
+    this.controls.pointerSpeed = 1.5; // Increased sensitivity
+
+    // Click to lock
+    this.canvas.addEventListener('click', () => {
+      this.controls.lock();
+    });
+
+    const onKeyDown = (event) => {
+      switch (event.code) {
+        case 'KeyW':
+          this.moveForward = true;
+          break;
+        case 'KeyA':
+          this.moveLeft = true;
+          break;
+        case 'KeyS':
+          this.moveBackward = true;
+          break;
+        case 'KeyD':
+          this.moveRight = true;
+          break;
+        case 'ArrowUp':
+          this.moveUp = true;
+          break;
+        case 'ArrowDown':
+          this.moveDown = true;
+          break;
+      }
+    };
+
+    const onKeyUp = (event) => {
+      switch (event.code) {
+        case 'KeyW':
+          this.moveForward = false;
+          break;
+        case 'KeyA':
+          this.moveLeft = false;
+          break;
+        case 'KeyS':
+          this.moveBackward = false;
+          break;
+        case 'KeyD':
+          this.moveRight = false;
+          break;
+        case 'ArrowUp':
+          this.moveUp = false;
+          break;
+        case 'ArrowDown':
+          this.moveDown = false;
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keyup', onKeyUp);
   }
 
 
@@ -62,7 +126,32 @@ export default class Camera extends Handler {
   }
 
 
-  update() {
-    if (this.orbitControls) this.orbitControls.update();
+  update(state) {
+    if (this.controls && this.controls.isLocked) {
+      const delta = state ? state.delta : 0.016;
+      const speed = 10.0 * delta;
+
+      // Move the dummy target
+      if (this.moveForward) this.controls.moveForward(speed);
+      if (this.moveBackward) this.controls.moveForward(- speed);
+      if (this.moveLeft) this.controls.moveRight(- speed);
+      if (this.moveRight) this.controls.moveRight(speed);
+
+      if (this.moveUp) this.cameraTarget.position.y += speed;
+      if (this.moveDown) this.cameraTarget.position.y -= speed;
+
+      // Physical Constraints on dummy target
+      if (this.cameraTarget.position.y < -5.0) this.cameraTarget.position.y = -5.0;
+      const maxDist = 50;
+      if (this.cameraTarget.position.length() > maxDist) {
+        this.cameraTarget.position.setLength(maxDist);
+      }
+    }
+
+    // Smoothly interpolate actual camera to dummy target
+    // Damping factor: lower = smoother/slower
+    const damping = 0.15;
+    this.target.position.lerp(this.cameraTarget.position, damping);
+    this.target.quaternion.slerp(this.cameraTarget.quaternion, damping);
   }
 }

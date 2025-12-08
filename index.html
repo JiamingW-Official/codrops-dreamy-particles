@@ -1,41 +1,70 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8"/>
-		<link rel="shortcut icon" href="./favicon.ico">
-		<link rel="stylesheet" href="./style.css"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-		<title>GPGPU Shining Mask - Mask</title>
-		<script src="//tympanus.net/codrops/adpacks/analytics.js"></script>
-	</head>
-	<body class="is-loading">
-		<header class="frame">
-			<h1 class="frame__title">Dreamy Particles by&nbsp;
-				<a href="https://fojcikdominik.com/" target="_blank">Dominik Fojcik</a>
-			</h1>
-			<nav class="frame__links">
-				<a href="https://tympanus.net/codrops/?p=83785">Article</a>
-				<a href="https://tympanus.net/codrops/demos/">All demos</a>
-				<a href="https://github.com/DGFX/codrops-dreamy-particles">GitHub</a>
-			</nav>
-			<nav class="frame__demos">
-				<span>Variations:</span>
-				<span>Leader</span>
-				<a href="./example2.html">Venecia</a>
-				<a href="./example3.html">Samurai</a>
-				<a href="./example4.html">Cyborg</a>
-			</nav>
-			<nav class="frame__tags">
-				<a href="https://tympanus.net/codrops/demos/?tag=three-js">Three.js</a>
-				<a href="https://tympanus.net/codrops/demos/?tag=webgl">WebGL</a>
-				<a href="https://tympanus.net/codrops/demos/?tag=3d">3D</a>
-			</nav>
+
+<head>
+	<meta charset="UTF-8" />
+	<link rel="shortcut icon" href="./favicon.ico">
+	<link rel="stylesheet" href="./style.css" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>GPGPU Shining Mask - Mask</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+</head>
+
+<body class="is-loading">
+	<div class="experience">
+		<canvas class="experience__canvas"></canvas>
+	</div>
+
+	<!-- Market Sentiment UI -->
+	<div class="ui-container">
+		<header class="header">
+			<h1>Market Sentiment Visualizer</h1>
+			<p>Select a date to view historical market mood</p>
 		</header>
-		<div class="experience">
-			<canvas class="experience__canvas"></canvas>
+
+		<!-- Main Market Stats -->
+		<div class="market-hero">
+			<div class="index-display">
+				<span class="index-label">Nasdaq Composite</span>
+				<h2 id="val-index">--</h2>
+				<span id="val-change" class="change-pill">--%</span>
+			</div>
+			<div id="market-status" class="market-status hidden">
+				Market Closed
+			</div>
 		</div>
-		<div class="loading"></div>
-		<script type="module" src="./webgl/Mask.js"></script>
-		<script src="https://tympanus.net/codrops/adpacks/cda_sponsor.js"></script>
-	</body>
+
+		<div class="controls">
+			<div class="date-picker-container">
+				<label for="date-picker">Date</label>
+				<input type="date" id="date-picker" />
+			</div>
+			<button id="btn-today" class="btn">Time Travel: Today</button>
+		</div>
+
+		<div class="market-info hidden" id="market-info">
+			<div class="stat-card">
+				<span class="label">Sentiment</span>
+				<span class="value" id="val-sentiment">Neutral</span>
+			</div>
+			<div class="stat-card">
+				<span class="label">Fear & Greed</span>
+				<span class="value" id="val-fear-greed">50</span>
+			</div>
+			<div class="stat-card">
+				<span class="label">Volatility</span>
+				<span class="value" id="val-volatility">Low</span>
+			</div>
+			<div class="headlines" id="headlines-container">
+				<!-- Headlines go here -->
+			</div>
+		</div>
+	</div>
+
+	<div class="loading"></div>
+	<script type="module" src="./src/AppController.js"></script>
+	<script type="module" src="./webgl/Mask.js"></script>
+</body>
+
 </html>

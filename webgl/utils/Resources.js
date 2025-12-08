@@ -7,6 +7,7 @@ import maskPath from '../assets/models/mask.glb?url';
 import veneciaMaskPath from '../assets/models/veneciaMask.glb?url';
 import samuraiPath from '../assets/models/samurai.glb?url';
 import cyborgPath from '../assets/models/cyborg.glb?url';
+import subwayPath from '../assets/models/subway.glb?url';
 
 
 export default class Resources extends EventEmitter {
@@ -37,6 +38,7 @@ export default class Resources extends EventEmitter {
     this.loadModel('veneciaMask', veneciaMaskPath);
     this.loadModel('samurai', samuraiPath);
     this.loadModel('cyborg', cyborgPath);
+    this.loadModel('subway', subwayPath);
   }
 
   loadModel(name, path) {

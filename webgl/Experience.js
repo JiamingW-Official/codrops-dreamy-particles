@@ -12,6 +12,8 @@ import Sizes from './utils/Sizes.js';
 import Mouse from './utils/Mouse.js';
 import Time from './utils/Time.js';
 import Resources from './utils/Resources.js';
+import AudioHandler from './utils/AudioHandler.js';
+import WebcamHandler from './utils/WebcamHandler.js';
 import { debounce } from './helpers'
 
 
@@ -45,6 +47,8 @@ export default class Experience {
     this.camera = Camera.getInstance(); // <-- Camera class
     this.renderer = Renderer.getInstance(); // <-- Renderer class
     this.resources = Resources.getInstance(); // <-- Resources class
+    this.audio = AudioHandler.getInstance(); // <-- Audio class
+    this.webcam = WebcamHandler.getInstance(); // <-- Webcam class
 
 
 
@@ -77,7 +81,8 @@ export default class Experience {
 
   update(state) {
     if (this.debug.active) this.debug.stats.update();
-    if (this.camera.target) this.camera.update();
+    if (this.audio) this.audio.update();
+    if (this.camera.target) this.camera.update(state);
     if (this.renderer.webglRenderer) this.renderer.update(state);
     if (this.world) this.world.update(state);
   }

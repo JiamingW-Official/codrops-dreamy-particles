@@ -30,14 +30,17 @@ body:not(.is-loading) .loading {
     transform: scaleX(0);
     transform-origin: 0% 50%;
   }
+
   50% {
     transform: scaleX(1);
     transform-origin: 0% 50%;
   }
+
   50.1% {
     transform: scaleX(1);
     transform-origin: 100% 50%;
   }
+
   100% {
     transform: scaleX(0);
     transform-origin: 100% 50%;
@@ -46,6 +49,7 @@ body:not(.is-loading) .loading {
 
 @media (scripting: enabled) {
   .loading {
+
     &::before,
     &::after {
       content: '';
@@ -125,6 +129,7 @@ a:hover {
   flex-wrap: wrap;
   gap: 1rem
 }
+
 .frame__demos {
   grid-area: demos;
   display: flex;
@@ -150,23 +155,459 @@ a:hover {
 
 @media screen and (min-width: 53rem) {
   .frame {
-      position:fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      grid-template-columns: min-content min-content auto 1fr;
-      grid-template-rows: auto auto auto 1fr;
-      align-content: space-between;
-      grid-template-areas: "title title title ..." "links links links ..." "tags tags tags ..." "demos demos demos sponsor"
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    grid-template-columns: min-content min-content auto 1fr;
+    grid-template-rows: auto auto auto 1fr;
+    align-content: space-between;
+    grid-template-areas: "title title title ..." "links links links ..." "tags tags tags ..." "demos demos demos sponsor"
   }
+
   .frame__demos {
-      align-self: end
+    align-self: end
   }
+
   .frame #cdawrap {
-      justify-self: end;
-      text-align: right;
-      align-self: end
+    justify-self: end;
+    text-align: right;
+    align-self: end
   }
 }
 
+/* UI Overlay Styles */
+.ui-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  color: white;
+  font-family: 'Inter', sans-serif;
+}
+
+.header {
+  pointer-events: auto;
+  margin-bottom: 2rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  font-weight: 300;
+  letter-spacing: -0.05em;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(90deg, #fff, #aaa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header p {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.controls {
+  pointer-events: auto;
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-end;
+  margin-bottom: auto;
+  /* Pushes content below to bottom if needed, or stays top */
+}
+
+.date-picker-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.date-picker-container label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.7;
+}
+
+input[type="date"] {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.8rem 1.2rem;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+  backdrop-filter: blur(10px);
+  outline: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+input[type="date"]:hover,
+input[type="date"]:focus {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+/* Custom Webkit Calendar picker indicator */
+::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+.btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  height: 46px;
+  /* Match input height roughly */
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.market-info {
+  pointer-events: auto;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.market-info.hidden {
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+}
+
+.stat-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.5rem;
+}
+
+.stat-card:last-of-type {
+  border-bottom: none;
+}
+
+.stat-card .label {
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+.stat-card .value {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.headlines {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.headlines p {
+  margin-bottom: 0.5rem;
+  padding-left: 1rem;
+  border-left: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  /* More subtle */
+  --glass-blur: 20px;
+
+  --font-primary: 'Inter', sans-serif;
+  /* Assuming Inter or system */
+  --text-main: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.6);
+  --text-faint: rgba(255, 255, 255, 0.3);
+
+  /* Semantic Colors */
+  --color-up: #00ffaa;
+  --color-down: #ff5050;
+  --color-accent: #ffcc00;
+
+  /* Spacing System */
+  --space-xs: 0.5rem;
+  /* 8px */
+  --space-sm: 1rem;
+  /* 16px */
+  --space-md: 1.5rem;
+  /* 24px */
+  --space-lg: 2rem;
+  /* 32px */
+
+  --radius-md: 16px;
+  --radius-sm: 8px;
+}
+
+body {
+  margin: 0;
+  color: var(--text-main);
+  font-family: var(--font-primary);
+  -webkit-font-smoothing: antialiased;
+  background: #000;
+  overflow: hidden;
+}
+
+/* Rational Grid Layout Container for UI */
+.ui-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+
+  display: grid;
+  grid-template-columns: 320px 1fr 320px;
+  /* Sidebar layout */
+  grid-template-rows: auto 1fr auto;
+  padding: var(--space-lg);
+  gap: var(--space-md);
+  box-sizing: border-box;
+}
+
+/* Header Reimagined */
+.header {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  /* Glass */
+  background: transparent;
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: var(--space-sm);
+  margin: 0;
+  /* Grid handles spacing */
+}
+
+.header h1 {
+  font-weight: 300;
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: var(--text-main);
+}
+
+.header p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* Market Hero Stats (Left Sidebar) */
+.market-hero {
+  grid-column: 1;
+  grid-row: 2;
+  pointer-events: auto;
+  align-self: start;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+
+  /* Glass Card */
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.stat-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.index-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  margin-bottom: 0.2rem;
+}
+
+.big-number {
+  font-size: 2.5rem;
+  font-weight: 200;
+  line-height: 1.1;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+.change-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.change-pill {
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  /* Rational small radius */
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.change-pill.positive {
+  color: var(--color-up);
+}
+
+.change-pill.negative {
+  color: var(--color-down);
+}
+
+/* Controls (Grid placement) */
+.controls {
+  grid-column: 1;
+  grid-row: 3;
+  pointer-events: auto;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+/* Info Card (Right Sidebar) */
+.info-card {
+  grid-column: 3;
+  grid-row: 2 / 4;
+  /* Span down */
+  pointer-events: auto;
+  align-self: start;
+
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.data-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: var(--space-xs);
+}
+
+.data-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.data-value {
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--text-main);
+}
+
+.headlines {
+  margin-top: var(--space-sm);
+}
+
+.headlines h3 {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: var(--space-sm);
+}
+
+.headlines a {
+  display: block;
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px dotted var(--glass-border);
+
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  transition: color 0.2s;
+}
+
+.headlines a:hover {
+  color: var(--text-main);
+  border-bottom-color: var(--text-muted);
+}
+
+/* Flatpickr Custom Override for Rational System */
+.flatpickr-calendar {
+  background: rgba(5, 5, 5, 0.6) !important;
+  backdrop-filter: blur(25px) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
+  border-radius: var(--radius-md) !important;
+  font-family: var(--font-primary) !important;
+}
+
+.flatpickr-day.selected {
+  background: var(--text-main) !important;
+  color: #000 !important;
+  border: none !important;
+  font-weight: 600 !important;
+}
+
+/* Hide original HTML structure layout issues */
+/* We will restructure HTML next */
+
+/* Responsive */
+@media (max-width: 900px) {
+  .ui-layer {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+    padding: var(--space-sm);
+  }
+
+  .market-hero,
+  .info-card,
+  .controls,
+  .header {
+    grid-column: 1;
+    grid-row: auto;
+    width: 100%;
+  }
+}
