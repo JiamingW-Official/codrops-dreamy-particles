@@ -174,10 +174,19 @@ export default class Mask extends Handler {
 
     console.log(`[Mask] Switching Pantheon Model to: ${modelKey}`);
 
-    // 1. Transition OUT (Disperse/Fade)
+    // 1. Transition OUT (Disperse/Fade + SPIN)
     // We can boost noise or reduce alpha
     const oldAlpha = this.params.minAlpha;
     gsap.to(this.params, { minAlpha: 0.0, duration: 1.0 });
+
+    // Spin Effect: Rotate the entire particle system
+    if (this.gpgpu && this.gpgpu.mesh) {
+      gsap.to(this.gpgpu.mesh.rotation, {
+        y: this.gpgpu.mesh.rotation.y + Math.PI * 2, // Full spin
+        duration: 2.5,
+        ease: "power2.inOut"
+      });
+    }
 
     try {
       // 2. Load New Model (or get from cache)

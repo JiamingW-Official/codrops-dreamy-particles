@@ -2634,7 +2634,27 @@ export default class AppController {
         if (volRatio < 0.8 && Math.abs(s) < 0.2) return 'chronos'; // Accumulation
         if (rsi > 45 && rsi < 55) return 'hecate'; // Indecision/Crossroads
 
-        // Default Smart Money
-        return 'athena';
+        // 6. SEASONAL ZODIAC (The Theory of Cyclic Time)
+        // If no specific condition is triggered, the Market Spirit follows the Seasons.
+        // This ensures all 12 Archetypes are represented in the Cycle of the Year.
+        const dateObj = new Date(data.date);
+        const month = dateObj.getMonth(); // 0 (Jan) - 11 (Dec)
+
+        const zodiac = [
+            'hypnos',     // Jan: Post-holiday slumber
+            'chronos',    // Feb: The long wait
+            'hephaestus', // Mar: Building for Spring
+            'apollo',     // Apr: Recovery/Light
+            'hermes',     // May: "Sell in May" velocity
+            'zeus',       // Jun: Summer peak
+            'dionysus',   // Jul: Mid-summer madness
+            'athena',     // Aug: Strategic re-evaluation
+            'hecate',     // Sep: The Crossroads (historically volatile)
+            'ares',       // Oct: The Month of Crashes (War)
+            'poseidon',   // Nov: Deep waters
+            'hades'       // Dec: Tax loss/Death of year
+        ];
+
+        return zodiac[month];
     }
 }
