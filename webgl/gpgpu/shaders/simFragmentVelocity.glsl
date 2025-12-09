@@ -40,11 +40,12 @@ void main() {
 	// Mouse repel force
     
 	float mouseDistance = distance( position, uMouse );
-	float maxDistance = 0.3 + uAudioBass * 0.01 + uTapIntensity * 0.05; // Reduced tap radius influence
+	float maxDistance = 0.4 + uAudioBass * 0.1; // Increased radius (was 0.3)
 
 	if( mouseDistance < maxDistance ) {
 		vec3 pushDirection = normalize( position - uMouse );
-		velocity += pushDirection * ( 1.0 - mouseDistance / maxDistance ) * (0.005 * uMouseSpeed + uTapIntensity * 0.01); // Reduced tap force influence
+        // Boosted force: 0.02 (was 0.005) makes it much more reactive
+		velocity += pushDirection * ( 1.0 - mouseDistance / maxDistance ) * (0.02 * uMouseSpeed + uTapIntensity * 0.05); 
 	}
 
     // Webcam Interaction

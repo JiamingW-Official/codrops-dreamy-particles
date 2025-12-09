@@ -2186,8 +2186,44 @@ export default class AppController {
                 const rulingGod = this.determineRulingGod(data);
                 if (rulingGod) {
                     this.mask.switchModel(rulingGod);
-                    // Also update tooltip or UI to show current God name if needed
-                    // console.log("Current God:", rulingGod);
+
+                    // Display God Name in UI (reusing Sentiment Box for now, or append)
+                    if (this.ui.valSentiment) {
+                        this.ui.valSentiment.textContent = rulingGod.toUpperCase();
+                        this.ui.valSentiment.style.color = "#FFD700"; // Gold color for Gods
+                    }
+
+                    // Dynamic Bloom based on God/Mood
+                    // Each God represents a market psychological state
+                    if (this.postProcessing) {
+                        let bloomSettings = { strength: 1.0, threshold: 0.25, radius: 0.1 }; // Default
+
+                        switch (rulingGod) {
+                            case 'zeus': // Power (ATH) - MAX GLOW
+                                bloomSettings = { strength: 2.5, threshold: 0.1, radius: 0.2 };
+                                break;
+                            case 'dionysus': // Mania - Hazy, Strong
+                                bloomSettings = { strength: 2.0, threshold: 0.15, radius: 0.3 };
+                                break;
+                            case 'hades': // Fear/Crash - Dim, Sharp
+                            case 'poseidon': // Liquidation
+                                bloomSettings = { strength: 0.6, threshold: 0.4, radius: 0.05 };
+                                break;
+                            case 'hypnos': // Sleep/Boring - Low
+                            case 'chronos': // Time
+                                bloomSettings = { strength: 0.8, threshold: 0.3, radius: 0.0 };
+                                break;
+                            case 'ares': // War/Vol - Sharp, Medium
+                                bloomSettings = { strength: 1.5, threshold: 0.3, radius: 0.05 };
+                                break;
+                            case 'apollo': // Healing - Soft
+                            case 'athena': // Wisdom
+                                bloomSettings = { strength: 1.2, threshold: 0.2, radius: 0.25 };
+                                break;
+                        }
+
+                        this.postProcessing.setBloomParams(bloomSettings);
+                    }
                 }
             }
 

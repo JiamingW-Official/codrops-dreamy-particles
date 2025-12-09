@@ -53,7 +53,7 @@ export default class PostProcessing {
 
         this.params = {
             threshold: 0.25, // High clarity
-            strength: 1.5,   // Reduced from 2.0 (Balanced Impact)
+            strength: 1.0,   // Reduced from 1.5 (Subtle, professional)
             radius: 0.1,     // Slight radius for better falloff
             directionX: 1.5,
             directionY: 1,
@@ -99,6 +99,14 @@ export default class PostProcessing {
     // --- API For Scene To Control FX ---
     setBloom(strength) {
         if (this.bloomPass) this.bloomPass.strength = strength;
+    }
+
+    setBloomParams(params) {
+        if (this.bloomPass) {
+            if (params.strength !== undefined) this.bloomPass.strength = params.strength;
+            if (params.threshold !== undefined) this.bloomPass.threshold = params.threshold;
+            if (params.radius !== undefined) this.bloomPass.radius = params.radius;
+        }
     }
 
     setGlitch(amount) {
