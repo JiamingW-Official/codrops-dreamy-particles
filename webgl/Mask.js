@@ -207,19 +207,22 @@ export default class Mask extends Handler {
       // MAGNETIC SNAP: Boost Attraction + Moderate Brake
       // 4. Transition IN (Snap Formation)
       // "10x Faster": High Tension Physics
+      // 4. Transition IN (Snap Formation)
+      // "10x Faster": Super-Tension + Heavy Brake
       if (this.gpgpu && this.gpgpu.uniforms.velocityUniforms.uAttraction) {
-        // 1. MAGNETIC SLINGSHOT: Massive pull (0.8), fade to Strong Hold (0.05)
-        // This ensures they fly in fast and STAY tight (fixing "super slow" ending)
+        // 1. GRAVITY WELL: Extreme pull (2.0) -> Strong Hold (0.2)
+        // 2.0 pulls them instantly. 0.2 keeps them from drifting (fixes "dark brush" gaps)
         gsap.fromTo(this.gpgpu.uniforms.velocityUniforms.uAttraction,
-          { value: 0.8 },
-          { value: 0.05, duration: 1.0, ease: "expo.out" } // exponential ease for SNAP
+          { value: 2.0 },
+          { value: 0.2, duration: 0.8, ease: "power4.out" } // Aggressive snap
         );
 
-        // 2. LOW FRICTION: Reduce drag so they move fast
-        // Fade from 0.0 (No drag) to 0.1 (Light drag)
+        // 2. BRAKING SYSTEM: Fly fast (0.0), then STOP (0.5)
+        // The 0.5 friction is CRITICAL. It kills the momentum so they don't overshoot/vibrate.
+        // This solves "takes forever to concentrate".
         gsap.fromTo(this.gpgpu.uniforms.velocityUniforms.uForce,
-          { value: 0.0 }, // Fly freely
-          { value: 0.1, duration: 1.5, ease: "power2.in" } // Catch them gently
+          { value: 0.0 }, // No drag start
+          { value: 0.5, duration: 1.2, ease: "power2.out" } // Strong brake arrival
         );
       }
 
