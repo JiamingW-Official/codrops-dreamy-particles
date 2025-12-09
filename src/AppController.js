@@ -2176,6 +2176,21 @@ export default class AppController {
                     this.audioHandler.setDistortionLevel(parseFloat(data.vix));
                 }
             }
+
+            // --- PANTHEON MODEL SWITCHING ---
+            if (!this.mask && Mask && typeof Mask.getInstance === 'function') {
+                this.mask = Mask.getInstance();
+            }
+
+            if (this.mask && typeof this.mask.switchModel === 'function') {
+                const rulingGod = this.determineRulingGod(data);
+                if (rulingGod) {
+                    this.mask.switchModel(rulingGod);
+                    // Also update tooltip or UI to show current God name if needed
+                    // console.log("Current God:", rulingGod);
+                }
+            }
+
             fgDisplay.textContent = fgText;
             fgDisplay.style.color = fgClr;
         }
@@ -2587,5 +2602,39 @@ export default class AppController {
             if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         });
         ctx.stroke();
+    }
+
+    determineRulingGod(data) {
+        if (!data) return null;
+        const fg = data.fearGreedIndex || 50;
+        const vix = data.vix || 20;
+        const s = data.marketChangePercent || 0;
+        const volRatio = data.volumeRatio || 1.0;
+        const rsi = data.rsi || 50;
+        const gap = data.marketGap || 0;
+
+        // 1. EXTREME GREED / MANIA
+        if (fg >= 80) return 'zeus';
+        if (fg >= 70 && rsi > 75) return 'dionysus';
+
+        // 2. BULLISH STRENGTH
+        if (s > 1.5 && volRatio > 1.2) return 'hermes';
+        if (s > 0.5 && fg < 60 && gap > 0.5) return 'apollo'; // Recovery
+
+        // 3. EXTREME FEAR / CRASH
+        if (fg <= 15) return 'hades';
+        if (s < -2.0 && volRatio > 1.5) return 'poseidon'; // Crash wave
+
+        // 4. BEARISH STRUCTURE
+        if (vix > 28 && Math.abs(s) < 1.0) return 'ares'; // Volatile Chop
+        if (fg < 40 && s > -0.5 && s < 0.5) return 'hephaestus'; // Builders
+
+        // 5. NEUTRAL / TRANSITION
+        if (volRatio < 0.6) return 'medusa'; // Frozen
+        if (volRatio < 0.8 && Math.abs(s) < 0.2) return 'chronos'; // Accumulation
+        if (rsi > 45 && rsi < 55) return 'janus'; // Indecision
+
+        // Default Smart Money
+        return 'athena';
     }
 }

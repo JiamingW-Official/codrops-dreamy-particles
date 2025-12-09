@@ -125,6 +125,23 @@ export default class GPGPU {
     }
 
 
+    updateTarget(newMesh) {
+        // Create new utilities for the new mesh to sample positions
+        const tempUtils = new GPGPUUtils(newMesh, this.size);
+
+        // This computes the new texture from the new mesh
+        const newPositionTexture = tempUtils.getPositionTexture();
+
+        // Update the 'Original' position uniform (this is the target for attraction)
+        if (this.uniforms.velocityUniforms.uOriginalPosition) {
+            this.uniforms.velocityUniforms.uOriginalPosition.value = newPositionTexture;
+        }
+
+        // Clean up temp sampler if needed (GPGPUUtils doesn't have dispose, but it's just arrays)
+        tempUtils.sampler = null;
+        tempUtils.mesh = null;
+    }
+
     compute() {
         // Update Audio Uniforms
         if (this.audio && this.audio.ready) {

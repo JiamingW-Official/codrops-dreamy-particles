@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import GPGPU from './gpgpu/GPGPU.js'
 import KeywordCloud from './KeywordCloud.js';
 import gsap from 'gsap';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 
 export default class Mask extends Handler {
@@ -167,27 +168,92 @@ export default class Mask extends Handler {
     }
   }
 
-  changeModel(modelName) {
-    if (this.currentModelName === modelName) return;
-    console.log(`[Mask] Switching to model: ${modelName}`);
 
-    this.currentModelName = modelName;
+  async switchModel(modelKey) {
+    if (this.currentModelName === modelKey) return;
 
-    // Cleanup old GPGPU
-    if (this.gpgpu) {
-      // Assume GPGPU has a dispose or access to mesh
-      if (this.gpgpu.particles) {
-        this.scene.remove(this.gpgpu.particles);
-        if (this.gpgpu.particles.geometry) this.gpgpu.particles.geometry.dispose();
-        if (this.gpgpu.particles.material) this.gpgpu.particles.material.dispose();
+    console.log(`[Mask] Switching Pantheon Model to: ${modelKey}`);
+
+    // 1. Transition OUT (Disperse/Fade)
+    // We can boost noise or reduce alpha
+    const oldAlpha = this.params.minAlpha;
+    gsap.to(this.params, { minAlpha: 0.0, duration: 1.0 });
+
+    try {
+      // 2. Load New Model (or get from cache)
+      let mesh;
+      if (this.resources.models[modelKey]) {
+        mesh = this.resolveMesh(this.resources.models[modelKey].scene);
+      } else {
+        // Hot-load
+        const url = `models/pantheon/${modelKey}.glb`; // Convention
+        console.log(`[Mask] Loading ${url}...`);
+        mesh = await this.loadModelFromUrl(url);
+        // Cache it?
+        this.resources.models[modelKey] = { scene: mesh }; // Hacky cache
       }
-      // Also need to dispose computation renderer if possible, but basic mesh cleanup is key
-      this.gpgpu = null;
-    }
 
-    this.setupMask();
-    this.setupGPGPU();
+      if (!mesh) throw new Error("No mesh found");
+
+      // 3. Update Simulation Data
+      this.updateGPGPUGeometry(mesh);
+      this.currentModelName = modelKey;
+
+      // 4. Transition IN
+      gsap.to(this.params, { minAlpha: oldAlpha, duration: 1.5, delay: 0.5 });
+
+      // Notify Debug
+      console.log(`[Mask] Switched to ${modelKey}`);
+
+    } catch (e) {
+      console.warn(`[Mask] Failed to switch to ${modelKey}:`, e);
+      // Fallback?
+      gsap.to(this.params, { minAlpha: oldAlpha, duration: 1.0 });
+    }
   }
+
+  resolveMesh(scene) {
+    let m = scene.children[0];
+    if (!m.geometry) {
+      scene.traverse((c) => { if (c.isMesh && !m.geometry) m = c; });
+    }
+    return m;
+  }
+
+  async loadModelFromUrl(url) {
+    const loader = new GLTFLoader();
+    return new Promise((resolve, reject) => {
+      loader.load(url, (gltf) => {
+        resolve(this.resolveMesh(gltf.scene));
+      }, undefined, (err) => {
+        console.warn("Error loading model", url);
+        reject(err);
+      });
+    });
+  }
+
+  updateGPGPUGeometry(mesh) {
+    if (!this.gpgpu) return;
+
+    // We need to generate a new Texture from the geometry
+    // Reuse GPGPU's intenal method if possible, or replicate it.
+    // Since GPGPU class encapsulates this, we might need to add a method there
+    // OR we can access the helper from here if exported.
+
+    // Ideally call this.gpgpu.updateTarget(mesh);
+    if (typeof this.gpgpu.updateTarget === 'function') {
+      this.gpgpu.updateTarget(mesh);
+    } else {
+      console.error("GPGPU.updateTarget not implemented!");
+    }
+  }
+
+  setupMask() {
+    // ... existing ...
+  }
+
+  // Replace changeModel with alias
+  changeModel(m) { this.switchModel(m); }
 
   updateVisualization(data) {
     if (!data) return;
