@@ -20,6 +20,7 @@ void main() {
     
     // Audio Influence
     velocityAlpha += uAudioHigh * 0.2;
+    velocityAlpha += uAudioBass * 0.4; // Add Bass Flash to compensate for lack of movement brightness
     vec3 finalColor = uColor * (1.0 + uAudioMid * 0.2);
 
 	if (center > 0.5) { discard; }

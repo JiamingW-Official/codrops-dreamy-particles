@@ -4613,6 +4613,7 @@ void main() {
     
     
     velocityAlpha += uAudioHigh * 0.2;
+    velocityAlpha += uAudioBass * 0.4; 
     vec3 finalColor = uColor * (1.0 + uAudioMid * 0.2);
 
 	if (center > 0.5) { discard; }
