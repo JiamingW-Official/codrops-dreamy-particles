@@ -135,33 +135,34 @@ export default class AudioHandler extends EventEmitter {
     }
 
     setDistortionLevel(vix) {
+        // Debug entry
+        // console.log(`[AudioHandler] setDistortionLevel called with VIX: ${vix}`);
+
         // Auto-start check
         if (!this.distortionSource && this.distortionBuffer) {
             console.warn("[AudioHandler] Force-starting Distortion now!");
             this.startDistortion();
-        } else if (!this.distortionBuffer) {
-            console.error("[AudioHandler] Distortion Buffer is MISSING!");
-            return;
         }
 
         if (!this.distortionGain) return;
 
-        // Thresholds - LOWERED & BOOSTED
-        const minVix = 10; // Trigger almost immediately
-        const maxVix = 35; // Max out earlier
+        // Thresholds
+        const minVix = 10;
+        const maxVix = 35;
 
         let targetVol = 0;
-        if (vix > minVix) {
+        if (vix && !isNaN(vix) && vix > minVix) {
             let t = Math.min(1.0, (vix - minVix) / (maxVix - minVix));
-            targetVol = t * 2.5; // SUPER LOUD (Pre-amp gain)
+            targetVol = t * 2.5;
         }
 
-        console.log(`[AudioHandler] VIX: ${vix} -> Gain: ${targetVol.toFixed(2)} (Active: ${!!this.distortionSource})`);
+        // Log significant changes
+        if (targetVol > 0.01 || this.distortionGain.gain.value > 0.01) {
+            console.log(`[AudioHandler] VIX: ${vix} -> Vol: ${targetVol.toFixed(2)}`);
+        }
 
-        const now = this.context.currentTime;
-        this.distortionGain.gain.cancelScheduledValues(now);
-        this.distortionGain.gain.setValueAtTime(this.distortionGain.gain.value, now);
-        this.distortionGain.gain.linearRampToValueAtTime(targetVol, now + 0.2); // Fast response
+        // Direct assignment to catch any scheduling bugs
+        this.distortionGain.gain.value = targetVol;
     }
 
     setMood(mood) {
