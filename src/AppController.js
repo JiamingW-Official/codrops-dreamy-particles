@@ -792,13 +792,61 @@ export default class AppController {
     // --- REPLACED: updateUI with new calls ---
     updateUI(data, isClosed, requestedDateStr) {
         // ... (Keeping standard parts) ...
-        const statusEl = document.getElementById('market-status');
         if (statusEl) {
             statusEl.classList.toggle('hidden', !isClosed);
             if (isClosed) statusEl.textContent = `Market Closed on ${requestedDateStr}. Data from ${data.date}`;
         }
 
-        // --- LEFT SIDEBAR UPDATES ---
+        // --- RESTORED: Basic Dashboard Metrics ---
+        const setVal = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+
+        // 1. Main NASDAQ Display (Top Left)
+        if (document.getElementById('val-index')) {
+            document.getElementById('val-index').textContent = data.indexValue.toLocaleString();
+            const valChange = document.getElementById('val-change');
+            if (valChange) {
+                valChange.textContent = (data.marketChangePercent > 0 ? '+' : '') + data.marketChangePercent + '%';
+                valChange.className = 'change-pill ' + (data.marketChangePercent > 0 ? 'positive' : 'negative');
+            }
+        }
+
+        // 2. S&P 500 (Main)
+        if (document.getElementById('val-sp500')) {
+            document.getElementById('val-sp500').textContent = data.sp500Value.toLocaleString();
+            const spChange = document.getElementById('val-sp500-change');
+            if (spChange) {
+                spChange.textContent = (data.sp500Change > 0 ? '+' : '') + data.sp500Change + '%';
+                spChange.className = 'change-pill ' + (data.sp500Change > 0 ? 'positive' : 'negative');
+            }
+        }
+
+        // 3. Volume
+        const valVolume = document.getElementById('val-volume');
+        if (valVolume) {
+            const vol = data.volume;
+            if (!isNaN(vol)) {
+                valVolume.textContent = (vol > 1e9) ? (vol / 1e9).toFixed(1) + 'B' : (vol / 1e6).toFixed(1) + 'M';
+            } else {
+                valVolume.textContent = vol || '--';
+            }
+        }
+
+        // 4. VIX
+        const valVix = document.getElementById('val-vix');
+        if (valVix) {
+            valVix.textContent = data.vix || '--';
+            const v = parseFloat(data.vix);
+            if (!isNaN(v)) {
+                valVix.style.color = v > 20 ? '#ff5050' : (v < 15 ? '#00ffaa' : '#ffffff');
+            }
+        }
+
+        // 5. 52W Range
+        const val52w = document.getElementById('val-52w-range');
+        if (val52w) val52w.textContent = data.yearLow ? `${data.yearLow} - ${data.yearHigh}` : '--';
+
+
+        // --- LEFT SIDEBAR UPDATES (Sparklines, Meters) ---
 
         // 1. Sparklines Data Prep
         // Need to get history for charts. Access this.marketDataService.dataMap
