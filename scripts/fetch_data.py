@@ -199,33 +199,39 @@ def fetch_market_data():
 
         # --- FEAR & GREED PROXY CALCULATION ---
         try:
-            # A. Momentum Score (0-100)
+            # A. Momentum Score (0-100) - SP500 vs 125D MA
             curr_sp500 = float(sp500_close.loc[date])
             ma_125_val = float(sp500_ma125.loc[date])
-            ma_200_val = float(sp500_ma200.loc[date]) if not pd.isna(sp500_ma200.loc[date]) else ma_125_val
-            
             if pd.isna(ma_125_val):
                 mom_score = 50
             else:
+                # 5% above MA is "extreme greed" (100), 5% below is "extreme fear" (0)
                 diff_pct = (curr_sp500 - ma_125_val) / ma_125_val
-                mom_score = 50 + (diff_pct * 500) 
+                mom_score = 50 + (diff_pct * 1000) # Sensitivity: 0.05 * 1000 = 50 -> 100
                 mom_score = max(0, min(100, mom_score))
 
-            # B. Volatility Score (0-100)
+            # B. Volatility Score (0-100) - INVERTED (High VIX = Low Score/Fear)
             curr_vix = float(vix_close.loc[date])
-            ma_50_vix = float(vix_ma50.loc[date])
-            
-            # Safe Div
-            vix_ratio = 1.0
-            if not pd.isna(ma_50_vix) and ma_50_vix > 0:
-                 vix_ratio = curr_vix / ma_50_vix
-            
-            vol_score = 50 + ((1.0 - vix_ratio) * 100)
+            # Benchmark VIX: 20 is "Neutral" barrier. 
+            # 10 = Extreme Greed (100)
+            # 40 = Extreme Fear (0)
+            # Linear map: Score = 100 - ((VIX - 10) / 30 * 100)
+            vol_score = 100 - ((curr_vix - 12) / (35 - 12) * 100)
             vol_score = max(0, min(100, vol_score))
-                
-            # Final Index
-            fear_greed_idx = int((mom_score * 0.6) + (vol_score * 0.4))
             
+            # C. RSI Score (0-100) - Short Term Emotion
+            # RSI 30 = Fear (20 score), RSI 70 = Greed (80 score)
+            curr_rsi = float(rsi_series.loc[date]) if not pd.isna(rsi_series.loc[date]) else 50.0
+            rsi_score = curr_rsi # RSI is already 0-100 friendly
+            
+            # Final Index Weighted
+            # VIX (Fear) is dominant in "Fear" mode, Momentum in "Greed".
+            # Let's verify user observation: "31 Fear today".
+            # If VIX is high (e.g. 25+), score should be < 40.
+            # My prev logic was too bullish.
+            
+            fear_greed_idx = int((mom_score * 0.3) + (vol_score * 0.45) + (rsi_score * 0.25))
+
         except Exception as e:
             # Fallback
             fear_greed_idx = 50

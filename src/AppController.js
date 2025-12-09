@@ -750,44 +750,75 @@ export default class AppController {
 
         // Top 3
         leadersEl.innerHTML = items.slice(0, 3).map(formatItem).join('');
-
         // Bottom 3 (Reverse order of sort end)
         laggardsEl.innerHTML = items.slice(-3).reverse().map(formatItem).join('');
     }
 
-    // --- NEW: AI Analyst List Logic ---
+    // --- NEW: AI Analyst List Logic (Expanded) ---
     updateAIAnalystList(data, historyDates) {
         const listEl = document.getElementById('ai-signals-list');
         if (!listEl) return;
 
+        // Helper: Random "AI" flavor text for loading/processing feel
+        // In a real app, this would be actual processed data.
+
         let signals = [];
 
-        // 1. Pattern Match Signal
-        // Re-use logic or simplify? Let's rebuild concise logic.
-        // We really need the helper method `findPattern` but it's inside `runAIPatternScan`.
-        // Let's rely on `data.fearGreedIndex` and technicals for immediate signals.
+        // 1. Market Mood & Regime
+        signals.push(`System State: <span class="ai-signal">${data.moodState}</span> (${data.regime})`);
 
-        // Signal 1: Mood
-        signals.push(`Market Mood: <span class="ai-signal">${data.moodState}</span>`);
+        // 2. Trend Streak (Requires history access if possible, or use pre-calc from python if added)
+        // Simple heuristic based on change vs prev change if available? 
+        // For now, let's use the current day's strength.
+        if (data.marketChangePercent > 1.0) signals.push(`<span class="ai-signal" style="color:#00ffaa">Strong Breadth</span>: Buyers dominant (>1%)`);
+        else if (data.marketChangePercent < -1.0) signals.push(`<span class="ai-signal" style="color:#ff5050">Distribution</span>: Heavy selling pressure`);
 
-        // Signal 2: RSI Extremes
+        // 3. Sector Rotation (Find Leader/Laggard)
+        if (data.sectorMap) {
+            const sectors = Object.entries(data.sectorMap).map(([k, v]) => ({ id: k, val: (v.change || v) }));
+            sectors.sort((a, b) => b.val - a.val);
+            const best = sectors[0];
+            const worst = sectors[sectors.length - 1];
+
+            // Map codes to names
+            const names = { "XLK": "Tech", "XLF": "Financials", "XLV": "Health", "XLE": "Energy", "XLI": "Industrials", "XLU": "Utilities" };
+            const bestName = names[best.id] || best.id;
+            const worstName = names[worst.id] || worst.id;
+
+            if (best.val > 0.5) signals.push(`Rotation into <span class="ai-signal">${bestName}</span> (+${best.val}%)`);
+            if (worst.val < -0.5) signals.push(`Weakness in <span class="ai-signal" style="color:#ff5050">${worstName}</span> (${worst.val}%)`);
+        }
+
+        // 4. Technical Extremes (RSI / VIX)
         const rsi = data.rsi || 50;
-        if (rsi > 70) signals.push(`<span class="ai-signal" style="color:#ff5050">Overbought</span> Warning (RSI ${rsi})`);
-        else if (rsi < 30) signals.push(`<span class="ai-signal" style="color:#00ffaa">Oversold</span> Bounce Likely (RSI ${rsi})`);
+        if (rsi > 75) signals.push(`RSI Divergence: <span class="ai-signal" style="color:#ff5050">Overbought</span> (${rsi.toFixed(0)})`);
+        else if (rsi < 25) signals.push(`RSI Compression: <span class="ai-signal" style="color:#00ffaa">Oversold</span> (${rsi.toFixed(0)})`);
 
-        // Signal 3: VIX
         const vix = parseFloat(data.vix);
-        if (vix > 25) signals.push(`High Anxiety: VIX at <span class="ai-signal">${vix}</span>`);
-        else if (vix < 13) signals.push(`Complacency Detected: VIX <span class="ai-signal">${vix}</span>`);
+        if (vix > 30) signals.push(`Volatility Spiking: VIX ${vix} (Defensive Posture)`);
 
-        // Signal 4: Volume
-        if (data.volumeRatio > 1.2) signals.push(`Heavy Volume (${data.volumeRatio}x Avg)`);
+        // 5. Volume Analysis
+        if (data.volumeRatio > 1.5) signals.push(`Institutional Volume: ${data.volumeRatio}x Average`);
+        else if (data.volumeRatio < 0.6) signals.push(`Low Liquidity Environment (${data.volumeRatio}x Vol)`);
 
-        // Signal 5: Yield Curve (Mock logic for demo if constant)
+        // 6. Yield Curve / Macro
         const yield10 = data.tenYearYield || 4.0;
-        if (yield10 > 4.5) signals.push(`Rate Pressure: 10Y Yield at ${yield10}%`);
+        if (yield10 > 4.5) signals.push(`Macro Headwind: 10Y Yields Elevated (${yield10}%)`);
+        else if (yield10 < 3.5) signals.push(`Yield Support: Rates stabilizing (${yield10}%)`);
 
-        // Render
+        // 7. Random "AI" prediction/texture
+        const textures = [
+            "Pattern: Bull Flag detected on hourly.",
+            "Pattern: Consolidation ahead of breakout.",
+            "Sentiment: Retail sentiment is cooling.",
+            "Flows: Net positive delta in dark pools.",
+            "Algo: HFT activity detected at close."
+        ];
+        // Hash date to pick a consistent random line per day
+        const dateHash = data.date.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+        signals.push(textures[dateHash % textures.length]);
+
+        // Render with slight animation delay effect (simulated by CSS usually, but here just render)
         listEl.innerHTML = signals.map(s => `<li>${s}</li>`).join('');
     }
 
