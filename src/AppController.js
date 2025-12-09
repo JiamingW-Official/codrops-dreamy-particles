@@ -334,6 +334,7 @@ export default class AppController {
         }
 
         // Always run AI Pattern Scan (moved outside conditional block)
+        console.log('[updateUI] Running AI scan, data:', data ? data.date : 'undefined');
         this.runAIPatternScan(data);
 
     } // Closes updateUI
@@ -539,6 +540,8 @@ export default class AppController {
 
     runAIPatternScan(currentData) {
         const aiText = document.getElementById('ai-analyst-text');
+        console.log('[AI] runAIPatternScan called, element:', aiText ? 'found' : 'NOT FOUND', 'data:', currentData ? currentData.date : 'none');
+
         if (!aiText) {
             console.warn('[AI] ai-analyst-text element not found');
             return;
@@ -546,6 +549,7 @@ export default class AppController {
 
         // If no current data, show loading
         if (!currentData) {
+            console.log('[AI] No currentData, showing loading');
             aiText.innerHTML = `<span style="color:#ffcc00;">Loading market data...</span>`;
             return;
         }
@@ -554,6 +558,8 @@ export default class AppController {
         const vix = currentData.vix || '--';
         const fg = currentData.fearGreedIndex || 50;
         const change = currentData.marketChangePercent || 0;
+
+        console.log('[AI] Data available - mood:', mood, 'vix:', vix, 'fg:', fg);
 
         // If dataMap not ready or too few entries, show current conditions
         if (!this.marketDataService.dataMap || Object.keys(this.marketDataService.dataMap).length < 3) {
