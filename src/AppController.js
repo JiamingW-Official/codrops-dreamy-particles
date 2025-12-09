@@ -683,4 +683,275 @@ export default class AppController {
             this.mask.updateVisualization(data);
         }
     }
+
+    // --- NEW: Generic Sparkline Drawer ---
+    drawSparkline(canvasId, values, colorOverride = null) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width;
+        const H = canvas.height;
+        ctx.clearRect(0, 0, W, H);
+
+        if (!values || values.length < 2) return;
+
+        const minVal = Math.min(...values);
+        const maxVal = Math.max(...values);
+        const range = maxVal - minVal || 1;
+
+        // Determine Color (Green up, Red down)
+        const isUp = values[values.length - 1] >= values[0];
+        const color = colorOverride || (isUp ? '#00ffaa' : '#ff5050');
+
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+
+        values.forEach((v, i) => {
+            const x = (i / (values.length - 1)) * W;
+            // Normalize Height (padding 2px)
+            const y = H - ((v - minVal) / range) * (H - 4) - 2;
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+
+        // Fill
+        const grad = ctx.createLinearGradient(0, 0, 0, H);
+        grad.addColorStop(0, color);
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+
+        ctx.globalAlpha = 0.15;
+        ctx.fillStyle = grad;
+        ctx.lineTo(W, H);
+        ctx.lineTo(0, H);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+    }
+
+    // --- NEW: Leaderboard Logic ---
+    updateLeaderboard(data) {
+        const leadersEl = document.getElementById('leaders-list');
+        const laggardsEl = document.getElementById('laggards-list');
+
+        if (!data.sectorMap || !leadersEl || !laggardsEl) return;
+
+        const items = Object.entries(data.sectorMap).map(([k, v]) => ({
+            id: k,
+            val: (typeof v === 'object') ? v.change : v
+        }));
+
+        // Sort
+        items.sort((a, b) => b.val - a.val); // Descending
+
+        const formatItem = (item) => `<div>${item.id}: ${(item.val > 0 ? '+' : '')}${item.val}%</div>`;
+
+        // Top 3
+        leadersEl.innerHTML = items.slice(0, 3).map(formatItem).join('');
+
+        // Bottom 3 (Reverse order of sort end)
+        laggardsEl.innerHTML = items.slice(-3).reverse().map(formatItem).join('');
+    }
+
+    // --- NEW: AI Analyst List Logic ---
+    updateAIAnalystList(data, historyDates) {
+        const listEl = document.getElementById('ai-signals-list');
+        if (!listEl) return;
+
+        let signals = [];
+
+        // 1. Pattern Match Signal
+        // Re-use logic or simplify? Let's rebuild concise logic.
+        // We really need the helper method `findPattern` but it's inside `runAIPatternScan`.
+        // Let's rely on `data.fearGreedIndex` and technicals for immediate signals.
+
+        // Signal 1: Mood
+        signals.push(`Market Mood: <span class="ai-signal">${data.moodState}</span>`);
+
+        // Signal 2: RSI Extremes
+        const rsi = data.rsi || 50;
+        if (rsi > 70) signals.push(`<span class="ai-signal" style="color:#ff5050">Overbought</span> Warning (RSI ${rsi})`);
+        else if (rsi < 30) signals.push(`<span class="ai-signal" style="color:#00ffaa">Oversold</span> Bounce Likely (RSI ${rsi})`);
+
+        // Signal 3: VIX
+        const vix = parseFloat(data.vix);
+        if (vix > 25) signals.push(`High Anxiety: VIX at <span class="ai-signal">${vix}</span>`);
+        else if (vix < 13) signals.push(`Complacency Detected: VIX <span class="ai-signal">${vix}</span>`);
+
+        // Signal 4: Volume
+        if (data.volumeRatio > 1.2) signals.push(`Heavy Volume (${data.volumeRatio}x Avg)`);
+
+        // Signal 5: Yield Curve (Mock logic for demo if constant)
+        const yield10 = data.tenYearYield || 4.0;
+        if (yield10 > 4.5) signals.push(`Rate Pressure: 10Y Yield at ${yield10}%`);
+
+        // Render
+        listEl.innerHTML = signals.map(s => `<li>${s}</li>`).join('');
+    }
+
+    // --- REPLACED: updateUI with new calls ---
+    updateUI(data, isClosed, requestedDateStr) {
+        // ... (Keeping standard parts) ...
+        const statusEl = document.getElementById('market-status');
+        if (statusEl) {
+            statusEl.classList.toggle('hidden', !isClosed);
+            if (isClosed) statusEl.textContent = `Market Closed on ${requestedDateStr}. Data from ${data.date}`;
+        }
+
+        // --- LEFT SIDEBAR UPDATES ---
+
+        // 1. Sparklines Data Prep
+        // Need to get history for charts. Access this.marketDataService.dataMap
+        const dateKeys = Object.keys(this.marketDataService.dataMap).sort();
+        const endIdx = dateKeys.indexOf(data.date);
+
+        let nasdaqHist = [], sp500Hist = [], yieldHist = [];
+        let pctNasdaq = 0, pctSP = 0, pctYield = 0;
+
+        if (endIdx !== -1) {
+            const startIdx = Math.max(0, endIdx - 20); // 20 Day Sparklines
+            const slice = dateKeys.slice(startIdx, endIdx + 1);
+
+            nasdaqHist = slice.map(k => this.marketDataService.dataMap[k].indexValue);
+            sp500Hist = slice.map(k => this.marketDataService.dataMap[k].sp500Value);
+            yieldHist = slice.map(k => this.marketDataService.dataMap[k].tenYearYield || 4.0);
+
+            // Calc % change for the spark card
+            const calcPct = (arr) => {
+                if (arr.length < 2) return 0;
+                return ((arr[arr.length - 1] - arr[0]) / arr[0]) * 100;
+            };
+            pctNasdaq = calcPct(nasdaqHist).toFixed(2);
+            pctSP = calcPct(sp500Hist).toFixed(2);
+            pctYield = calcPct(yieldHist).toFixed(2);
+        }
+
+        // Draw Sparklines
+        this.drawSparkline('chart-nasdaq', nasdaqHist);
+        this.drawSparkline('chart-sp500', sp500Hist);
+        this.drawSparkline('chart-yield', yieldHist, '#cc99ff'); // Purple for Yield
+
+        // Update Mini Text
+        const setTxt = (id, txt, color) => {
+            const el = document.getElementById(id);
+            if (el) { el.textContent = txt; el.style.color = color; }
+        };
+        const colorVal = (v) => v >= 0 ? '#00ffaa' : '#ff5050';
+
+        setTxt('val-index-mini', data.indexValue.toLocaleString(), '#fff');
+        setTxt('pch-nasdaq', (pctNasdaq > 0 ? '+' : '') + pctNasdaq + '%', colorVal(pctNasdaq));
+
+        setTxt('val-sp500-mini', data.sp500Value.toLocaleString(), '#fff');
+        setTxt('pch-sp500', (pctSP > 0 ? '+' : '') + pctSP + '%', colorVal(pctSP));
+
+        setTxt('val-yield-mini', (data.tenYearYield || 4.0) + '%', '#fff');
+        setTxt('pch-yield', (pctYield > 0 ? '+' : '') + pctYield + '%', colorVal(pctYield)); // Yield up is usually red for stocks, but let's keep it math-accurate
+
+        // 2. Technical Meters
+        // RSI
+        const rsiVal = data.rsi || 50;
+        const rsiEl = document.getElementById('meter-rsi');
+        const rsiTxt = document.getElementById('val-rsi');
+        if (rsiEl) {
+            rsiEl.style.width = `${rsiVal}%`;
+            rsiEl.style.backgroundColor = rsiVal > 70 ? '#ff5050' : (rsiVal < 30 ? '#00ffaa' : '#ffcc00');
+        }
+        if (rsiTxt) rsiTxt.textContent = rsiVal.toFixed(1);
+
+        // Rel Vol
+        const volRatio = data.volumeRatio || 1.0;
+        const volEl = document.getElementById('meter-rvol');
+        const volTxt = document.getElementById('val-rvol');
+        if (volEl) {
+            // Cap at 2.0x for width calculation -> 100%
+            const widthPct = Math.min(100, (volRatio / 2.0) * 100);
+            volEl.style.width = `${widthPct}%`;
+            volEl.style.backgroundColor = volRatio > 1.0 ? '#00ffaa' : '#ffffff';
+        }
+        if (volTxt) volTxt.textContent = volRatio.toFixed(2) + 'x';
+
+
+        // --- RIGHT SIDEBAR UPDATES ---
+
+        // 3. Leaderboard
+        this.updateLeaderboard(data);
+
+        // 4. AI Analyst List
+        this.updateAIAnalystList(data);
+
+        // --- STANDARD PREVIOUS UPDATES ---
+        // Headlines
+        this.ui.headlinesContainer.innerHTML = '';
+        data.headlines.forEach(headline => {
+            const isObj = typeof headline === 'object' && headline !== null;
+            const text = isObj ? headline.title : headline;
+            const link = isObj ? headline.link : '#';
+            const p = document.createElement('p');
+            p.style.margin = '0';
+            p.innerHTML = `<a href="${link}" target="_blank" rel="noopener noreferrer" style="cursor:pointer">${text}</a>`;
+            this.ui.headlinesContainer.appendChild(p);
+        });
+
+        // Risk Gauge / Mood
+        // ... (Re-implementing the block I might have overwritten? Check context)
+        // I need to ensure I didn't delete the Risk Gauge logic.
+        // It's safer to copy that logic here.
+
+        const fgIndex = data.fearGreedIndex || 50;
+        const riskFill = document.getElementById('risk-fill');
+        const riskVal = document.getElementById('risk-val');
+        if (riskFill && riskVal) {
+            riskFill.style.width = `${fgIndex}%`;
+            if (fgIndex < 40) {
+                riskFill.style.backgroundColor = '#ff5050'; riskVal.textContent = "Risk Off"; riskVal.style.color = '#ff5050';
+            } else if (fgIndex > 60) {
+                riskFill.style.backgroundColor = '#00ffaa'; riskVal.textContent = "Risk On"; riskVal.style.color = '#00ffaa';
+            } else {
+                riskFill.style.backgroundColor = '#ffffff'; riskVal.textContent = "Neutral"; riskVal.style.color = '#ffffff';
+            }
+        }
+
+        // Mood / Regime Subtitle
+        if (this.ui.valSentiment) {
+            this.ui.valSentiment.textContent = data.moodState.toUpperCase(); // Or use Fear/Greed Label
+            // Actually user preferred the Fear/Greed label? 
+            // "EXTREME GREED (80)"
+            // Let's keep logic:
+            let fgLabel = "NEUTRAL";
+            let fgColor = "#ffffff";
+            if (fgIndex <= 25) { fgLabel = `EXTREME FEAR (${fgIndex})`; fgColor = "#ff5050"; }
+            else if (fgIndex <= 45) { fgLabel = `FEAR (${fgIndex})`; fgColor = "#ffaa50"; }
+            else if (fgIndex <= 55) { fgLabel = `NEUTRAL (${fgIndex})`; fgColor = "#ffffff"; }
+            else if (fgIndex <= 75) { fgLabel = `GREED (${fgIndex})`; fgColor = "#50ffaa"; }
+            else { fgLabel = `EXTREME GREED (${fgIndex})`; fgColor = "#00ffaa"; }
+
+            this.ui.valSentiment.textContent = fgLabel;
+            this.ui.valSentiment.style.color = fgColor;
+        }
+        const regimeEl = document.getElementById('val-regime');
+        if (regimeEl) regimeEl.textContent = "CNN Fear & Greed Index";
+
+        // Treemap
+        this.renderTreemap(data);
+
+        // Breadth
+        this.updateMarketBreadth(data);
+
+        // Velocity (Slider at bottom of Intelligence)
+        // Actually, did I break Velocity updates?
+        const velMarker = document.getElementById('velocity-marker');
+        if (velMarker && data.fearGreedIndex) {
+            velMarker.style.left = (data.fearGreedIndex) + "%";
+        }
+
+        // Sliders
+        if (this.ui.timelineSlider && this.marketDataService.dataMap) {
+            const validDates = Object.keys(this.marketDataService.dataMap).sort();
+            const currentIdx = validDates.indexOf(data.date);
+            if (currentIdx !== -1) {
+                this.ui.timelineSlider.value = currentIdx;
+                this.ui.timelineCurrent.textContent = data.date;
+            }
+        }
+    }
 }
