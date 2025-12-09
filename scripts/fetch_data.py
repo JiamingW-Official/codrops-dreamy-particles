@@ -463,28 +463,37 @@ def fetch_market_data():
              year_high = day_high
              year_low = day_low
         
+        # Helper for NaN safety
+        def safe_float(val, default=0.0):
+            try:
+                f = float(val)
+                if pd.isna(f) or np.isnan(f): return default
+                return f
+            except:
+                return default
+
         market_data[date_str] = {
             "date": date_str,
-            "indexValue": round(close_price, 2),
-            "marketChangePercent": round(change_percent, 2),
-            "sp500Value": round(sp500_val, 2),
-            "sp500Change": round(sp500_change, 2),
-            "sentiment": round(sentiment, 2),
-            "vix": round(vix_val, 2),
+            "indexValue": safe_float(close_price),
+            "marketChangePercent": safe_float(change_percent),
+            "sp500Value": safe_float(sp500_val),
+            "sp500Change": safe_float(sp500_change),
+            "sentiment": safe_float(sentiment),
+            "vix": safe_float(vix_val),
             "fearGreedIndex": int(fear_greed_idx),
-            "volumeRatio": round(volume_ratio, 2),
-            "tenYearYield": round(yield_val, 2),
-            "marketGap": round(market_gap, 2),
-            "intradayRange": round(intraday_range, 2),
-            "gold": round(gold_val, 2),
-            "oil": round(oil_val, 2),
+            "volumeRatio": safe_float(volume_ratio),
+            "tenYearYield": safe_float(yield_val),
+            "marketGap": safe_float(market_gap),
+            "intradayRange": safe_float(intraday_range),
+            "gold": safe_float(gold_val),
+            "oil": safe_float(oil_val),
             
             # Expanded Data
-            "volume": round(volume, 2),
-            "dayHigh": round(day_high, 2),
-            "dayLow": round(day_low, 2),
-            "yearHigh": round(year_high, 2),
-            "yearLow": round(year_low, 2),
+            "volume": safe_float(volume),
+            "dayHigh": safe_float(day_high),
+            "dayLow": safe_float(day_low),
+            "yearHigh": safe_float(year_high),
+            "yearLow": safe_float(year_low),
             
             # Mood
             "sectorMap": sector_map,
