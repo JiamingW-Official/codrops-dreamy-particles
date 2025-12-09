@@ -22,20 +22,25 @@
 			<div class="logo">MARKET SENTIMENT VISUALIZER</div>
 			<div class="sub-logo">RATIONAL DATA & GENERATIVE MOODS</div>
 			<div id="market-status" class="market-status hidden">Market Closed</div>
-		</div>
+			<div class="panel-left glass-panel">
+				<!-- NASDAQ CHART (New) -->
+				<div class="chart-container" style="margin-bottom: 2rem;">
+					<div class="chart-label">MARKET TREND (30D)</div>
+					<canvas id="market-chart" width="280" height="80"></canvas>
+				</div>
 
-		<!-- LEFT SIDEBAR -->
-		<div id="sidebar-left">
-			<div class="glass-panel">
-				<div class="panel-header">
-					<span class="panel-title">MARKET DATA</span>
-					<div class="chart-controls">
-						<span id="btn-chart-prev" class="control-arrow">&lt;</span>
-						<span id="chart-title">NASDAQ</span>
-						<span id="btn-chart-next" class="control-arrow">&gt;</span>
+				<div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+					<span>MARKET DATA</span>
+					<div class="chart-nav">
+						<span id="btn-chart-prev" class="nav-arrow"
+							style="cursor:pointer; padding:0 5px;">&#9664;</span>
+						<span id="chart-title" style="font-size:0.8em; color:#aaa;">NASDAQ</span>
+						<span id="btn-chart-next" class="nav-arrow"
+							style="cursor:pointer; padding:0 5px;">&#9654;</span>
 					</div>
 				</div>
 
+				<!-- INDICES LIST (Clickable) -->
 				<div class="market-data-list">
 					<div class="data-row clickable active-row" id="row-nasdaq">
 						<span class="label">NASDAQ</span>

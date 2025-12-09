@@ -443,14 +443,23 @@ export default class AppController {
             cell.style.border = '1px solid rgba(0,0,0,0.3)';
             cell.style.boxShadow = 'inset 0 0 10px rgba(0,0,0,0.2)';
 
+            // Mapping Tickers to Names
+            const sectorNames = {
+                'XLK': 'Technology', 'XLF': 'Financials', 'XLV': 'Healthcare',
+                'XLY': 'Discretionary', 'XLP': 'Staples', 'XLE': 'Energy',
+                'XLI': 'Industrials', 'XLB': 'Materials', 'XLU': 'Utilities',
+                'XLRE': 'Real Estate', 'XLC': 'Comm. Svcs'
+            };
+            const displayName = sectorNames[item.id] || item.id;
+
             // Just display ID + Val
             cell.innerHTML = `
                 <div style="text-align:center; pointer-events:none; width:100%; overflow:hidden;">
-                    <span style="display:block; font-size:0.75em; font-weight:700; color:white; margin-bottom:2px;">${item.id}</span>
-                    <span style="font-size:0.8em; font-weight:600;">${val > 0 ? '+' : ''}${val}%</span>
+                    <span style="display:block; font-size:0.65em; font-weight:700; color:white; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 2px;">${displayName}</span>
+                    <span style="font-size:0.7em; font-weight:600;">${val > 0 ? '+' : ''}${val}%</span>
                 </div>
             `;
-            cell.title = `${item.id}: ${val}%`;
+            cell.title = `${displayName}: ${val}%`;
             container.appendChild(cell);
         };
 
@@ -1035,7 +1044,7 @@ export default class AppController {
         const newsContainer = document.getElementById('headlines-container');
         if (newsContainer && data.headlines) {
             newsContainer.innerHTML = '';
-            data.headlines.slice(0, 3).forEach(headline => { // Limit to 3
+            data.headlines.slice(0, 10).forEach(headline => { // User requested 10
                 const isObj = typeof headline === 'object' && headline !== null;
                 const text = isObj ? headline.title : headline;
                 const link = isObj ? headline.link : '#';
