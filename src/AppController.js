@@ -848,6 +848,11 @@ export default class AppController {
         const val52w = document.getElementById('val-52w-range');
         if (val52w) val52w.textContent = data.yearLow ? `${data.yearLow} - ${data.yearHigh}` : '--';
 
+        // --- RESTORED: Main Chart Call ---
+        // This draws the big 30D chart in the "MARKET DATA" section
+        if (this.drawIndexChart) {
+            this.drawIndexChart(data);
+        }
 
         // --- LEFT SIDEBAR UPDATES (Sparklines, Meters) ---
 
