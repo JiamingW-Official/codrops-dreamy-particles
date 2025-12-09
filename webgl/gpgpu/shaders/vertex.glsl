@@ -22,7 +22,7 @@ void main() {
     // Radial pulse mimicking the original physics push - VISUAL ONLY
     vec3 direction = normalize(newpos);
     float bass = smoothstep(0.4, 0.9, uAudioBass); // Threshold to keep it tight
-    float pulse = bass * 0.25; // Visual kick amount
+    float pulse = bass * 0.20; // Reduced amplitude
     newpos += direction * pulse;
 
 	vPosition = newpos;

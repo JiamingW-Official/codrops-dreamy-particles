@@ -4577,7 +4577,7 @@ void main() {
     
     vec3 direction = normalize(newpos);
     float bass = smoothstep(0.4, 0.9, uAudioBass); 
-    float pulse = bass * 0.25; 
+    float pulse = bass * 0.20; 
     newpos += direction * pulse;
 
 	vPosition = newpos;

@@ -33,10 +33,10 @@ export default class Mask extends Handler {
 
     this.params = {
       color: new THREE.Color('#F777A8'),
-      size: 1.2,
+      size: 1.0,
       minAlpha: 0.04,
       maxAlpha: 0.8,
-      force: 0.3,
+      force: 0.2,
     };
 
     this.currentModelName = 'mask';
@@ -387,10 +387,10 @@ export default class Mask extends Handler {
           this.gpgpu.material.uniforms.uParticleSize.value = (this.params.size || 1.5) * pulse;
         }
 
-        // Apply Noise to Force (Clamped for Safety) - MINIMAL
-        const noise = (Math.random() - 0.5) * (vix / 500.0); // Almost zero noise
-        let f = (this.params.force || 0.3) + noise;
-        f = Math.min(0.75, Math.max(0.2, f)); // Very strict damping (max 0.75)
+        // Apply Noise to Force (Clamped for Safety) - MICRO
+        const noise = (Math.random() - 0.5) * (vix / 800.0);
+        let f = (this.params.force || 0.2) + noise;
+        f = Math.min(0.6, Math.max(0.1, f)); // Extremely tight damping range
         this.gpgpu.uniforms.velocityUniforms.uForce.value = f;
       }
     }
