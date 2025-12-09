@@ -974,6 +974,18 @@ export default class AppController {
         const regimeEl = document.getElementById('val-regime');
         if (regimeEl) regimeEl.textContent = "CNN Fear & Greed Index";
 
+        // Fear & Greed Index Display (Left Sidebar)
+        const fgDisplay = document.getElementById('val-fear-greed');
+        if (fgDisplay && data.fearGreedIndex !== undefined) {
+            const fgIdx = data.fearGreedIndex;
+            fgDisplay.textContent = fgIdx;
+            if (fgIdx <= 25) { fgDisplay.style.color = "#ff5050"; }
+            else if (fgIdx <= 45) { fgDisplay.style.color = "#ffaa50"; }
+            else if (fgIdx <= 55) { fgDisplay.style.color = "#ffffff"; }
+            else if (fgIdx <= 75) { fgDisplay.style.color = "#50ffaa"; }
+            else { fgDisplay.style.color = "#00ffaa"; }
+        }
+
         // Macro Intelligence Render
         // Yield Curve
         if (document.getElementById('val-yield-curve')) {
