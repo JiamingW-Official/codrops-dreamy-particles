@@ -29,6 +29,11 @@ export default class AudioHandler extends EventEmitter {
             'extreme_greed': './audio/Extreme Greed : Bull Run.wav'
         };
 
+        this.distortionPath = './audio/Distortion.wav';
+        this.distortionBuffer = null;
+        this.distortionGain = null;
+        this.distortionSource = null;
+
         this.sources = {};
         this.gains = {};
 
@@ -69,6 +74,7 @@ export default class AudioHandler extends EventEmitter {
                     this.ready = true;
                     this.emit('ready');
                     console.log("Audio System Ready - Waiting for Mood");
+                    this.startDistortion(); // Start silent loop
                 });
 
                 // Resume context if suspended
@@ -96,8 +102,54 @@ export default class AudioHandler extends EventEmitter {
             });
         });
 
-        await Promise.all(promises);
+        // Load Distortion
+        const distPromise = new Promise((resolve) => {
+            loader.load(this.distortionPath, (buffer) => {
+                this.distortionBuffer = buffer;
+                resolve();
+            }, undefined, (err) => {
+                console.error("Failed to load distortion:", err);
+                resolve(); // Non-blocking
+            });
+        });
+
+        await Promise.all([...promises, distPromise]);
         console.log("All soundtracks loaded");
+    }
+
+    startDistortion() {
+        if (!this.distortionBuffer) return;
+
+        const source = this.context.createBufferSource();
+        source.buffer = this.distortionBuffer;
+        source.loop = true;
+
+        this.distortionGain = this.context.createGain();
+        this.distortionGain.gain.value = 0; // Silent start
+
+        source.connect(this.distortionGain);
+        this.distortionGain.connect(this.masterGain);
+
+        source.start(0);
+        this.distortionSource = source;
+    }
+
+    setDistortionLevel(vix) {
+        if (!this.distortionGain) return;
+
+        // Thresholds
+        const minVix = 18;
+        const maxVix = 45;
+
+        let targetVol = 0;
+        if (vix > minVix) {
+            // Cubic curve for more "sudden" onset
+            let t = Math.min(1.0, (vix - minVix) / (maxVix - minVix));
+            targetVol = t * t * 0.8;
+        }
+
+        const now = this.context.currentTime;
+        this.distortionGain.gain.setTargetAtTime(targetVol, now, 0.5);
     }
 
     setMood(mood) {

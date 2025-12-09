@@ -2171,6 +2171,11 @@ export default class AppController {
                 else soundMood = 'extreme_greed';
 
                 this.audioHandler.setMood(soundMood);
+
+                // Panic Mode: Distortion from VIX
+                if (data.vix && typeof this.audioHandler.setDistortionLevel === 'function') {
+                    this.audioHandler.setDistortionLevel(data.vix);
+                }
             }
             fgDisplay.textContent = fgText;
             fgDisplay.style.color = fgClr;
