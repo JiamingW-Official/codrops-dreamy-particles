@@ -146,9 +146,9 @@ def fetch_market_data():
     # Fetch Data
     # 10 Major Sectors + Indices + Macro
     tickers = [
-        "QQQ", "^GSPC", "^IXIC", # Indices
-        "^VIX", "^TNX", # Volatility & Rates
-        "NB", # Bonds (fallback/proxy, actually TNX mainly used)
+        "QQQ", "^GSPC", "^IXIC", "^DJI", # Indices (Added Dow)
+        "^VIX", "^TNX", "^FVX", "DX-Y.NYB", # Volatility, 10Y, 5Y, Dollar Index
+        "NB", # Bonds (fallback)
         "XLE", "XLF", "XLK", "XLV", "XLI", "XLY", "XLP", "XLU", "XLB", "XLRE", # Sectors
         "GC=F", "CL=F" # Commodities
     ]
@@ -163,16 +163,22 @@ def fetch_market_data():
     # Extract DataFrames
     nasdaq = data['^IXIC'].copy()
     sp500 = data['^GSPC'].copy()
+    dow = data['^DJI'].copy() # NEW
     vix = data['^VIX'].copy()
-    tnx = data['^TNX'].copy()
+    tnx = data['^TNX'].copy() # 10Y
+    fvx = data['^FVX'].copy() # 5Y
+    dxy = data['DX-Y.NYB'].copy() # Dollar
     gold = data['GC=F'].copy()
     oil = data['CL=F'].copy()
     
     try:
          # Fill NaN in macro data to avoid gaps
          tnx.fillna(method='ffill', inplace=True)
+         fvx.fillna(method='ffill', inplace=True)
+         dxy.fillna(method='ffill', inplace=True)
          gold.fillna(method='ffill', inplace=True)
          oil.fillna(method='ffill', inplace=True)
+         dow.fillna(method='ffill', inplace=True)
     except: pass
     
     sectors = {
@@ -492,36 +498,53 @@ def fetch_market_data():
             except:
                 return default
 
+        # Get Dow, Dollar, Yields
+        dow_close = float(dow.loc[date]['Close']) if not pd.isna(dow.loc[date]['Close']) else 0.0
+        dxy_val = float(dxy.loc[date]['Close']) if date in dxy.index and not pd.isna(dxy.loc[date]['Close']) else 0.0
+        tnx_val = float(tnx.loc[date]['Close']) if date in tnx.index and not pd.isna(tnx.loc[date]['Close']) else 0.0
+        fvx_val = float(fvx.loc[date]['Close']) if date in fvx.index and not pd.isna(fvx.loc[date]['Close']) else 0.0
+        
+        # Checks
+        if dow_close <= 1.0: dow_close = 0.0 
+
+        # Calculate Changes
+        dow_change = 0.0
+        if i > 0:
+            try:
+                prev_dow = float(dow.loc[dates[i-1]]['Close'])
+                if prev_dow > 0:
+                    dow_change = ((dow_close - prev_dow) / prev_dow) * 100
+            except: pass
+
         market_data[date_str] = {
-            "date": date_str,
-            "indexValue": safe_float(close_price),
-            "marketChangePercent": safe_float(change_percent),
-            "sp500Value": safe_float(sp500_val),
-            "sp500Change": safe_float(sp500_change),
-            "sentiment": safe_float(sentiment),
-            "vix": safe_float(vix_val),
-            "fearGreedIndex": int(fear_greed_idx),
-            "volumeRatio": safe_float(volume_ratio),
-            "tenYearYield": safe_float(yield_val),
-            "marketGap": safe_float(market_gap),
-            "intradayRange": safe_float(intraday_range),
-            "gold": safe_float(gold_val),
-            "oil": safe_float(oil_val),
-            
-            # Expanded Data
-            "volume": safe_float(volume),
-            "dayHigh": safe_float(day_high),
-            "dayLow": safe_float(day_low),
-            "yearHigh": safe_float(year_high),
-            "yearLow": safe_float(year_low),
-            
-            # Mood
-            "sectorMap": sector_map,
-            "sectorStat": round(sector_trend, 2), 
-            "rsi": round(rsi_val, 2),
-            "moodState": mood_state,
-            "regime": regime,
-            "headlines": headlines
+            'date': date_str,
+            'indexValue': round(close_price, 2),
+            # ...
+            'dowValue': round(dow_close, 2),
+            'dowChange': round(dow_change, 2),
+            'sentiment': 0.0, # Placeholder
+            'vix': round(vix_val, 2),
+            'fearGreedIndex': fear_greed_idx, 
+            'volumeRatio': round(volume_ratio, 2),
+            'tenYearYield': round(tnx_val, 2),
+            'fiveYearYield': round(fvx_val, 2),
+            'yieldCurve': round(tnx_val - fvx_val, 2), # Slope
+            'dollarIndex': round(dxy_val, 2),
+            'marketGap': round(market_gap, 2),
+            'intradayRange': round(intraday_range, 2),
+            'gold': round(gold_val, 2),
+            'oil': round(oil_val, 2),
+            'volume': int(volume),
+            'dayHigh': round(high_price, 2),
+            'dayLow': round(low_price, 2),
+            'yearHigh': round(year_high, 2),
+            'yearLow': round(year_low, 2),
+            'sectorMap': sector_map,
+            'sectorStat': round(sector_trend, 2),
+            'rsi': round(rsi_val, 2),
+            'moodState': mood_state,
+            'regime': regime,
+            'headlines': headlines
         }
         
         print(f"[{i+1}/{total_days}] {date_str}: {mood_state} ({regime}) | FG:{fear_greed_idx}")

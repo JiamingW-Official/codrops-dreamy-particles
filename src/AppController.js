@@ -1024,10 +1024,10 @@ export default class AppController {
 
         // Mood / Regime Subtitle
         if (this.ui.valSentiment) {
-            this.ui.valSentiment.textContent = data.moodState.toUpperCase(); // Or use Fear/Greed Label
-            // Actually user preferred the Fear/Greed label? 
-            // "EXTREME GREED (80)"
-            // Let's keep logic:
+            this.ui.valSentiment.textContent = data.moodState.toUpperCase();
+
+            // Fear/Greed Logic
+            const fgIndex = data.fearGreedIndex;
             let fgLabel = "NEUTRAL";
             let fgColor = "#ffffff";
             if (fgIndex <= 25) { fgLabel = `EXTREME FEAR (${fgIndex})`; fgColor = "#ff5050"; }
@@ -1042,6 +1042,35 @@ export default class AppController {
         const regimeEl = document.getElementById('val-regime');
         if (regimeEl) regimeEl.textContent = "CNN Fear & Greed Index";
 
+        // Macro Intelligence Render
+        // Yield Curve
+        if (document.getElementById('val-yield-curve')) {
+            const yc = parseFloat(data.yieldCurve);
+            document.getElementById('val-yield-curve').textContent = !isNaN(yc) ? yc.toFixed(2) + '%' : '--';
+        }
+        // Dollar Index
+        if (document.getElementById('val-dxy')) {
+            const dxy = parseFloat(data.dollarIndex);
+            document.getElementById('val-dxy').textContent = !isNaN(dxy) ? dxy.toFixed(2) : '--';
+        }
+        // Dow Jones Row
+        if (document.getElementById('val-dow')) {
+            const dv = parseFloat(data.dowValue);
+            document.getElementById('val-dow').textContent = !isNaN(dv) ? dv.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '--';
+
+            const dcEl = document.getElementById('val-dow-change');
+            if (dcEl) {
+                const dc = parseFloat(data.dowChange);
+                if (!isNaN(dc)) {
+                    dcEl.textContent = (dc > 0 ? '+' : '') + dc.toFixed(2) + '%';
+                    dcEl.className = 'change-pill ' + (dc > 0 ? 'positive' : 'negative');
+                } else {
+                    dcEl.textContent = '--';
+                }
+            }
+        }
+
+
         // Treemap
         this.renderTreemap(data);
 
@@ -1049,7 +1078,6 @@ export default class AppController {
         this.updateMarketBreadth(data);
 
         // Velocity (Slider at bottom of Intelligence)
-        // Actually, did I break Velocity updates?
         const velMarker = document.getElementById('velocity-marker');
         if (velMarker && data.fearGreedIndex) {
             velMarker.style.left = (data.fearGreedIndex) + "%";
@@ -1064,5 +1092,134 @@ export default class AppController {
                 this.ui.timelineCurrent.textContent = data.date;
             }
         }
+    }
+
+    // --- CHART SWAPPING LOGIC ---
+    setupEventListeners() {
+        if (this.ui.btnToday) {
+            this.ui.btnToday.addEventListener('click', () => {
+                this.stopPlay();
+                this.picker.setDate(new Date(), true);
+            });
+        }
+
+        // Chart Navigation
+        this.activeChart = 'nasdaq'; // Default
+        const charts = ['nasdaq', 'sp500', 'dow'];
+
+        const setChart = (type) => {
+            this.activeChart = type;
+            // Update Title
+            const titleEl = document.getElementById('chart-title');
+            if (titleEl) {
+                if (type === 'nasdaq') titleEl.textContent = 'NASDAQ';
+                if (type === 'sp500') titleEl.textContent = 'S&P 500';
+                if (type === 'dow') titleEl.textContent = 'DOW JONES';
+            }
+
+            // Highlight Rows
+            ['row-nasdaq', 'row-sp500', 'row-dow'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('active-row');
+            });
+            const activeId = type === 'dow' ? 'row-dow' : (type === 'sp500' ? 'row-sp500' : 'row-nasdaq');
+            const activeEl = document.getElementById(activeId);
+            if (activeEl) activeEl.classList.add('active-row');
+
+            // Redraw
+            if (this.currentData) this.drawIndexChart(this.currentData);
+        };
+
+        // Click Listeners
+        const addClick = (id, type) => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('click', () => setChart(type));
+        }
+        addClick('row-nasdaq', 'nasdaq');
+        addClick('row-sp500', 'sp500');
+        addClick('row-dow', 'dow');
+
+        // Arrows
+        const btnPrev = document.getElementById('btn-chart-prev');
+        const btnNext = document.getElementById('btn-chart-next');
+
+        if (btnPrev) btnPrev.addEventListener('click', () => {
+            const idx = charts.indexOf(this.activeChart);
+            const newIdx = (idx - 1 + charts.length) % charts.length;
+            setChart(charts[newIdx]);
+        });
+        if (btnNext) btnNext.addEventListener('click', () => {
+            const idx = charts.indexOf(this.activeChart);
+            const newIdx = (idx + 1) % charts.length;
+            setChart(charts[newIdx]);
+        });
+    }
+
+    drawIndexChart(currentData) {
+        if (!currentData) return;
+        this.currentData = currentData; // Save for redraws
+
+        const canvas = document.getElementById('market-chart');
+        if (!canvas || !this.marketDataService.dataMap) return;
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width;
+        const H = canvas.height;
+        ctx.clearRect(0, 0, W, H);
+
+        const dates = Object.keys(this.marketDataService.dataMap).sort();
+        const endIdx = dates.indexOf(currentData.date);
+        if (endIdx === -1) return;
+
+        // Pick Data Source based on Active Chart
+        const startIdx = Math.max(0, endIdx - 30); // 30 Day view
+        const slice = dates.slice(startIdx, endIdx + 1);
+
+        let values = [];
+        if (this.activeChart === 'sp500') {
+            values = slice.map(k => this.marketDataService.dataMap[k].sp500Value);
+        } else if (this.activeChart === 'dow') {
+            values = slice.map(k => this.marketDataService.dataMap[k].dowValue || 0);
+        } else {
+            values = slice.map(k => this.marketDataService.dataMap[k].indexValue);
+        }
+
+        if (values.length < 2) return;
+
+        // Normalize for sparkline
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+        const range = max - min || 1;
+
+        ctx.beginPath();
+        const color = values[values.length - 1] >= values[0] ? '#00ffaa' : '#ff5050';
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+
+        // Gradient fill
+        const grad = ctx.createLinearGradient(0, 0, 0, H);
+        grad.addColorStop(0, color);
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad;
+
+        // Draw Fill
+        ctx.moveTo(0, H);
+        values.forEach((v, i) => {
+            const x = (i / (values.length - 1)) * W;
+            const y = H - ((v - min) / range) * H * 0.8 - (H * 0.1); // 10% padding
+            ctx.lineTo(x, y);
+        });
+        ctx.lineTo(W, H);
+        ctx.globalAlpha = 0.2;
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+
+        // Draw Line
+        ctx.beginPath();
+        values.forEach((v, i) => {
+            const x = (i / (values.length - 1)) * W;
+            const y = H - ((v - min) / range) * H * 0.8 - (H * 0.1);
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
     }
 }

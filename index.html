@@ -35,19 +35,32 @@
 					<canvas id="market-chart" width="280" height="80"></canvas>
 				</div>
 
-				<div class="panel-header">MARKET DATA</div>
-
-				<!-- INDICES -->
-				<div class="metric-group">
-					<div class="metric-row">
-						<span class="label">NASDAQ</span>
-						<span class="value" id="val-index">--</span>
-						<span class="change-pill" id="val-change">--%</span>
+				<div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+					<span>MARKET DATA</span>
+					<div class="chart-nav">
+						<span id="btn-chart-prev" class="nav-arrow"
+							style="cursor:pointer; padding:0 5px;">&#9664;</span>
+						<span id="chart-title" style="font-size:0.8em; color:#aaa;">NASDAQ</span>
+						<span id="btn-chart-next" class="nav-arrow"
+							style="cursor:pointer; padding:0 5px;">&#9654;</span>
 					</div>
-					<div class="metric-row">
+				</div>
+
+				<!-- MAIN CHART (Top Sparkline style) -->
+				<canvas id="market-chart" width="300" height="80"
+					style="width:100%; height:80px; margin-bottom:10px;"></canvas>
+
+				<!-- INDICES LIST (Clickable) -->
+				<div class="metric-group">
+					<div class="data-row-compact clickable active-row" id="row-nasdaq">
+						<span class="label">NASDAQ</span>
+						<span class="value-mono" id="val-index">--</span>
+						<span class="change-pill" id="val-change">--</span>
+					</div>
+					<div class="data-row-compact clickable" id="row-sp500">
 						<span class="label">S&P 500</span>
-						<span class="value-sm" id="val-sp500">--</span>
-						<span class="change-pill" id="val-sp500-change">--%</span>
+						<span class="value-mono" id="val-sp500">--</span>
+						<span class="change-pill" id="val-sp500-change">--</span>
 					</div>
 				</div>
 
@@ -106,6 +119,25 @@
 					<div class="data-row-compact">
 						<span class="label">Crude Oil</span>
 						<span class="value-mono" id="val-oil">--</span>
+					</div>
+				</div>
+
+				<!-- MACRO INTELLIGENCE (New) -->
+				<div class="metric-group"
+					style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
+					<div class="widget-title" style="margin-bottom:5px;">MACRO CONTEXT</div>
+					<div class="data-row-compact">
+						<span class="label">Yield Curve (10Y-5Y)</span>
+						<span class="value-mono" id="val-yield-curve">--</span>
+					</div>
+					<div class="data-row-compact">
+						<span class="label">Dollar Index (DXY)</span>
+						<span class="value-mono" id="val-dxy">--</span>
+					</div>
+					<div class="data-row-compact clickable" id="row-dow">
+						<span class="label">Dow Jones</span>
+						<span class="value-mono" id="val-dow">--</span>
+						<span class="change-pill" id="val-dow-change">--</span>
 					</div>
 				</div>
 
