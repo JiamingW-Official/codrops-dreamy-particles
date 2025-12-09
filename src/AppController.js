@@ -580,30 +580,88 @@ export default class AppController {
         // Trend analysis
         let dayVerdict = '';
         let verdictColor = '#8899a6';
-        if (change > 1.5) { dayVerdict = '🟢 Strong Rally Day'; verdictColor = '#00ffaa'; }
-        else if (change > 0.5) { dayVerdict = '🟢 Green Day'; verdictColor = '#50ffaa'; }
-        else if (change > 0) { dayVerdict = '🟡 Slight Gain'; verdictColor = '#ffcc00'; }
-        else if (change < -1.5) { dayVerdict = '🔴 Sharp Selloff'; verdictColor = '#ff5050'; }
-        else if (change < -0.5) { dayVerdict = '🔴 Red Day'; verdictColor = '#ff7744'; }
-        else if (change < 0) { dayVerdict = '🟡 Slight Loss'; verdictColor = '#ffcc00'; }
-        else { dayVerdict = '⚪ Flat Day'; verdictColor = '#8899a6'; }
+        if (change > 1.5) { dayVerdict = '🟢 Rally'; verdictColor = '#00ffaa'; }
+        else if (change > 0.5) { dayVerdict = '🟢 Up'; verdictColor = '#50ffaa'; }
+        else if (change > 0) { dayVerdict = '🟡 +'; verdictColor = '#ffcc00'; }
+        else if (change < -1.5) { dayVerdict = '🔴 Selloff'; verdictColor = '#ff5050'; }
+        else if (change < -0.5) { dayVerdict = '🔴 Down'; verdictColor = '#ff7744'; }
+        else if (change < 0) { dayVerdict = '🟡 -'; verdictColor = '#ffcc00'; }
+        else { dayVerdict = '⚪ Flat'; verdictColor = '#8899a6'; }
 
-        // Generate market narrative
+        // Get sector details for narrative
+        let topSectorName = '', worstSectorName = '', topSectorVal = 0, worstSectorVal = 0;
+        if (currentData.sectorMap) {
+            const sectorNames = { 'XLK': 'Tech', 'XLF': 'Financials', 'XLV': 'Healthcare', 'XLE': 'Energy', 'XLI': 'Industrials', 'XLU': 'Utilities', 'XLY': 'Consumer Discretionary', 'XLP': 'Consumer Staples', 'XLB': 'Materials', 'XLRE': 'Real Estate', 'XLC': 'Communications' };
+            const sectors = Object.entries(currentData.sectorMap);
+            let topS = null, worstS = null, topV = -Infinity, worstV = Infinity;
+            sectors.forEach(([key, val]) => {
+                const v = typeof val === 'object' ? val.change : val;
+                if (v > topV) { topV = v; topS = key; }
+                if (v < worstV) { worstV = v; worstS = key; }
+            });
+            topSectorName = sectorNames[topS] || topS || '';
+            worstSectorName = sectorNames[worstS] || worstS || '';
+            topSectorVal = topV;
+            worstSectorVal = worstV;
+        }
+
+        // Generate detailed market narrative based on conditions
         let narrative = '';
-        if (fg <= 25 && vix > 20) {
-            narrative = '📉 Extreme fear is gripping the market. Historically, these conditions have marked capitulation bottoms. Smart money may be accumulating.';
-        } else if (fg >= 75 && change > 1) {
-            narrative = '📈 Euphoria is building. Late-stage rallies can extend, but mean reversion risk is elevated. Consider profit-taking.';
-        } else if (vix > 25) {
-            narrative = '⚡ Volatility is spiking! Expect wild swings. Options premiums are expensive. Hedge or reduce position sizes.';
-        } else if (Math.abs(change) < 0.3 && vix < 18) {
-            narrative = '😴 A quiet consolidation day. The market is coiling for its next move. Watch for breakout catalysts.';
-        } else if (change > 0 && fg > 50) {
-            narrative = '💪 Bulls are in control. Momentum favors continuation. Dips are likely to be bought.';
-        } else if (change < 0 && fg < 50) {
-            narrative = '🛡️ Bears have the upper hand. Defensive sectors outperforming. Watch support levels closely.';
-        } else {
-            narrative = '⚖️ Market is in a transitional phase. Mixed signals suggest waiting for clearer direction.';
+        const absChange = Math.abs(change);
+        const sp500Str = sp500Change >= 0 ? `+${sp500Change.toFixed(2)}%` : `${sp500Change.toFixed(2)}%`;
+        const changeStr = change >= 0 ? `+${change.toFixed(2)}%` : `${change.toFixed(2)}%`;
+
+        // EXTREME FEAR + HIGH VIX = Panic day
+        if (fg <= 25 && vix > 25) {
+            narrative = `� PANIC MODE: Extreme fear (F&G: ${fg}) with VIX at ${vix.toFixed(1)}. NASDAQ ${changeStr}, S&P ${sp500Str}. ${worstSectorName ? `${worstSectorName} crushed (${worstSectorVal.toFixed(1)}%).` : ''} Capitulation conditions — historically a contrarian buy signal.`;
+        }
+        // EXTREME FEAR + DOWN DAY = Fear selling
+        else if (fg <= 25 && change < -1) {
+            narrative = `📉 FEAR SELLOFF: Markets plunging with F&G at ${fg}. NASDAQ down ${absChange.toFixed(2)}%. VIX elevated at ${vix.toFixed(1)}. ${topSectorName ? `Only ${topSectorName} showing resilience.` : ''} Oversold bounce possible.`;
+        }
+        // EXTREME GREED + BIG UP = Euphoria
+        else if (fg >= 75 && change > 1) {
+            narrative = `� EUPHORIA: Extreme greed (${fg}) and NASDAQ surging ${changeStr}. VIX low at ${vix.toFixed(1)}. ${topSectorName ? `${topSectorName} leading (+${topSectorVal.toFixed(1)}%).` : ''} Overbought — late buyers at risk.`;
+        }
+        // GREED + UP = Strong bull
+        else if (fg >= 60 && change > 0.5) {
+            narrative = `💪 BULL RUN: Greed sentiment (${fg}) with NASDAQ ${changeStr}. S&P ${sp500Str}. VIX calm at ${vix.toFixed(1)}. ${topSectorName ? `${topSectorName} outperforming.` : ''} Trend continuation likely.`;
+        }
+        // HIGH VIX SPIKE = Volatility event
+        else if (vix > 25) {
+            narrative = `⚡ VOL SPIKE: VIX surged to ${vix.toFixed(1)}! NASDAQ ${changeStr}. F&G at ${fg}. ${absChange > 1 ? 'Wild swings expected.' : 'Tension building.'} ${worstSectorName ? `${worstSectorName} hardest hit.` : ''} Options expensive.`;
+        }
+        // BIG DOWN DAY
+        else if (change < -1.5) {
+            narrative = `🔴 SELLOFF: NASDAQ dropped ${absChange.toFixed(2)}%, S&P ${sp500Str}. VIX at ${vix.toFixed(1)}, F&G ${fg}. ${worstSectorName ? `${worstSectorName} led losses (${worstSectorVal.toFixed(1)}%).` : ''} Watch support levels.`;
+        }
+        // BIG UP DAY
+        else if (change > 1.5) {
+            narrative = `🟢 STRONG DAY: NASDAQ rallied ${changeStr}, S&P ${sp500Str}. VIX subdued at ${vix.toFixed(1)}. ${topSectorName ? `${topSectorName} surging (+${topSectorVal.toFixed(1)}%).` : ''} Bullish momentum intact.`;
+        }
+        // Quiet consolidation
+        else if (absChange < 0.3 && vix < 18) {
+            narrative = `😴 QUIET: NASDAQ ${changeStr}, S&P ${sp500Str}. VIX low at ${vix.toFixed(1)}, F&G ${fg}. Low volatility consolidation. Market awaits catalyst for next directional move.`;
+        }
+        // Mild up with fear = recovery
+        else if (change > 0 && fg < 45) {
+            narrative = `🌱 RECOVERY: NASDAQ edging higher ${changeStr} despite fear (F&G: ${fg}). VIX at ${vix.toFixed(1)}. ${topSectorName ? `${topSectorName} leading.` : ''} Tentative buying returning.`;
+        }
+        // Mild down with greed = profit taking
+        else if (change < 0 && fg > 55) {
+            narrative = `� PULLBACK: NASDAQ ${changeStr} amid greedy sentiment (${fg}). VIX at ${vix.toFixed(1)}. ${worstSectorName ? `${worstSectorName} lagging.` : ''} Healthy profit-taking or start of rotation?`;
+        }
+        // Generic up
+        else if (change > 0) {
+            narrative = `📈 GREEN: NASDAQ ${changeStr}, S&P ${sp500Str}. F&G ${fg}, VIX ${vix.toFixed(1)}. ${topSectorName ? `${topSectorName} (+${topSectorVal.toFixed(1)}%) outperforming.` : ''} Modest risk appetite.`;
+        }
+        // Generic down
+        else if (change < 0) {
+            narrative = `📉 RED: NASDAQ ${changeStr}, S&P ${sp500Str}. F&G ${fg}, VIX ${vix.toFixed(1)}. ${worstSectorName ? `${worstSectorName} (${worstSectorVal.toFixed(1)}%) underperforming.` : ''} Caution warranted.`;
+        }
+        // Flat
+        else {
+            narrative = `⚖️ UNCHANGED: NASDAQ flat at ${changeStr}. S&P ${sp500Str}. VIX ${vix.toFixed(1)}, F&G ${fg}. Markets in wait-and-see mode. Direction unclear.`;
         }
 
         // Yield curve health
@@ -613,20 +671,10 @@ export default class AppController {
         else if (yieldSpread < 0.5) { yieldHealth = '⚡ Flat (Slowing)'; yieldColor = '#ffcc00'; }
         else { yieldHealth = '✅ Normal'; yieldColor = '#50ffaa'; }
 
-        // Sector performance
+        // Sector summary for display
         let sectorSummary = '';
-        if (currentData.sectorMap) {
-            const sectors = Object.entries(currentData.sectorMap);
-            let topSector = null, worstSector = null, topVal = -Infinity, worstVal = Infinity;
-            sectors.forEach(([key, val]) => {
-                const v = typeof val === 'object' ? val.change : val;
-                if (v > topVal) { topVal = v; topSector = key; }
-                if (v < worstVal) { worstVal = v; worstSector = key; }
-            });
-            const sectorNames = { 'XLK': 'Tech', 'XLF': 'Financials', 'XLV': 'Healthcare', 'XLE': 'Energy', 'XLI': 'Industrials', 'XLU': 'Utilities', 'XLY': 'Consumer', 'XLP': 'Staples', 'XLB': 'Materials', 'XLRE': 'Real Estate' };
-            if (topSector && worstSector) {
-                sectorSummary = `<span style="color:#50ffaa">▲ ${sectorNames[topSector] || topSector}</span> <span style="color:#ff7744">▼ ${sectorNames[worstSector] || worstSector}</span>`;
-            }
+        if (topSectorName && worstSectorName) {
+            sectorSummary = `<span style="color:#50ffaa">▲ ${topSectorName}</span> <span style="color:#ff7744">▼ ${worstSectorName}</span>`;
         }
 
         // Custom Proprietary Indices
