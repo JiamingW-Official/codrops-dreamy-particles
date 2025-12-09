@@ -33,24 +33,28 @@ void main() {
 	float dist = length( original - position );
 
 	if( dist > 0.001 ) {
-        velocity += direction * ( dist * 0.02 ); // Original: hardcoded 0.02, not dynamic
+        velocity += direction * ( dist * uAttraction ); // Use dynamic uAttraction for faster/slower convergence
     }
 
 
-	// Mouse repel force with TAP RIPPLE
-    
+	// Mouse repel force - Smaller, more delicate brush
 	float mouseDistance = distance( position, uMouse );
-	// Base radius 0.15, grows with taps up to 0.4 max
-	float maxDistance = 0.15 + uTapIntensity * 0.25; // Tap makes ripple grow!
-	if (maxDistance > 0.4) maxDistance = 0.4; // Cap at 0.4
+	// Smaller base radius for delicate brush
+	float maxDistance = 0.14 + uTapIntensity * 0.25; // Smaller base, reduced tap growth
+	if (maxDistance > 0.5) maxDistance = 0.5; // Lower cap for delicate effect
 
 	if( mouseDistance < maxDistance ) {
 		vec3 pushDirection = normalize( position - uMouse );
-		// Stronger force (0.015) + tap boost for visible effect
-		velocity += pushDirection * ( 1.0 - mouseDistance / maxDistance ) * (0.015 * uMouseSpeed + uTapIntensity * 0.02); 
+		// More obvious hover force, stronger tap force with multiple taps
+		float distanceFactor = 1.0 - mouseDistance / maxDistance;
+		// Smooth falloff with squared distance for better visual effect
+		distanceFactor = distanceFactor * distanceFactor;
+		// Tap force scales more with intensity for stronger ripple
+		float tapForce = uTapIntensity * (0.02 + uTapIntensity * 0.015); // Non-linear scaling
+		velocity += pushDirection * distanceFactor * (0.07 * uMouseSpeed + tapForce); 
 	}
 
-    // Webcam Interaction
+    // Webcam Interaction - Consolidated into particles with more obvious effect
     if (uWebcamEnabled > 0.5) {
         // Map particle position to screen space (0-1)
         // Assuming particles are roughly within -2 to 2 range, map to 0-1
@@ -62,21 +66,31 @@ void main() {
             // Flip X for mirror effect
             vec4 webcamColor = texture2D(uWebcamTexture, vec2(1.0 - screenUV.x, screenUV.y));
             
-            // Calculate brightness (luminance)
+            // Calculate brightness (luminance) - more sensitive
             float brightness = dot(webcamColor.rgb, vec3(0.299, 0.587, 0.114));
             
-            // Apply force if bright
-            if (brightness > 0.5) { // High threshold, only brightest spots
-                // "Shimmer" effect: Gentle sine wave vibration
-                // Uses position and time to create a non-uniform wave pattern
-                float waveX = sin(position.y * 2.0 + uTime * 0.5); // Very slow, large waves
-                float waveY = cos(position.x * 2.0 + uTime * 0.5);
-                float waveZ = sin(position.z * 2.0 + uTime * 0.5);
+            // Apply force based on brightness - more obvious reaction
+            if (brightness > 0.3) { // Lower threshold for more sensitivity
+                // Calculate direction from webcam brightness gradient
+                vec2 gradient = vec2(
+                    dot(texture2D(uWebcamTexture, vec2(1.0 - (screenUV.x + 0.01), screenUV.y)).rgb, vec3(0.299, 0.587, 0.114)) - brightness,
+                    dot(texture2D(uWebcamTexture, vec2(1.0 - screenUV.x, screenUV.y + 0.01)).rgb, vec3(0.299, 0.587, 0.114)) - brightness
+                );
+                
+                // "Shimmer" effect: More dynamic wave pattern
+                float waveX = sin(position.y * 3.0 + uTime * 1.5) * 0.5 + 0.5;
+                float waveY = cos(position.x * 3.0 + uTime * 1.5) * 0.5 + 0.5;
+                float waveZ = sin(position.z * 3.0 + uTime * 1.5) * 0.5 + 0.5;
                 
                 vec3 shimmer = vec3(waveX, waveY, waveZ);
                 
-                // Apply extremely subtle force
-                velocity += shimmer * brightness * 0.0005; // Barely visible
+                // Apply force based on brightness - much more obvious
+                float forceStrength = brightness * 0.015; // Increased from 0.0005 for obvious effect
+                velocity += shimmer * forceStrength;
+                
+                // Add gradient-based push/pull
+                vec3 gradientForce = vec3(gradient.x, gradient.y, 0.0) * brightness * 0.01;
+                velocity += gradientForce;
             }
         }
     }

@@ -4,10 +4,6 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 
 // Assets
 import maskPath from '../assets/models/mask.glb?url';
-import veneciaMaskPath from '../assets/models/veneciaMask.glb?url';
-import samuraiPath from '../assets/models/samurai.glb?url';
-import cyborgPath from '../assets/models/cyborg.glb?url';
-import subwayPath from '../assets/models/subway.glb?url';
 
 
 export default class Resources extends EventEmitter {
@@ -31,14 +27,9 @@ export default class Resources extends EventEmitter {
 
     this.models = {};
     this.loadingCount = 0;
-    this.totalModels = 5;
 
-    // Load all models
+    // Only load the primary model up-front to avoid blocking the first paint.
     this.loadModel('mask', maskPath);
-    this.loadModel('veneciaMask', veneciaMaskPath);
-    this.loadModel('samurai', samuraiPath);
-    this.loadModel('cyborg', cyborgPath);
-    this.loadModel('subway', subwayPath);
   }
 
   loadModel(name, path) {

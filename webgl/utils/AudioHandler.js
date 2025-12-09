@@ -11,7 +11,7 @@ export default class AudioHandler extends EventEmitter {
         this.ready = false;
         this.tracks = {};
         this.currentMood = null;
-        this.volume = 0.5;
+        this.volume = 0.4; // Slightly reduced gain; visuals still driven by amplitude
 
         // Visualizer Data
         this.frequencyData = {
@@ -202,10 +202,10 @@ export default class AudioHandler extends EventEmitter {
 
         source.start(0);
 
-        // Fade in
+        // Fade in - Constant gain for all moods (amplitude increases are visual-only in shaders)
         gainNode.gain.cancelScheduledValues(now);
         gainNode.gain.setValueAtTime(0, now);
-        gainNode.gain.linearRampToValueAtTime(1.0, now + fadeTime);
+        gainNode.gain.linearRampToValueAtTime(1.0, now + fadeTime); // Same volume for all moods
 
         // Store references
         this.sources[mood] = source;

@@ -20,6 +20,8 @@ export default class GPGPUEvents {
         }
 
         this.lastPoint = new THREE.Vector3();
+        this.mouseSpeed = 0;
+        this.tapIntensity = 0;
 
         this.init();
     }
@@ -38,7 +40,9 @@ export default class GPGPUEvents {
             THREE.Mesh.prototype.raycast = acceleratedRaycast;
             // Compute bounds tree for optimized raycasting
             try {
-                this.geometry.computeBoundsTree = new MeshBVH(this.geometry);
+                if (!this.geometry.boundsTree) {
+                    this.geometry.boundsTree = new MeshBVH(this.geometry);
+                }
             } catch (e) {
                 console.warn("GPGPUEvents: Failed to compute MeshBVH, falling back to standard raycast", e);
             }
@@ -59,15 +63,23 @@ export default class GPGPUEvents {
             this.raycasterMesh.updateMatrixWorld();
         }
 
-        // Tap Event
+        // Tap Event - Accumulates with multiple taps for stronger ripple
         window.addEventListener('mousedown', (e) => {
-            this.tapIntensity += 0.2; // Keep increment small
-            if (this.tapIntensity > 3.0) this.tapIntensity = 3.0; // Increased cap for higher max level
+            this.tapIntensity += 0.25; // Increment for tap accumulation
+            if (this.tapIntensity > 4.5) this.tapIntensity = 4.5; // Higher cap for strong ripple with multiple taps
         });
     }
 
 
     update() {
+        // Sync raycaster mesh transforms with the actual model (important for model switching)
+        if (this.raycasterMesh && this.mesh) {
+            this.raycasterMesh.position.copy(this.mesh.position);
+            this.raycasterMesh.rotation.copy(this.mesh.rotation);
+            this.raycasterMesh.scale.copy(this.mesh.scale);
+            this.raycasterMesh.updateMatrixWorld();
+        }
+
         // Determine raycasting source based on control mode
         let rayOrigin;
 
@@ -112,22 +124,37 @@ export default class GPGPUEvents {
         if (intersects.length > 0) {
             currentWorldPoint = intersects[0].point.clone();
 
-            // ORIGINAL DGFX: Set speed to 1 immediately on hit (full power)
-            this.mouseSpeed = 1.0; // Instant full brush effect
+            // Calculate mouse speed based on distance moved - More obvious hover
+            if (this.lastPoint.length() > 0) {
+                const distance = currentWorldPoint.distanceTo(this.lastPoint);
+                // Scale speed based on movement distance, higher for more obvious hover
+                this.mouseSpeed = Math.max(1.4, distance * 14.0); // Higher base and multiplier for obvious hover
+            } else {
+                this.mouseSpeed = 1.4; // Higher initial hit for obvious hover
+            }
 
-            // Debug Log (Throttle this in real production, but useful for now)
-            // console.log('Hit:', currentWorldPoint, 'Speed:', this.mouseSpeed);
-
+            // Always update mouse position when hovering for highlight effect
             this.uniforms.velocityUniforms.uMouse.value = currentWorldPoint;
             this.lastPoint.copy(currentWorldPoint);
 
         } else {
-            // console.log('No Hit');
-            this.mouseSpeed = 0;
+            // When not intersecting, still maintain minimum speed for highlight visibility
+            // Set mouse to a far position so highlight doesn't show
+            this.mouseSpeed = Math.max(0, this.mouseSpeed * 0.5); // Faster decay when not hovering
+            // Keep last mouse position for smooth transitions
+            if (this.mouseSpeed < 0.1) {
+                // Set mouse far away when not hovering to disable highlight
+                this.uniforms.velocityUniforms.uMouse.value.set(1000, 1000, 1000);
+            }
         }
 
-        this.mouseSpeed *= 0.85; // Decay
-        this.tapIntensity *= 0.95; // Decay
+        // Ensure minimum mouse speed when hovering for visible highlight
+        if (intersects.length > 0 && this.mouseSpeed < 0.5) {
+            this.mouseSpeed = 0.5; // Minimum speed to ensure highlight is visible
+        }
+
+        this.mouseSpeed *= 0.87; // Slower decay for more obvious hover effect
+        this.tapIntensity *= 0.91; // Slower decay so ripple persists longer with multiple taps
 
         if (this.uniforms.velocityUniforms.uMouseSpeed) this.uniforms.velocityUniforms.uMouseSpeed.value = this.mouseSpeed;
         if (this.uniforms.velocityUniforms.uTapIntensity) this.uniforms.velocityUniforms.uTapIntensity.value = this.tapIntensity;
@@ -152,6 +179,20 @@ export default class GPGPUEvents {
             this.geometry.boundsTree = null;
         }
 
+        // Dispose old raycaster mesh if it exists
+        if (this.raycasterMesh) {
+            if (this.raycasterMesh.geometry) this.raycasterMesh.geometry.dispose();
+            if (this.raycasterMesh.material) this.raycasterMesh.material.dispose();
+        }
+
         this.setupMouse();
+        
+        // Ensure raycaster mesh transforms match the new model
+        if (this.raycasterMesh && this.mesh) {
+            this.raycasterMesh.position.copy(this.mesh.position);
+            this.raycasterMesh.rotation.copy(this.mesh.rotation);
+            this.raycasterMesh.scale.copy(this.mesh.scale);
+            this.raycasterMesh.updateMatrixWorld();
+        }
     }
 }

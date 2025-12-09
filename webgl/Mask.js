@@ -5,6 +5,8 @@ import GPGPU from './gpgpu/GPGPU.js'
 import KeywordCloud from './KeywordCloud.js';
 import gsap from 'gsap';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+import GPGPUUtils from './gpgpu/GPGPUUtils.js';
 
 
 export default class Mask extends Handler {
@@ -35,10 +37,17 @@ export default class Mask extends Handler {
     this.params = {
       color: new THREE.Color('#F777A8'),
       size: 1.0,
-      minAlpha: 0.04,
-      maxAlpha: 0.8,
+      minAlpha: 0.08, // brighter baseline
+      maxAlpha: 1.0,  // allow brighter peaks
       force: 0.2,
     };
+
+    // Shared loaders/cache for super-fast model switches
+    const THREE_PATH = `https://unpkg.com/three@0.161.0`;
+    const dracoLoader = new DRACOLoader().setDecoderPath(`${THREE_PATH}/examples/jsm/libs/draco/`);
+    this.modelLoader = new GLTFLoader().setDRACOLoader(dracoLoader);
+    this.modelPromises = {};
+    this.modelSamplingCache = {};
 
     this.currentModelName = 'mask';
 
@@ -71,6 +80,9 @@ export default class Mask extends Handler {
 
     // PhD Vis: Keyword Cloud
     if (!this.keywordCloud) this.keywordCloud = new KeywordCloud();
+
+    // Kick off background preloads so switches are instant.
+    setTimeout(() => this.preloadPantheonModels(), 300);
   }
 
   setupCameraPosition() {
@@ -78,8 +90,20 @@ export default class Mask extends Handler {
   }
 
   setupGPGPU() {
+    // Ensure model exists and has geometry before initializing GPGPU
+    if (!this.model || !this.model.geometry) {
+      console.error("Mask: Model not ready for GPGPU initialization, using fallback");
+      const geo = new THREE.BoxGeometry(1, 1, 1);
+      const mat = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
+      this.model = new THREE.Mesh(geo, mat);
+    }
+
+    // Scale particle grid based on viewport to avoid overloading weaker GPUs.
+    // Capped at 512x512 (~262k particles) which is plenty for the effect.
+    const particleSide = Math.min(512, Math.max(256, Math.floor(this.sizes.width / 2)));
+
     this.gpgpu = new GPGPU({
-      size: 800, // Reduced from 1200 for better performance
+      size: particleSide,
       camera: this.camera,
       renderer: this.renderer.webglRenderer,
       mouse: this.mouse,
@@ -169,16 +193,16 @@ export default class Mask extends Handler {
     console.log(`[Mask] Switching Pantheon Model to: ${modelKey}`);
 
     // 1. Transition OUT (Disperse/Fade + SPIN)
-    // Snappier Fade
+    // Instant fade out for immediate transition
     const oldAlpha = this.params.minAlpha;
-    gsap.to(this.params, { minAlpha: 0.0, duration: 0.3 }); // Was 1.0
+    gsap.to(this.params, { minAlpha: 0.0, duration: 0.06 });
 
     // Spin Effect: Rotate the entire particle system
-    // Much faster spin (0.4s for full rotation) + 5x Faster Feel
+    // Ultra-fast spin for snappy feel
     if (this.gpgpu && this.gpgpu.mesh) {
       gsap.to(this.gpgpu.mesh.rotation, {
-        y: this.gpgpu.mesh.rotation.y + Math.PI * 4, // Double spin
-        duration: 0.5, // Super fast (was 2.5)
+        y: this.gpgpu.mesh.rotation.y + Math.PI * 4,
+        duration: 0.2, // Very fast spin
         ease: "power2.inOut"
       });
     }
@@ -189,40 +213,40 @@ export default class Mask extends Handler {
       if (this.resources.models[modelKey]) {
         mesh = this.resolveMesh(this.resources.models[modelKey].scene);
       } else {
-        // Hot-load
         const url = `models/pantheon/${modelKey}.glb`; // Convention
-        console.log(`[Mask] Loading ${url}...`);
-        mesh = await this.loadModelFromUrl(url);
-        // Cache it?
-        this.resources.models[modelKey] = { scene: mesh }; // Hacky cache
+        mesh = await this.loadAndCacheModel(modelKey, url);
       }
 
       if (!mesh) throw new Error("No mesh found");
 
-      // 3. Update Simulation Data
-      this.updateGPGPUGeometry(mesh);
+      // 3. Update Simulation Data (use precomputed textures when available)
+      const sampling = this.getSamplingCache(modelKey, mesh);
+      this.updateGPGPUGeometry(mesh, sampling);
       this.currentModelName = modelKey;
 
       // 4. Transition IN (Snap Formation)
-      // "10x Faster": Super-Tension + Heavy Brake
+      // Ultra-fast snap-in: HIGH attraction pulls fast, LOW force stops fast
       if (this.gpgpu && this.gpgpu.uniforms.velocityUniforms.uAttraction) {
-        // 1. GRAVITY WELL: Extreme pull (2.0) -> Strong Hold (0.2)
-        // 2.0 pulls them instantly. 0.2 keeps them from drifting (fixes "dark brush" gaps)
-        gsap.fromTo(this.gpgpu.uniforms.velocityUniforms.uAttraction,
-          { value: 2.0 },
-          { value: 0.2, duration: 0.8, ease: "power4.out" } // Aggressive snap
-        );
+        // Set very high attraction immediately for instant pull (increase more)
+        this.gpgpu.uniforms.velocityUniforms.uAttraction.value = 3.0;
+        // Set very low force immediately for instant braking (velocity *= uForce, lower = faster stop)
+        this.gpgpu.uniforms.velocityUniforms.uForce.value = 0.02;
+        
+        // Then quickly settle to normal values
+        gsap.to(this.gpgpu.uniforms.velocityUniforms.uAttraction, {
+          value: 0.12, // Higher than original 0.02 for snappier feel
+          duration: 0.06,
+          ease: "power4.out"
+        });
 
-        // 2. BRAKING SYSTEM: Fly fast (0.0), then STOP (0.5)
-        // The 0.5 friction is CRITICAL. It kills the momentum so they don't overshoot/vibrate.
-        // This solves "takes forever to concentrate".
-        gsap.fromTo(this.gpgpu.uniforms.velocityUniforms.uForce,
-          { value: 0.0 }, // No drag start
-          { value: 0.5, duration: 1.2, ease: "power2.out" } // Strong brake arrival
-        );
+        gsap.to(this.gpgpu.uniforms.velocityUniforms.uForce, {
+          value: 0.12, // Lower than original for faster settling
+          duration: 0.1,
+          ease: "power2.out"
+        });
       }
 
-      gsap.to(this.params, { minAlpha: oldAlpha, duration: 0.5, delay: 0.0 }); // Immediate fade in
+      gsap.to(this.params, { minAlpha: oldAlpha, duration: 0.12, delay: 0.0 }); // Very fast fade in
 
       // Notify Debug
       console.log(`[Mask] Switched to ${modelKey}`);
@@ -256,17 +280,16 @@ export default class Mask extends Handler {
       return dummy;
     }
 
-    // SCALING: User requested "make the model larger"
-    m.scale.set(2.2, 2.2, 2.2); // Increased from 1.7 for grander Gods
+    // SCALING: User requested larger models
+    m.scale.set(3.0, 3.0, 3.0); // Was 2.2
     m.updateMatrixWorld(); // Ensure scale is applied before sampling
 
     return m;
   }
 
   async loadModelFromUrl(url) {
-    const loader = new GLTFLoader();
     return new Promise((resolve, reject) => {
-      loader.load(url, (gltf) => {
+      this.modelLoader.load(url, (gltf) => {
         resolve(this.resolveMesh(gltf.scene));
       }, undefined, (err) => {
         console.warn("Error loading model", url);
@@ -275,7 +298,7 @@ export default class Mask extends Handler {
     });
   }
 
-  updateGPGPUGeometry(mesh) {
+  updateGPGPUGeometry(mesh, sampling) {
     if (!this.gpgpu) return;
 
     // We need to generate a new Texture from the geometry
@@ -285,7 +308,7 @@ export default class Mask extends Handler {
 
     // Ideally call this.gpgpu.updateTarget(mesh);
     if (typeof this.gpgpu.updateTarget === 'function') {
-      this.gpgpu.updateTarget(mesh);
+      this.gpgpu.updateTarget(mesh, sampling);
     } else {
       console.error("GPGPU.updateTarget not implemented!");
     }
@@ -297,6 +320,50 @@ export default class Mask extends Handler {
 
   // Replace changeModel with alias
   changeModel(m) { this.switchModel(m); }
+
+  async loadAndCacheModel(modelKey, url) {
+    if (this.modelPromises[modelKey]) {
+      return this.modelPromises[modelKey];
+    }
+
+    this.modelPromises[modelKey] = this.loadModelFromUrl(url).then((mesh) => {
+      if (mesh) {
+        this.resources.models[modelKey] = { scene: mesh };
+        // Precompute sampling textures once so switches are instant.
+        this.computeSamplingCache(modelKey, mesh);
+      }
+      return mesh;
+    }).catch((err) => {
+      console.warn(`[Mask] Failed to load ${modelKey}:`, err);
+      return null;
+    });
+
+    return this.modelPromises[modelKey];
+  }
+
+  computeSamplingCache(modelKey, mesh) {
+    if (!mesh || this.modelSamplingCache[modelKey]) return this.modelSamplingCache[modelKey];
+    const utils = new GPGPUUtils(mesh, this.gpgpu ? this.gpgpu.size : 256);
+    this.modelSamplingCache[modelKey] = {
+      positionTexture: utils.getPositionTexture(),
+    };
+    utils.sampler = null;
+    utils.mesh = null;
+    return this.modelSamplingCache[modelKey];
+  }
+
+  getSamplingCache(modelKey, mesh) {
+    return this.computeSamplingCache(modelKey, mesh);
+  }
+
+  preloadPantheonModels() {
+    const pantheon = ['veneciaMask', 'samurai', 'cyborg', 'subway'];
+    pantheon.forEach((modelKey) => {
+      if (this.resources.models[modelKey] || this.modelPromises[modelKey]) return;
+      const url = `models/pantheon/${modelKey}.glb`;
+      this.loadAndCacheModel(modelKey, url);
+    });
+  }
 
   updateVisualization(data) {
     if (!data) return;
@@ -429,12 +496,28 @@ export default class Mask extends Handler {
 
     if (this.gpgpu && this.gpgpu.material) {
       // Calculate Market Intensity (0.0 = Neutral, 1.0 = Extreme Fear/Greed)
-      const intensity = Math.abs(fg - 50) / 50.0;
+      let intensity = Math.abs(fg - 50) / 50.0;
+      
+      // EXTREME FEAR BOOST: Dramatically increase intensity when in extreme fear (fg <= 25)
+      const isExtremeFear = fg <= 25;
+      if (isExtremeFear) {
+        // Boost intensity to 1.5x-2.0x for extreme fear (can exceed 1.0)
+        const fearMultiplier = 1.0 + ((25 - fg) / 25.0) * 1.0; // 1.0 at fg=25, 2.0 at fg=0
+        intensity = Math.min(2.0, intensity * fearMultiplier);
+      }
 
       gsap.to(this.gpgpu.material.uniforms.uMarketIntensity, {
         value: intensity,
         duration: 2.5
       });
+      
+      // Pass extreme fear state to shaders for enhanced audio/visual reaction
+      if (this.gpgpu.material.uniforms.uExtremeFear !== undefined) {
+        gsap.to(this.gpgpu.material.uniforms.uExtremeFear, {
+          value: isExtremeFear ? 1.0 : 0.0,
+          duration: 2.5
+        });
+      }
 
       gsap.to(this.gpgpu.material.uniforms.uForce, {
         value: targetForce,
@@ -487,13 +570,22 @@ export default class Mask extends Handler {
         const time = performance.now() * 0.001;
         const vix = this.currentData.vix || 20;
 
-        // Pulse Logic
+        // Pulse Logic - EXTREME FEAR: More intense pulsing
+        const fg = this.currentData.fearGreedIndex || 50;
+        const isExtremeFear = fg <= 25;
+        
         let pulseSpeed = 1.0 + (vix / 10.0);
         let pulseAmp = 0.4;
 
         if (vix > 30) {
           pulseSpeed = 8.0;
           pulseAmp = 0.2;
+        }
+        
+        // EXTREME FEAR: Dramatically increase pulse speed and amplitude
+        if (isExtremeFear) {
+          pulseSpeed *= 2.5; // Much faster pulsing
+          pulseAmp *= 1.8; // Much stronger pulse amplitude
         }
 
         const pulse = 1.0 + Math.sin(time * pulseSpeed) * pulseAmp;

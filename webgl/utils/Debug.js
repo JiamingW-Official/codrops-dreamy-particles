@@ -12,6 +12,8 @@ export default class Debug {
 
     if (this.active) {
       this.gui = new GUI();
+      // Collapse the panel by default to keep UI unobtrusive on load.
+      this.gui.close();
       this.stats = new Stats(false);
     }
   }

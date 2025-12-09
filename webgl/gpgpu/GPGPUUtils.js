@@ -11,7 +11,15 @@ export default class GPGPUUtils {
 
         this.number = this.size * this.size;
 
-        this.mesh = mesh;
+        // Safety check: ensure mesh exists and has geometry
+        if (!mesh || !mesh.geometry) {
+            console.warn("GPGPUUtils: Invalid mesh provided, using fallback box geometry");
+            const geo = new THREE.BoxGeometry(1, 1, 1);
+            const mat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            this.mesh = new THREE.Mesh(geo, mat);
+        } else {
+            this.mesh = mesh;
+        }
 
         try {
             this.sampler = new MeshSurfaceSampler(this.mesh).build();

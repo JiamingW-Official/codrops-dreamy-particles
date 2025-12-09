@@ -21,6 +21,7 @@ export default class Camera extends Handler {
     this.moveRight = false;
     this.moveUp = false;
     this.moveDown = false;
+    this.shakeIntensity = 0;
 
     // Setup
 
@@ -127,8 +128,9 @@ export default class Camera extends Handler {
 
 
   update(state) {
+    const delta = state ? state.delta : 0.016;
+    
     if (this.controls) {
-      const delta = state ? state.delta : 0.016;
       const speed = 5.0 * delta; // Slower, more controlled speed
 
       // Move the dummy target
@@ -154,12 +156,29 @@ export default class Camera extends Handler {
     this.target.position.lerp(this.cameraTarget.position, damping);
     this.target.quaternion.slerp(this.cameraTarget.quaternion, damping);
 
-    // --- CAMERA SHAKE (Visceral Panic) ---
+    // Lightweight parallax with mouse to add responsiveness without heavy cost
+    if (this.mouse?.cursorPosition) {
+      const parallax = 0.09; // Reduced by 40% (from 0.15 to 0.09)
+      this.target.position.x += this.mouse.cursorPosition.x * parallax * delta;
+      this.target.position.y += this.mouse.cursorPosition.y * parallax * delta;
+    }
+
+    // --- CAMERA SHAKE (Visceral Panic) - More Obvious ---
     if (this.shakeIntensity > 0) {
-      const shakeAmount = this.shakeIntensity * 0.1; // Scale factor
-      this.target.position.x += (Math.random() - 0.5) * shakeAmount;
-      this.target.position.y += (Math.random() - 0.5) * shakeAmount;
-      this.target.position.z += (Math.random() - 0.5) * shakeAmount;
+      const shakeAmount = this.shakeIntensity * 0.3; // Increased from 0.1 to 0.3 for more obvious shake
+      // Add frequency-based shake for more realistic effect
+      const shakeX = (Math.random() - 0.5) * shakeAmount;
+      const shakeY = (Math.random() - 0.5) * shakeAmount;
+      const shakeZ = (Math.random() - 0.5) * shakeAmount * 0.5; // Less Z shake
+      this.target.position.x += shakeX;
+      this.target.position.y += shakeY;
+      this.target.position.z += shakeZ;
+      
+      // Add rotation shake for more dramatic effect
+      if (this.target.rotation) {
+        this.target.rotation.x += (Math.random() - 0.5) * shakeAmount * 0.02;
+        this.target.rotation.y += (Math.random() - 0.5) * shakeAmount * 0.02;
+      }
     }
   }
 }

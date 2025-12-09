@@ -36,7 +36,9 @@ export default class GPGPU {
     }
 
     initGPGPU() {
-        this.gpgpuCompute = new GPUComputationRenderer(this.sizes.width, this.sizes.width, this.renderer);
+        // Use the configured simulation size instead of the viewport width to
+        // avoid creating giant GPU textures that stall the first render.
+        this.gpgpuCompute = new GPUComputationRenderer(this.size, this.size, this.renderer);
 
         const positionTexture = this.utils.getPositionTexture();
         const velocityTexture = this.utils.getVelocityTexture();
@@ -53,7 +55,7 @@ export default class GPGPU {
         }
 
 
-        this.uniforms.velocityUniforms.uMouse = { value: this.mouse.cursorPosition };
+        this.uniforms.velocityUniforms.uMouse = { value: new THREE.Vector3(1000, 1000, 1000) }; // Initialize far away
         this.uniforms.velocityUniforms.uMouseSpeed = { value: 0 };
         this.uniforms.velocityUniforms.uOriginalPosition = { value: positionTexture }
         this.uniforms.velocityUniforms.uTime = { value: 0 };
@@ -91,7 +93,17 @@ export default class GPGPU {
                 uAudioHigh: { value: 0 },
                 uAudioLevel: { value: 0 },
                 uMarketIntensity: { value: 0 },
+                uExtremeFear: { value: 0 }, // Extreme fear state for enhanced reactions
                 uTime: { value: 0 },
+                
+                // Mouse Uniforms for Particle Highlighting
+                uMouse: { value: new THREE.Vector3(0, 0, 0) },
+                uMouseSpeed: { value: 0 },
+                uTapIntensity: { value: 0 },
+                
+                // Webcam Uniforms for Visual Effects
+                uWebcamTexture: { value: new THREE.Texture() },
+                uWebcamEnabled: { value: 0 },
             },
             vertexShader,
             fragmentShader,
@@ -126,26 +138,24 @@ export default class GPGPU {
     }
 
 
-    updateTarget(newMesh) {
-        // Create new utilities for the new mesh to sample positions
-        const tempUtils = new GPGPUUtils(newMesh, this.size);
+    updateTarget(newMesh, precomputed) {
+        // Allow callers to pass precomputed textures to avoid sampling work on the switch path.
+        let positionTexture = precomputed?.positionTexture;
 
-        // This computes the new texture from the new mesh
-        const newPositionTexture = tempUtils.getPositionTexture();
-
-        // Update the 'Original' position uniform (this is the target for attraction)
-        if (this.uniforms.velocityUniforms.uOriginalPosition) {
-            this.uniforms.velocityUniforms.uOriginalPosition.value = newPositionTexture;
+        if (!positionTexture) {
+            const tempUtils = new GPGPUUtils(newMesh, this.size);
+            positionTexture = tempUtils.getPositionTexture();
+            tempUtils.sampler = null;
+            tempUtils.mesh = null;
         }
 
-        // CRITICAL: Update Events/Interaction Raycaster to new mesh
+        if (this.uniforms.velocityUniforms.uOriginalPosition) {
+            this.uniforms.velocityUniforms.uOriginalPosition.value = positionTexture;
+        }
+
         if (this.events) {
             this.events.updateGeometry(newMesh);
         }
-
-        // Clean up temp sampler if needed (GPGPUUtils doesn't have dispose, but it's just arrays)
-        tempUtils.sampler = null;
-        tempUtils.mesh = null;
     }
 
     compute() {
@@ -169,11 +179,26 @@ export default class GPGPU {
         if (this.webcam && this.webcam.ready) {
             this.uniforms.velocityUniforms.uWebcamTexture.value = this.webcam.texture;
             this.uniforms.velocityUniforms.uWebcamEnabled.value = 1;
+            // Also update fragment shader webcam uniforms
+            this.material.uniforms.uWebcamTexture.value = this.webcam.texture;
+            this.material.uniforms.uWebcamEnabled.value = 1;
         } else {
             this.uniforms.velocityUniforms.uWebcamEnabled.value = 0;
+            this.material.uniforms.uWebcamEnabled.value = 0;
         }
 
         this.material.uniforms.uTime.value += 0.01;
+
+        // Update Mouse Uniforms for Particle Highlighting
+        if (this.uniforms.velocityUniforms.uMouse) {
+            this.material.uniforms.uMouse.value.copy(this.uniforms.velocityUniforms.uMouse.value);
+        }
+        if (this.uniforms.velocityUniforms.uMouseSpeed) {
+            this.material.uniforms.uMouseSpeed.value = this.uniforms.velocityUniforms.uMouseSpeed.value;
+        }
+        if (this.uniforms.velocityUniforms.uTapIntensity) {
+            this.material.uniforms.uTapIntensity.value = this.uniforms.velocityUniforms.uTapIntensity.value;
+        }
 
         this.gpgpuCompute.compute();
         this.events.update();
