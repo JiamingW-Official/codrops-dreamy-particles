@@ -57,8 +57,8 @@ export default class GPGPU {
         this.uniforms.velocityUniforms.uMouseSpeed = { value: 0 };
         this.uniforms.velocityUniforms.uOriginalPosition = { value: positionTexture }
         this.uniforms.velocityUniforms.uTime = { value: 0 };
-        this.uniforms.velocityUniforms.uForce = { value: this.params.force };
-        this.uniforms.velocityUniforms.uAttraction = { value: 0.02 }; // Increased from 0.003 for faster healing (less lag)
+        this.uniforms.velocityUniforms.uForce = { value: this.params.force }; // Default ~0.1-0.2
+        this.uniforms.velocityUniforms.uAttraction = { value: 0.05 }; // Strong Hold (Fast Healing)
         this.uniforms.velocityUniforms.uTapIntensity = { value: 0 };
 
         // Audio Uniforms for Simulation

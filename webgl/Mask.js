@@ -205,17 +205,21 @@ export default class Mask extends Handler {
 
       // 4. Transition IN (Snap Formation)
       // MAGNETIC SNAP: Boost Attraction + Moderate Brake
+      // 4. Transition IN (Snap Formation)
+      // "10x Faster": High Tension Physics
       if (this.gpgpu && this.gpgpu.uniforms.velocityUniforms.uAttraction) {
-        // 1. Boost Attraction huge (pull fast)
+        // 1. MAGNETIC SLINGSHOT: Massive pull (0.8), fade to Strong Hold (0.05)
+        // This ensures they fly in fast and STAY tight (fixing "super slow" ending)
         gsap.fromTo(this.gpgpu.uniforms.velocityUniforms.uAttraction,
-          { value: 0.08 }, // 25x stronger pull (was 0.003)
-          { value: 0.003, duration: 1.5, ease: "power2.out" }
+          { value: 0.8 },
+          { value: 0.05, duration: 1.0, ease: "expo.out" } // exponential ease for SNAP
         );
 
-        // 2. Moderate Brake (prevent overshoot)
+        // 2. LOW FRICTION: Reduce drag so they move fast
+        // Fade from 0.0 (No drag) to 0.1 (Light drag)
         gsap.fromTo(this.gpgpu.uniforms.velocityUniforms.uForce,
-          { value: 0.5 },
-          { value: 0.2, duration: 1.5, ease: "power2.out" }
+          { value: 0.0 }, // Fly freely
+          { value: 0.1, duration: 1.5, ease: "power2.in" } // Catch them gently
         );
       }
 
