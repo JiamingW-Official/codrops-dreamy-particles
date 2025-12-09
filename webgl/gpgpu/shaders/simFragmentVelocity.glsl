@@ -11,6 +11,7 @@ uniform float uTapIntensity;
 uniform sampler2D uWebcamTexture;
 uniform float uWebcamEnabled;
 uniform float uTime;
+uniform float uAttraction; // New uniform
 
 
 void main() {
@@ -32,7 +33,7 @@ void main() {
 	float dist = length( original - position );
 
 	if( dist > 0.001 ) {
-        velocity += direction * ( dist * 0.003 );
+        velocity += direction * ( dist * uAttraction );
     }
 
 

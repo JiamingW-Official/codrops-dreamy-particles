@@ -204,12 +204,18 @@ export default class Mask extends Handler {
       this.currentModelName = modelKey;
 
       // 4. Transition IN (Snap Formation)
-      // "Opposite approach": Moderate Force + Longer Settle Time
-      // Force 0.6 is strong enough to snap, but low enough to avoid overshoot/vibration
-      if (this.gpgpu && this.gpgpu.uniforms.velocityUniforms.uForce) {
+      // MAGNETIC SNAP: Boost Attraction + Moderate Brake
+      if (this.gpgpu && this.gpgpu.uniforms.velocityUniforms.uAttraction) {
+        // 1. Boost Attraction huge (pull fast)
+        gsap.fromTo(this.gpgpu.uniforms.velocityUniforms.uAttraction,
+          { value: 0.08 }, // 25x stronger pull (was 0.003)
+          { value: 0.003, duration: 1.5, ease: "power2.out" }
+        );
+
+        // 2. Moderate Brake (prevent overshoot)
         gsap.fromTo(this.gpgpu.uniforms.velocityUniforms.uForce,
-          { value: 0.8 }, // Reduced from 5.0 to 0.8 (Sweet spot)
-          { value: 0.2, duration: 1.5, ease: "power2.out" } // Longer settling
+          { value: 0.5 },
+          { value: 0.2, duration: 1.5, ease: "power2.out" }
         );
       }
 

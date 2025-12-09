@@ -58,6 +58,7 @@ export default class GPGPU {
         this.uniforms.velocityUniforms.uOriginalPosition = { value: positionTexture }
         this.uniforms.velocityUniforms.uTime = { value: 0 };
         this.uniforms.velocityUniforms.uForce = { value: this.params.force };
+        this.uniforms.velocityUniforms.uAttraction = { value: 0.003 }; // Default attraction
         this.uniforms.velocityUniforms.uTapIntensity = { value: 0 };
 
         // Audio Uniforms for Simulation
