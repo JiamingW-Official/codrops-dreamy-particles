@@ -1230,17 +1230,22 @@ body {
 
 /* Timeline Slider */
 .timeline-wrapper {
-  grid-column: 2;
   position: absolute;
-  bottom: 2rem;
-  left: 370px;
-  right: 2rem;
+  bottom: 30px;
+  /* Lower it to bottom */
+  left: 360px;
+  /* 320px Panel + 40px Gap */
+  right: 360px;
+  /* 320px Panel + 40px Gap */
+  width: auto;
   z-index: 20;
   pointer-events: auto;
 
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  justify-content: flex-end;
+  /* Align bottom */
 }
 
 .timeline-controls-row {
