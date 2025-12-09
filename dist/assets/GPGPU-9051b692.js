@@ -4504,9 +4504,9 @@ void main() {
 	velocity *= uForce; 
 
     
-    if (uAudioBass > 0.1) {
+    if (uAudioBass > 0.4) {
         vec3 pulseDir = normalize(position);
-        velocity += pulseDir * (uAudioBass * 0.008); 
+        velocity += pulseDir * (uAudioBass * 0.0015); 
     }
 
 	

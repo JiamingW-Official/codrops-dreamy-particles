@@ -387,13 +387,14 @@ export default class Mask extends Handler {
           this.gpgpu.material.uniforms.uParticleSize.value = (this.params.size || 1.5) * pulse;
         }
 
-        // Apply Noise to Force
+        // Apply Noise to Force (Clamped for Safety)
         const noise = (Math.random() - 0.5) * (vix / 100.0);
-        this.gpgpu.uniforms.velocityUniforms.uForce.value = (this.params.force || 0.5) + noise;
+        let f = (this.params.force || 0.5) + noise;
+        f = Math.min(0.92, Math.max(0.1, f));
+        this.gpgpu.uniforms.velocityUniforms.uForce.value = f;
       }
     }
 
-    // 3. Update Keywords
     // 3. Update Keywords
     if (this.keywordCloud && this.experience.time) {
       this.keywordCloud.update(this.experience.time.elapsed / 1000);
