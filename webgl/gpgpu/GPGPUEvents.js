@@ -112,10 +112,8 @@ export default class GPGPUEvents {
         if (intersects.length > 0) {
             currentWorldPoint = intersects[0].point.clone();
 
-            // Calculate speed based on distance from last point
-            const distance = currentWorldPoint.distanceTo(this.lastPoint);
-            this.mouseSpeed = distance * 10.0; // Scale up for visibility
-            if (this.mouseSpeed > 1.0) this.mouseSpeed = 1.0; // Cap speed
+            // ORIGINAL DGFX: Set speed to 1 immediately on hit (full power)
+            this.mouseSpeed = 1.0; // Instant full brush effect
 
             // Debug Log (Throttle this in real production, but useful for now)
             // console.log('Hit:', currentWorldPoint, 'Speed:', this.mouseSpeed);
