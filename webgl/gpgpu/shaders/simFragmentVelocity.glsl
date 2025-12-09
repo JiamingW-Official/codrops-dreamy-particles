@@ -33,19 +33,18 @@ void main() {
 	float dist = length( original - position );
 
 	if( dist > 0.001 ) {
-        velocity += direction * ( dist * uAttraction );
+        velocity += direction * ( dist * 0.02 ); // Original: hardcoded 0.02, not dynamic
     }
 
 
-	// Mouse repel force
+	// Mouse repel force (Original DGFX values)
     
 	float mouseDistance = distance( position, uMouse );
-	float maxDistance = 0.15 + uAudioBass * 0.05; // Smaller brush (was 0.25)
+	float maxDistance = 0.1; // Original: small radius
 
 	if( mouseDistance < maxDistance ) {
 		vec3 pushDirection = normalize( position - uMouse );
-        // Very gentle nudge (0.003) for subtle ripple effect
-		velocity += pushDirection * ( 1.0 - mouseDistance / maxDistance ) * (0.003 * uMouseSpeed + uTapIntensity * 0.01); 
+		velocity += pushDirection * ( 1.0 - mouseDistance / maxDistance ) * 0.007 * uMouseSpeed; // Original gentle nudge
 	}
 
     // Webcam Interaction
