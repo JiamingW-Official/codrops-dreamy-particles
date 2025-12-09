@@ -547,66 +547,74 @@ export default class AppController {
         const vix = parseFloat(currentData.vix) || 15;
         const change = parseFloat(currentData.marketChangePercent) || 0;
         const sp500Change = parseFloat(currentData.sp500Change) || 0;
-        const volume = currentData.volume || 0;
+        const dowChange = parseFloat(currentData.dowChange) || 0;
         const rsi = currentData.rsi || 50;
+        const yieldSpread = currentData.yieldSpread || 0;
+        const date = currentData.date || '';
+
+        // Indices summary
+        const nasdaqVal = currentData.indexValue?.toLocaleString() || '--';
+        const sp500Val = currentData.sp500Value?.toLocaleString() || '--';
 
         // Determine market regime
         let regime = 'NEUTRAL';
         let regimeColor = '#ffffff';
         let regimeIcon = '◐';
+        let regimeBg = '#ffffff11';
 
-        if (fg <= 25) { regime = 'EXTREME FEAR'; regimeColor = '#ff5050'; regimeIcon = '⚠'; }
-        else if (fg <= 40) { regime = 'FEAR'; regimeColor = '#ff7744'; regimeIcon = '↓'; }
-        else if (fg >= 75) { regime = 'EXTREME GREED'; regimeColor = '#00ffaa'; regimeIcon = '⚡'; }
-        else if (fg >= 60) { regime = 'GREED'; regimeColor = '#50ffaa'; regimeIcon = '↑'; }
-        else if (vix > 25) { regime = 'HIGH VOLATILITY'; regimeColor = '#ff5050'; regimeIcon = '⚡'; }
-        else if (vix < 15 && change > 0) { regime = 'RISK-ON'; regimeColor = '#00ffaa'; regimeIcon = '↑'; }
+        if (fg <= 25) { regime = 'EXTREME FEAR'; regimeColor = '#ff5050'; regimeIcon = '⚠'; regimeBg = '#ff505022'; }
+        else if (fg <= 40) { regime = 'FEAR'; regimeColor = '#ff7744'; regimeIcon = '↓'; regimeBg = '#ff774422'; }
+        else if (fg >= 75) { regime = 'EXTREME GREED'; regimeColor = '#00ffaa'; regimeIcon = '⚡'; regimeBg = '#00ffaa22'; }
+        else if (fg >= 60) { regime = 'GREED'; regimeColor = '#50ffaa'; regimeIcon = '↑'; regimeBg = '#50ffaa22'; }
+        else if (vix > 25) { regime = 'HIGH VOLATILITY'; regimeColor = '#ff5050'; regimeIcon = '⚡'; regimeBg = '#ff505022'; }
+        else if (vix < 15 && change > 0) { regime = 'RISK-ON'; regimeColor = '#00ffaa'; regimeIcon = '↑'; regimeBg = '#00ffaa22'; }
 
-        // VIX analysis
-        let vixSignal = 'normal';
-        let vixColor = '#ffffff';
-        if (vix > 30) { vixSignal = 'Elevated Fear'; vixColor = '#ff5050'; }
-        else if (vix > 20) { vixSignal = 'Caution'; vixColor = '#ffcc00'; }
-        else if (vix < 15) { vixSignal = 'Complacency'; vixColor = '#50ffaa'; }
-        else { vixSignal = 'Normal'; vixColor = '#8899a6'; }
+        // Quick score (0-100 bullish meter)
+        let bullScore = 50;
+        if (change > 0) bullScore += change * 10;
+        if (fg > 50) bullScore += (fg - 50) * 0.3;
+        if (vix < 18) bullScore += 10;
+        if (vix > 25) bullScore -= 15;
+        bullScore = Math.max(0, Math.min(100, Math.round(bullScore)));
 
         // Trend analysis
-        let trendSignal = '';
-        let trendColor = '#8899a6';
-        if (change > 1.5) { trendSignal = 'Strong Rally'; trendColor = '#00ffaa'; }
-        else if (change > 0.5) { trendSignal = 'Bullish'; trendColor = '#50ffaa'; }
-        else if (change < -1.5) { trendSignal = 'Sharp Selloff'; trendColor = '#ff5050'; }
-        else if (change < -0.5) { trendSignal = 'Bearish'; trendColor = '#ff7744'; }
-        else { trendSignal = 'Consolidating'; trendColor = '#8899a6'; }
+        let dayVerdict = '';
+        let verdictColor = '#8899a6';
+        if (change > 1.5) { dayVerdict = '🟢 Strong Rally Day'; verdictColor = '#00ffaa'; }
+        else if (change > 0.5) { dayVerdict = '🟢 Green Day'; verdictColor = '#50ffaa'; }
+        else if (change > 0) { dayVerdict = '🟡 Slight Gain'; verdictColor = '#ffcc00'; }
+        else if (change < -1.5) { dayVerdict = '🔴 Sharp Selloff'; verdictColor = '#ff5050'; }
+        else if (change < -0.5) { dayVerdict = '🔴 Red Day'; verdictColor = '#ff7744'; }
+        else if (change < 0) { dayVerdict = '🟡 Slight Loss'; verdictColor = '#ffcc00'; }
+        else { dayVerdict = '⚪ Flat Day'; verdictColor = '#8899a6'; }
 
-        // RSI analysis
-        let rsiSignal = '';
-        if (rsi > 70) { rsiSignal = 'Overbought'; }
-        else if (rsi < 30) { rsiSignal = 'Oversold'; }
-        else if (rsi > 55) { rsiSignal = 'Bullish momentum'; }
-        else if (rsi < 45) { rsiSignal = 'Bearish momentum'; }
-        else { rsiSignal = 'Neutral momentum'; }
-
-        // Generate market insight
-        let insight = '';
+        // Generate market narrative
+        let narrative = '';
         if (fg <= 25 && vix > 20) {
-            insight = 'Capitulation signals present. Historical precedent suggests oversold conditions may attract dip buyers.';
+            narrative = '📉 Extreme fear is gripping the market. Historically, these conditions have marked capitulation bottoms. Smart money may be accumulating.';
         } else if (fg >= 75 && change > 1) {
-            insight = 'Euphoric conditions detected. Late-stage rallies often precede mean reversion. Exercise caution.';
+            narrative = '📈 Euphoria is building. Late-stage rallies can extend, but mean reversion risk is elevated. Consider profit-taking.';
         } else if (vix > 25) {
-            insight = 'Volatility spike indicates market stress. Expect elevated price swings and potential reversals.';
+            narrative = '⚡ Volatility is spiking! Expect wild swings. Options premiums are expensive. Hedge or reduce position sizes.';
         } else if (Math.abs(change) < 0.3 && vix < 18) {
-            insight = 'Low volatility consolidation. Markets await catalyst. Watch for breakout or breakdown.';
+            narrative = '😴 A quiet consolidation day. The market is coiling for its next move. Watch for breakout catalysts.';
         } else if (change > 0 && fg > 50) {
-            insight = 'Risk appetite intact. Momentum favors continuation. Monitor volume for confirmation.';
+            narrative = '💪 Bulls are in control. Momentum favors continuation. Dips are likely to be bought.';
         } else if (change < 0 && fg < 50) {
-            insight = 'Defensive posture warranted. Sector rotation to safety likely. Watch bonds and gold.';
+            narrative = '🛡️ Bears have the upper hand. Defensive sectors outperforming. Watch support levels closely.';
         } else {
-            insight = 'Mixed signals. Market in transition phase. Key levels and catalysts will determine direction.';
+            narrative = '⚖️ Market is in a transitional phase. Mixed signals suggest waiting for clearer direction.';
         }
 
-        // Sector insight
-        let sectorInsight = '';
+        // Yield curve health
+        let yieldHealth = '';
+        let yieldColor = '#8899a6';
+        if (yieldSpread < 0) { yieldHealth = '⚠️ Inverted (Recession Signal)'; yieldColor = '#ff5050'; }
+        else if (yieldSpread < 0.5) { yieldHealth = '⚡ Flat (Slowing)'; yieldColor = '#ffcc00'; }
+        else { yieldHealth = '✅ Normal'; yieldColor = '#50ffaa'; }
+
+        // Sector performance
+        let sectorSummary = '';
         if (currentData.sectorMap) {
             const sectors = Object.entries(currentData.sectorMap);
             let topSector = null, worstSector = null, topVal = -Infinity, worstVal = Infinity;
@@ -615,31 +623,56 @@ export default class AppController {
                 if (v > topVal) { topVal = v; topSector = key; }
                 if (v < worstVal) { worstVal = v; worstSector = key; }
             });
-            const sectorNames = { 'XLK': 'Tech', 'XLF': 'Financials', 'XLV': 'Healthcare', 'XLE': 'Energy', 'XLI': 'Industrials', 'XLU': 'Utilities' };
-            if (topSector && worstSector && topVal !== worstVal) {
-                sectorInsight = `Rotation: ${sectorNames[topSector] || topSector} leading (+${topVal.toFixed(1)}%), ${sectorNames[worstSector] || worstSector} lagging (${worstVal.toFixed(1)}%)`;
+            const sectorNames = { 'XLK': 'Tech', 'XLF': 'Financials', 'XLV': 'Healthcare', 'XLE': 'Energy', 'XLI': 'Industrials', 'XLU': 'Utilities', 'XLY': 'Consumer', 'XLP': 'Staples', 'XLB': 'Materials', 'XLRE': 'Real Estate' };
+            if (topSector && worstSector) {
+                sectorSummary = `<span style="color:#50ffaa">▲ ${sectorNames[topSector] || topSector}</span> <span style="color:#ff7744">▼ ${sectorNames[worstSector] || worstSector}</span>`;
             }
         }
 
-        // Build the HTML
+        // Build the enhanced HTML
         aiText.innerHTML = `
-            <div style="margin-bottom: 8px;">
-                <span style="background: ${regimeColor}22; color: ${regimeColor}; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: 700; letter-spacing: 0.5px;">
+            <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <span style="background: ${regimeBg}; color: ${regimeColor}; padding: 4px 10px; border-radius: 6px; font-size: 0.8em; font-weight: 700; letter-spacing: 0.5px; box-shadow: 0 0 10px ${regimeColor}44;">
                     ${regimeIcon} ${regime}
                 </span>
+                <span style="font-size: 0.75em; color: var(--text-faint);">${date}</span>
+                <span style="margin-left: auto; font-size: 0.75em; color: ${verdictColor}; font-weight: 600;">${dayVerdict}</span>
             </div>
-            <div style="font-size: 0.85em; line-height: 1.6; color: var(--text-main);">
-                <div style="margin-bottom: 6px;">${insight}</div>
-                <div style="display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.8em; color: var(--text-faint);">
-                    <span>VIX: <strong style="color: ${vixColor}">${vix.toFixed(1)} (${vixSignal})</strong></span>
-                    <span>Trend: <strong style="color: ${trendColor}">${trendSignal}</strong></span>
-                    <span>RSI: <strong>${rsiSignal}</strong></span>
+            
+            <div style="font-size: 0.9em; line-height: 1.7; color: var(--text-main); margin-bottom: 10px;">
+                ${narrative}
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; font-size: 0.75em;">
+                <div style="background: rgba(255,255,255,0.05); padding: 6px 8px; border-radius: 4px; text-align: center;">
+                    <div style="color: var(--text-faint); font-size: 0.85em;">NASDAQ</div>
+                    <div style="color: ${change >= 0 ? '#50ffaa' : '#ff5050'}; font-weight: 600;">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</div>
                 </div>
-                ${sectorInsight ? `<div style="margin-top: 6px; font-size: 0.8em; color: var(--text-faint);">${sectorInsight}</div>` : ''}
+                <div style="background: rgba(255,255,255,0.05); padding: 6px 8px; border-radius: 4px; text-align: center;">
+                    <div style="color: var(--text-faint); font-size: 0.85em;">S&P 500</div>
+                    <div style="color: ${sp500Change >= 0 ? '#50ffaa' : '#ff5050'}; font-weight: 600;">${sp500Change >= 0 ? '+' : ''}${sp500Change.toFixed(2)}%</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); padding: 6px 8px; border-radius: 4px; text-align: center;">
+                    <div style="color: var(--text-faint); font-size: 0.85em;">VIX</div>
+                    <div style="color: ${vix > 20 ? '#ff5050' : vix < 15 ? '#50ffaa' : '#ffffff'}; font-weight: 600;">${vix.toFixed(1)}</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); padding: 6px 8px; border-radius: 4px; text-align: center;">
+                    <div style="color: var(--text-faint); font-size: 0.85em;">F&G</div>
+                    <div style="color: ${fg < 40 ? '#ff5050' : fg > 60 ? '#50ffaa' : '#ffffff'}; font-weight: 600;">${fg}</div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.75em; color: var(--text-faint); padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <span>📊 Bull Score: <strong style="color: ${bullScore > 60 ? '#50ffaa' : bullScore < 40 ? '#ff5050' : '#ffffff'}">${bullScore}/100</strong></span>
+                <span>📈 Yield: <strong style="color: ${yieldColor}">${yieldHealth}</strong></span>
+                ${sectorSummary ? `<span>🏭 Sectors: ${sectorSummary}</span>` : ''}
             </div>
         `;
         aiText.style.borderLeft = `3px solid ${regimeColor}`;
-        aiText.style.paddingLeft = '10px';
+        aiText.style.paddingLeft = '12px';
+        aiText.style.background = `linear-gradient(135deg, ${regimeColor}08, transparent)`;
+        aiText.style.borderRadius = '0 8px 8px 0';
+        aiText.style.padding = '12px';
     }
 
     updateVisuals(data) {
