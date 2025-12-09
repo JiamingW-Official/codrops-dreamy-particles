@@ -7,16 +7,6 @@ export default class GPGPUEvents {
 
     constructor(mouse, camera, mesh, uniforms) {
         this.camera = camera;
-        this.mouse = mouse;
-        this.geometry = mesh.geometry;
-        this.uniforms = uniforms;
-        this.mesh = mesh;
-
-
-        // Mouse
-
-        this.mouseSpeed = 0;
-        this.tapIntensity = 0;
         this.lastPoint = new THREE.Vector3();
 
 
