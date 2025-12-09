@@ -7,8 +7,19 @@ export default class GPGPUEvents {
 
     constructor(mouse, camera, mesh, uniforms) {
         this.camera = camera;
-        this.lastPoint = new THREE.Vector3();
+        this.mouse = mouse;
+        this.uniforms = uniforms;
+        this.mesh = mesh;
 
+        // Safety check for Geometry
+        if (mesh && mesh.geometry) {
+            this.geometry = mesh.geometry;
+        } else {
+            console.warn("GPGPUEvents: Mesh has no geometry, using dummy BoxGeometry.");
+            this.geometry = new THREE.BoxGeometry(1, 1, 1);
+        }
+
+        this.lastPoint = new THREE.Vector3();
 
         this.init();
     }
@@ -22,9 +33,16 @@ export default class GPGPUEvents {
 
 
     setupMouse() {
-        THREE.Mesh.prototype.raycast = acceleratedRaycast;
-
-        this.geometry.boundsTree = new MeshBVH(this.geometry);
+        // Only use BVH if we have a valid, non-dummy geometry
+        if (this.geometry.type !== 'BoxGeometry' && this.geometry.isBufferGeometry) {
+            THREE.Mesh.prototype.raycast = acceleratedRaycast;
+            // Compute bounds tree for optimized raycasting
+            try {
+                this.geometry.computeBoundsTree = new MeshBVH(this.geometry);
+            } catch (e) {
+                console.warn("GPGPUEvents: Failed to compute MeshBVH, falling back to standard raycast", e);
+            }
+        }
 
         this.raycaster = new THREE.Raycaster();
         this.raycaster.firstHitOnly = true;
@@ -34,10 +52,12 @@ export default class GPGPUEvents {
         );
 
         // Copy transforms from the original model to ensure alignment
-        this.raycasterMesh.position.copy(this.mesh.position);
-        this.raycasterMesh.rotation.copy(this.mesh.rotation);
-        this.raycasterMesh.scale.copy(this.mesh.scale);
-        this.raycasterMesh.updateMatrixWorld();
+        if (this.mesh) {
+            this.raycasterMesh.position.copy(this.mesh.position);
+            this.raycasterMesh.rotation.copy(this.mesh.rotation);
+            this.raycasterMesh.scale.copy(this.mesh.scale);
+            this.raycasterMesh.updateMatrixWorld();
+        }
 
         // Tap Event
         window.addEventListener('mousedown', (e) => {
