@@ -169,15 +169,16 @@ export default class Mask extends Handler {
     console.log(`[Mask] Switching Pantheon Model to: ${modelKey}`);
 
     // 1. Transition OUT (Disperse/Fade + SPIN)
-    // We can boost noise or reduce alpha
+    // Snappier Fade
     const oldAlpha = this.params.minAlpha;
-    gsap.to(this.params, { minAlpha: 0.0, duration: 1.0 });
+    gsap.to(this.params, { minAlpha: 0.0, duration: 0.3 }); // Was 1.0
 
     // Spin Effect: Rotate the entire particle system
+    // Much faster spin (0.4s for full rotation) + 5x Faster Feel
     if (this.gpgpu && this.gpgpu.mesh) {
       gsap.to(this.gpgpu.mesh.rotation, {
-        y: this.gpgpu.mesh.rotation.y + Math.PI * 2, // Full spin
-        duration: 2.5,
+        y: this.gpgpu.mesh.rotation.y + Math.PI * 4, // Double spin
+        duration: 0.5, // Super fast (was 2.5)
         ease: "power2.inOut"
       });
     }
@@ -202,8 +203,16 @@ export default class Mask extends Handler {
       this.updateGPGPUGeometry(mesh);
       this.currentModelName = modelKey;
 
-      // 4. Transition IN
-      gsap.to(this.params, { minAlpha: oldAlpha, duration: 1.5, delay: 0.5 });
+      // 4. Transition IN (Snap Formation)
+      // Boost Force to 1.0 (5x normal) instantly to snap particles
+      if (this.gpgpu && this.gpgpu.uniforms.velocityUniforms.uForce) {
+        gsap.fromTo(this.gpgpu.uniforms.velocityUniforms.uForce,
+          { value: 1.0 },
+          { value: 0.2, duration: 2.0, ease: "power2.out" }
+        );
+      }
+
+      gsap.to(this.params, { minAlpha: oldAlpha, duration: 0.5, delay: 0.2 });
 
       // Notify Debug
       console.log(`[Mask] Switched to ${modelKey}`);
