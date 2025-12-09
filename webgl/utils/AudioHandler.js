@@ -135,6 +135,12 @@ export default class AudioHandler extends EventEmitter {
     }
 
     setDistortionLevel(vix) {
+        // Auto-start if not playing yet
+        if (this.distortionBuffer && !this.distortionSource) {
+            console.log("[AudioHandler] Lazy-starting Distortion Track");
+            this.startDistortion();
+        }
+
         if (!this.distortionGain) return;
 
         // Thresholds
