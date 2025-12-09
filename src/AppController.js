@@ -539,20 +539,31 @@ export default class AppController {
 
     runAIPatternScan(currentData) {
         const aiText = document.getElementById('ai-analyst-text');
-        if (!aiText) return;
+        if (!aiText) {
+            console.warn('[AI] ai-analyst-text element not found');
+            return;
+        }
 
-        // If dataMap not ready, show current conditions
-        if (!this.marketDataService.dataMap || Object.keys(this.marketDataService.dataMap).length < 2) {
-            const mood = currentData.moodState || 'Neutral';
-            const vix = currentData.vix || '--';
-            const fg = currentData.fearGreedIndex || '--';
+        // If no current data, show loading
+        if (!currentData) {
+            aiText.innerHTML = `<span style="color:#ffcc00;">Loading market data...</span>`;
+            return;
+        }
+
+        const mood = currentData.moodState || 'Neutral';
+        const vix = currentData.vix || '--';
+        const fg = currentData.fearGreedIndex || 50;
+        const change = currentData.marketChangePercent || 0;
+
+        // If dataMap not ready or too few entries, show current conditions
+        if (!this.marketDataService.dataMap || Object.keys(this.marketDataService.dataMap).length < 3) {
             aiText.innerHTML = `
-                <span style="color:var(--text-faint); font-size:0.7em; display:block; margin-bottom:4px;">
+                <span style="color:var(--text-faint); font-size:0.75em; display:block; margin-bottom:4px;">
                     MARKET PULSE
                 </span>
-                <span style="color:var(--text-main); font-size:0.85em; display:block; line-height:1.4;">
-                    Mood: <strong style="color:${fg < 40 ? '#ff5050' : fg > 60 ? '#00ffaa' : '#ffcc00'}">${mood}</strong>. 
-                    VIX: ${vix} | Fear/Greed: ${fg}
+                <span style="color:var(--text-main); font-size:0.9em; display:block; line-height:1.5;">
+                    Mood: <strong style="color:${fg < 40 ? '#ff5050' : fg > 60 ? '#00ffaa' : '#ffcc00'}">${mood}</strong><br/>
+                    VIX: ${vix} | F&G: ${fg} | Chg: ${change > 0 ? '+' : ''}${change}%
                 </span>
             `;
             aiText.style.borderLeft = '2px solid #8899a6';
@@ -560,6 +571,7 @@ export default class AppController {
             return;
         }
 
+        // Find best pattern match
         let bestMatchDate = null;
         let minDistance = Infinity;
         const historyKeys = Object.keys(this.marketDataService.dataMap);
@@ -586,19 +598,30 @@ export default class AppController {
             const matchData = this.marketDataService.dataMap[bestMatchDate];
             const similarity = Math.max(0, 100 - (minDistance * 10)).toFixed(0);
             aiText.innerHTML = `
-    <span style="color:var(--text-faint); font-size:0.7em; display:block; margin-bottom:4px;">
-        PATTERN MATCH: <span style="color:var(--color-accent)">${similarity}%</span> SIMILAR TO ${bestMatchDate}
-    </span>
-    <span style="color:var(--text-main); font-size:0.85em; display:block; line-height:1.4;">
-        Setup echoes <strong>${matchData.moodState}</strong>. 
-        Past reaction: <span style="color:${matchData.marketChangePercent > 0 ? '#00ffaa' : '#ff5050'}">
-        ${matchData.marketChangePercent > 0 ? '+' : ''}${matchData.marketChangePercent}%</span>.
-    </span>
-`;
+                <span style="color:var(--text-faint); font-size:0.75em; display:block; margin-bottom:4px;">
+                    PATTERN MATCH: <span style="color:var(--color-accent)">${similarity}%</span> SIMILAR TO ${bestMatchDate}
+                </span>
+                <span style="color:var(--text-main); font-size:0.9em; display:block; line-height:1.5;">
+                    Setup echoes <strong>${matchData.moodState}</strong>. 
+                    Past reaction: <span style="color:${matchData.marketChangePercent > 0 ? '#00ffaa' : '#ff5050'}">
+                    ${matchData.marketChangePercent > 0 ? '+' : ''}${matchData.marketChangePercent}%</span>.
+                </span>
+            `;
             aiText.style.borderLeft = `2px solid ${similarity > 80 ? '#00ffaa' : '#8899a6'}`;
             aiText.style.paddingLeft = '8px';
         } else {
-            aiText.textContent = "Scanning historical patterns...";
+            // Fallback: show current conditions
+            aiText.innerHTML = `
+                <span style="color:var(--text-faint); font-size:0.75em; display:block; margin-bottom:4px;">
+                    CURRENT STATE
+                </span>
+                <span style="color:var(--text-main); font-size:0.9em; display:block; line-height:1.5;">
+                    <strong style="color:${fg < 40 ? '#ff5050' : fg > 60 ? '#00ffaa' : '#ffcc00'}">${mood}</strong> regime. 
+                    Change: <span style="color:${change > 0 ? '#00ffaa' : '#ff5050'}">${change > 0 ? '+' : ''}${change}%</span>
+                </span>
+            `;
+            aiText.style.borderLeft = '2px solid #8899a6';
+            aiText.style.paddingLeft = '8px';
         }
     }
 
