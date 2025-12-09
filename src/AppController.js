@@ -331,9 +331,10 @@ export default class AppController {
             if (velMarker && data.fearGreedIndex) {
                 velMarker.style.left = (data.fearGreedIndex) + "%";
             }
-
-            this.runAIPatternScan(data);
         }
+
+        // Always run AI Pattern Scan (moved outside conditional block)
+        this.runAIPatternScan(data);
 
     } // Closes updateUI
 
@@ -430,9 +431,9 @@ export default class AppController {
 
             // Just display ID + Val
             cell.innerHTML = `
-                <div style="text-align:center; pointer-events:none; width:100%; overflow:hidden;">
-                    <span style="display:block; font-size:0.65em; font-weight:700; color:white; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 2px;">${displayName}</span>
-                    <span style="font-size:0.7em; font-weight:600;">${val > 0 ? '+' : ''}${val}%</span>
+                <div style="text-align:center; pointer-events:none; width:100%; overflow:hidden; display:flex; flex-direction:column; justify-content:center; height:100%;">
+                    <span style="display:block; font-size:0.8em; font-weight:700; color:white; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 2px;">${displayName}</span>
+                    <span style="font-size:0.85em; font-weight:600;">${val > 0 ? '+' : ''}${val}%</span>
                 </div>
             `;
             cell.title = `${displayName}: ${val}%`;
@@ -960,16 +961,19 @@ export default class AppController {
         const regimeEl = document.getElementById('val-regime');
         if (regimeEl) regimeEl.textContent = "CNN Fear & Greed Index";
 
-        // Fear & Greed Index Display (Left Sidebar)
+        // Fear & Greed Index Display (Left Sidebar) - Show number AND label
         const fgDisplay = document.getElementById('val-fear-greed');
         if (fgDisplay && data.fearGreedIndex !== undefined) {
             const fgIdx = data.fearGreedIndex;
-            fgDisplay.textContent = fgIdx;
-            if (fgIdx <= 25) { fgDisplay.style.color = "#ff5050"; }
-            else if (fgIdx <= 45) { fgDisplay.style.color = "#ffaa50"; }
-            else if (fgIdx <= 55) { fgDisplay.style.color = "#ffffff"; }
-            else if (fgIdx <= 75) { fgDisplay.style.color = "#50ffaa"; }
-            else { fgDisplay.style.color = "#00ffaa"; }
+            let fgText = fgIdx;
+            let fgClr = "#ffffff";
+            if (fgIdx <= 25) { fgText = `${fgIdx} · Extreme Fear`; fgClr = "#ff5050"; }
+            else if (fgIdx <= 45) { fgText = `${fgIdx} · Fear`; fgClr = "#ffaa50"; }
+            else if (fgIdx <= 55) { fgText = `${fgIdx} · Neutral`; fgClr = "#ffffff"; }
+            else if (fgIdx <= 75) { fgText = `${fgIdx} · Greed`; fgClr = "#50ffaa"; }
+            else { fgText = `${fgIdx} · Extreme Greed`; fgClr = "#00ffaa"; }
+            fgDisplay.textContent = fgText;
+            fgDisplay.style.color = fgClr;
         }
 
         // Macro Intelligence Render
@@ -1122,9 +1126,17 @@ export default class AppController {
     drawYieldCurve(data) {
         const canvas = document.getElementById('yield-curve-chart');
         if (!canvas) return;
+
+        // High-DPI fix: scale canvas for retina displays
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
         const ctx = canvas.getContext('2d');
-        const W = canvas.width;
-        const H = canvas.height;
+        ctx.scale(dpr, dpr);
+
+        const W = rect.width;
+        const H = rect.height;
         ctx.clearRect(0, 0, W, H);
 
         // All maturities from reference: RRP, 1M, 2M, 3M, 4M, 6M, 1Y, 2Y, 3Y, 5Y, 7Y, 10Y, 20Y, 30Y
@@ -1234,8 +1246,8 @@ export default class AppController {
         });
 
         // Draw maturity labels (every other for space)
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-        ctx.font = '8px monospace';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.font = '10px "Space Mono", monospace';
         ctx.textAlign = 'center';
         points.forEach((p, i) => {
             if (i % 2 === 0 || i === points.length - 1) { // Show every other + last
@@ -1246,15 +1258,15 @@ export default class AppController {
 
         // Y-axis labels
         ctx.textAlign = 'right';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-        ctx.font = '8px monospace';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.font = '10px "Space Mono", monospace';
         ctx.fillText(maxVal.toFixed(1) + '%', padding.left - 3, padding.top + 4);
         ctx.fillText(minVal.toFixed(1) + '%', padding.left - 3, H - padding.bottom);
 
         // Inverted curve indicator
         if (points[0].val > points[points.length - 1].val) {
             ctx.fillStyle = '#ff5050';
-            ctx.font = 'bold 9px monospace';
+            ctx.font = 'bold 10px "Space Mono", monospace';
             ctx.textAlign = 'right';
             ctx.fillText('⚠ INVERTED', W - padding.right, padding.top);
         }
