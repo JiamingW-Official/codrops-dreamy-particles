@@ -1182,38 +1182,63 @@ export default class AppController {
         const H = rect.height;
         ctx.clearRect(0, 0, W, H);
 
-        // All maturities from reference: RRP, 1M, 2M, 3M, 4M, 6M, 1Y, 2Y, 3Y, 5Y, 7Y, 10Y, 20Y, 30Y
-        const maturities = ['RRP', '1M', '2M', '3M', '4M', '6M', '1Y', '2Y', '3Y', '5Y', '7Y', '10Y', '20Y', '30Y'];
+        // Use ACTUAL data from data.yieldCurve (real daily values from Yahoo Finance)
+        // Format: [{maturity: '3M', val: X}, {maturity: '5Y', val: X}, ...]
+        let realData = {};
+        if (Array.isArray(data.yieldCurve)) {
+            data.yieldCurve.forEach(pt => { realData[pt.maturity] = pt.val; });
+        }
 
-        // Map available data to maturities (interpolate missing)
-        const baseRate = data.fiveYearYield || 4.0; // Use 5Y as baseline
-        const tenY = data.tenYearYield || baseRate + 0.3;
-        const fiveY = data.fiveYearYield || baseRate;
-        const thirtyY = data.thirtyYearYield || tenY + 0.3;
+        // Extract real values (these come from ^IRX, ^FVX, ^TNX, ^TYX)
+        const y3m = realData['3M'] || data.threeMonthYield || 4.3;
+        const y5y = realData['5Y'] || data.fiveYearYield || 4.0;
+        const y10y = realData['10Y'] || data.tenYearYield || 4.2;
+        const y30y = realData['30Y'] || data.thirtyYearYield || 4.5;
 
-        // Estimate rates (typical yield curve shape)
-        const shortEnd = baseRate - 0.5; // Short term tends to be lower or inverted
-        const longEnd = thirtyY;
+        // Maturity in months for proper interpolation
+        const knownPoints = [
+            { months: 3, val: y3m },
+            { months: 60, val: y5y },    // 5Y
+            { months: 120, val: y10y },  // 10Y
+            { months: 360, val: y30y }   // 30Y
+        ];
 
-        // Create interpolated yield curve
-        const rateMap = {
-            'RRP': shortEnd - 0.1,
-            '1M': shortEnd,
-            '2M': shortEnd + 0.05,
-            '3M': shortEnd + 0.1,
-            '4M': shortEnd + 0.15,
-            '6M': shortEnd + 0.25,
-            '1Y': fiveY - 0.5,
-            '2Y': fiveY - 0.3,
-            '3Y': fiveY - 0.15,
-            '5Y': fiveY,
-            '7Y': (fiveY + tenY) / 2,
-            '10Y': tenY,
-            '20Y': (tenY + thirtyY) / 2,
-            '30Y': thirtyY
+        // Linear interpolation function
+        const lerp = (x, x0, y0, x1, y1) => y0 + (y1 - y0) * (x - x0) / (x1 - x0);
+
+        // Interpolate yield for any maturity
+        const getYield = (months) => {
+            if (months <= knownPoints[0].months) return knownPoints[0].val;
+            if (months >= knownPoints[knownPoints.length - 1].months) return knownPoints[knownPoints.length - 1].val;
+
+            for (let i = 0; i < knownPoints.length - 1; i++) {
+                if (months >= knownPoints[i].months && months <= knownPoints[i + 1].months) {
+                    return lerp(months, knownPoints[i].months, knownPoints[i].val,
+                        knownPoints[i + 1].months, knownPoints[i + 1].val);
+                }
+            }
+            return y10y; // fallback
         };
 
-        const points = maturities.map(m => ({ maturity: m, val: rateMap[m] }));
+        // Build full curve with maturities
+        const maturities = [
+            { label: '3M', months: 3 },
+            { label: '6M', months: 6 },
+            { label: '1Y', months: 12 },
+            { label: '2Y', months: 24 },
+            { label: '3Y', months: 36 },
+            { label: '5Y', months: 60 },
+            { label: '7Y', months: 84 },
+            { label: '10Y', months: 120 },
+            { label: '20Y', months: 240 },
+            { label: '30Y', months: 360 }
+        ];
+
+        const points = maturities.map(m => ({
+            maturity: m.label,
+            val: getYield(m.months),
+            isReal: m.months === 3 || m.months === 60 || m.months === 120 || m.months === 360
+        }));
 
         // Get Min/Max with padding
         const vals = points.map(p => p.val);
@@ -1278,13 +1303,20 @@ export default class AppController {
         ctx.fillStyle = gradient;
         ctx.fill();
 
-        // Draw data points
-        ctx.fillStyle = '#00ffcc';
+        // Draw data points - larger for real data, smaller for interpolated
         points.forEach((p, i) => {
             const x = getX(i);
             const y = getY(p.val);
             ctx.beginPath();
-            ctx.arc(x, y, 3, 0, Math.PI * 2);
+            if (p.isReal) {
+                // Real data points (from Yahoo Finance)
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#00ffcc';
+            } else {
+                // Interpolated points
+                ctx.arc(x, y, 2, 0, Math.PI * 2);
+                ctx.fillStyle = '#888888';
+            }
             ctx.fill();
         });
 
