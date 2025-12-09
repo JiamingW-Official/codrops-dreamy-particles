@@ -48,10 +48,15 @@ export default class WebcamHandler extends EventEmitter {
                     this.emit('ready');
                 });
             } catch (error) {
-                console.error('Error accessing webcam:', error);
+                // Silently handle webcam errors (user may deny permission or webcam unavailable)
+                // Webcam is optional, so we don't need to log errors
+                console.debug('Webcam not available:', error.name);
+                this.ready = false;
             }
         } else {
-            console.error('getUserMedia not supported');
+            // getUserMedia not supported - silently handle
+            console.debug('getUserMedia not supported in this browser');
+            this.ready = false;
         }
     }
 }

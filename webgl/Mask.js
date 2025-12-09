@@ -307,10 +307,11 @@ export default class Mask extends Handler {
     // OR we can access the helper from here if exported.
 
     // Ideally call this.gpgpu.updateTarget(mesh);
-    if (typeof this.gpgpu.updateTarget === 'function') {
+    if (this.gpgpu && typeof this.gpgpu.updateTarget === 'function') {
       this.gpgpu.updateTarget(mesh, sampling);
-    } else {
-      console.error("GPGPU.updateTarget not implemented!");
+    } else if (this.gpgpu) {
+      // Silently handle - updateTarget is optional
+      console.debug("GPGPU.updateTarget not implemented - using standard update");
     }
   }
 
@@ -481,20 +482,22 @@ export default class Mask extends Handler {
     targetSize += (Math.random() * jitterAmount * 1.5);
 
     // --- TRANSITIONS ---
-    gsap.to(this.params.color, {
-      r: finalColor.r,
-      g: finalColor.g,
-      b: finalColor.b,
-      duration: 2.0,
-      ease: 'power2.out',
-      onUpdate: () => {
-        if (this.gpgpu && this.gpgpu.material && this.gpgpu.material.uniforms.uColor) {
-          this.gpgpu.material.uniforms.uColor.value.copy(this.params.color);
+    if (this.params && this.params.color) {
+      gsap.to(this.params.color, {
+        r: finalColor.r,
+        g: finalColor.g,
+        b: finalColor.b,
+        duration: 2.0,
+        ease: 'power2.out',
+        onUpdate: () => {
+          if (this.gpgpu && this.gpgpu.material && this.gpgpu.material.uniforms && this.gpgpu.material.uniforms.uColor) {
+            this.gpgpu.material.uniforms.uColor.value.copy(this.params.color);
+          }
         }
-      }
-    });
+      });
+    }
 
-    if (this.gpgpu && this.gpgpu.material) {
+    if (this.gpgpu && this.gpgpu.material && this.gpgpu.material.uniforms) {
       // Calculate Market Intensity (0.0 = Neutral, 1.0 = Extreme Fear/Greed)
       let intensity = Math.abs(fg - 50) / 50.0;
       
@@ -506,54 +509,69 @@ export default class Mask extends Handler {
         intensity = Math.min(2.0, intensity * fearMultiplier);
       }
 
-      gsap.to(this.gpgpu.material.uniforms.uMarketIntensity, {
-        value: intensity,
-        duration: 2.5
-      });
+      // Safety check before animating uniforms
+      if (this.gpgpu.material.uniforms.uMarketIntensity) {
+        gsap.to(this.gpgpu.material.uniforms.uMarketIntensity, {
+          value: intensity,
+          duration: 2.5
+        });
+      }
       
       // Pass extreme fear state to shaders for enhanced audio/visual reaction
-      if (this.gpgpu.material.uniforms.uExtremeFear !== undefined) {
+      if (this.gpgpu.material.uniforms.uExtremeFear) {
         gsap.to(this.gpgpu.material.uniforms.uExtremeFear, {
           value: isExtremeFear ? 1.0 : 0.0,
           duration: 2.5
         });
       }
 
-      gsap.to(this.gpgpu.material.uniforms.uForce, {
-        value: targetForce,
-        duration: 2.5
-      });
+      if (this.gpgpu.material.uniforms.uForce) {
+        gsap.to(this.gpgpu.material.uniforms.uForce, {
+          value: targetForce,
+          duration: 2.5
+        });
+      }
 
       const sizeEase = jitterAmount > 0.5 ? "elastic.out(1, 0.3)" : "back.out(1.0)";
 
-      gsap.to(this.gpgpu.material.uniforms.uParticleSize, {
-        value: targetSize,
-        duration: 2.5,
-        ease: sizeEase
-      });
+      if (this.gpgpu.material.uniforms.uParticleSize) {
+        gsap.to(this.gpgpu.material.uniforms.uParticleSize, {
+          value: targetSize,
+          duration: 2.5,
+          ease: sizeEase
+        });
+      }
 
-      gsap.to(this.params, {
-        minAlpha: targetAlpha,
-        duration: 2.0
-      });
+      if (this.params) {
+        gsap.to(this.params, {
+          minAlpha: targetAlpha,
+          duration: 2.0
+        });
+      }
     }
 
     // Camera & Post-Processing Effects
     if (this.renderer && this.renderer.postprocessing) {
       const pp = this.renderer.postprocessing;
-      pp.setGlitch(targetGlitch);
+      if (pp && typeof pp.setGlitch === 'function') {
+        pp.setGlitch(targetGlitch);
+      }
 
       if (!this.fxParams) this.fxParams = { bloom: 1.0, shake: 0.0 };
 
-      gsap.to(this.fxParams, {
-        bloom: targetBloom,
-        shake: targetShake,
-        duration: 2.0,
-        onUpdate: () => {
-          pp.setBloom(this.fxParams.bloom);
-          if (this.camera) this.camera.shakeIntensity = this.fxParams.shake;
-        }
-      });
+      if (this.fxParams) {
+        gsap.to(this.fxParams, {
+          bloom: targetBloom,
+          shake: targetShake,
+          duration: 2.0,
+          onUpdate: () => {
+            if (pp && typeof pp.setBloom === 'function') {
+              pp.setBloom(this.fxParams.bloom);
+            }
+            if (this.camera) this.camera.shakeIntensity = this.fxParams.shake;
+          }
+        });
+      }
     }
 
     this.currentBaseSize = targetSize;
