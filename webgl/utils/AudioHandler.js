@@ -147,13 +147,14 @@ export default class AudioHandler extends EventEmitter {
         if (!this.distortionGain) return;
 
         // Thresholds
-        const minVix = 10;
+        // Thresholds
+        const minVix = 13;
         const maxVix = 35;
 
         let targetVol = 0;
         if (vix && !isNaN(vix) && vix > minVix) {
             let t = Math.min(1.0, (vix - minVix) / (maxVix - minVix));
-            targetVol = t * 2.5;
+            targetVol = t * 1.5;
         }
 
         // Log significant changes
