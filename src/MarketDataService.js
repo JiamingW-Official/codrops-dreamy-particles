@@ -6,8 +6,8 @@ export default class MarketDataService {
 
     async init() {
         try {
-            // Use absolute path with cache-busting to prevent 404s on new data
-            const response = await fetch('/data/market_data.json?v=' + new Date().getTime());
+            // Use relative path for GH Pages compatibility
+            const response = await fetch('./data/market_data.json?v=' + new Date().getTime());
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             this.dataMap = await response.json();
             console.log("Market Data Loaded:", Object.keys(this.dataMap).length, "days");
