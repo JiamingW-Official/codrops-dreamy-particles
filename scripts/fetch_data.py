@@ -518,6 +518,19 @@ def fetch_market_data():
     
     today = datetime.now().date()
     
+    # Function to recursively clean NaN/Infinity for JSON compliance
+    def recursive_clean(obj):
+        if isinstance(obj, dict):
+            return {k: recursive_clean(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [recursive_clean(v) for v in obj]
+        elif isinstance(obj, float):
+            import math
+            if pd.isna(obj) or math.isnan(obj) or math.isinf(obj):
+                return 0.0
+            return obj
+        return obj
+
     # OUTPUT JSON
     print(f"Exporting {len(market_data)} days to JSON...")
     
@@ -529,25 +542,16 @@ def fetch_market_data():
             if date_key in c_map:
                 real_score = c_map[date_key]
                 market_data[date_key]['fearGreedIndex'] = real_score
-                # Re-calc mood?
-                # Actually mood depends on score, so yes.
-                # But moodState in JSON is just text. Let's update it if needed.
-                # Simple logic for text:
-                curr_change = float(market_data[date_key]['marketChangePercent'])
-                curr_vol = float(market_data[date_key]['volumeRatio']) if 'volumeRatio' in market_data[date_key] else 1.0
-                
-                # We can't easily re-call determine_mood here without refactoring, 
-                # but let's trust the front-end handles the score or just update text simply
-                # market_data[date_key]['moodState'] = determine_mood(real_score, curr_change, curr_vol) 
-                # ^ Let's skip re-calc of text to avoid errors, the SCORE is what matters for the gauge.
                 hits += 1
         print(f"Overwrote {hits} days with REAL CNN data.")
 
     # Save
+    market_data_clean = recursive_clean(market_data)
+    
     import json
     out_path = os.path.join(os.path.dirname(__file__), '../public/data/market_data.json')
     with open(out_path, 'w') as f:
-        json.dump(market_data, f)
+        json.dump(market_data_clean, f)
     print("Done!")
     
     

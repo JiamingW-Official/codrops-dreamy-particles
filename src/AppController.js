@@ -897,6 +897,7 @@ export default class AppController {
 
         // 1. Sparklines Data Prep
         // Need to get history for charts. Access this.marketDataService.dataMap
+        if (!this.marketDataService.dataMap) return;
         const dateKeys = Object.keys(this.marketDataService.dataMap).sort();
         const endIdx = dateKeys.indexOf(data.date);
 
