@@ -153,7 +153,7 @@ export default class AudioHandler extends EventEmitter {
         let targetVol = 0;
         if (vix && !isNaN(vix) && vix > minVix) {
             let t = Math.min(1.0, (vix - minVix) / (maxVix - minVix));
-            targetVol = t * 1.0;
+            targetVol = t * 0.8;
         }
 
         // Log significant changes
