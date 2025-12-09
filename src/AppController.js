@@ -629,7 +629,56 @@ export default class AppController {
             }
         }
 
-        // Build the enhanced HTML
+        // Custom Proprietary Indices
+
+        // PULSE INDEX (0-100) - Market health composite
+        let pulseIndex = 50;
+        pulseIndex += (fg - 50) * 0.4; // Fear/Greed contribution
+        pulseIndex += (change * 8); // Price action
+        pulseIndex -= (vix - 18) * 1.5; // Volatility drag
+        pulseIndex += (yieldSpread > 0 ? 5 : -10); // Yield curve health
+        pulseIndex = Math.max(0, Math.min(100, Math.round(pulseIndex)));
+
+        let pulseLabel = 'Balanced';
+        let pulseColor = '#ffffff';
+        if (pulseIndex >= 70) { pulseLabel = 'Strong'; pulseColor = '#00ffaa'; }
+        else if (pulseIndex >= 55) { pulseLabel = 'Healthy'; pulseColor = '#50ffaa'; }
+        else if (pulseIndex <= 30) { pulseLabel = 'Weak'; pulseColor = '#ff5050'; }
+        else if (pulseIndex <= 45) { pulseLabel = 'Fragile'; pulseColor = '#ff7744'; }
+
+        // FLOW INDEX - Smart Money / Institutional sentiment
+        let flowIndex = 50;
+        if (change > 0 && vix < 18) flowIndex += 20; // Quiet uptrend = accumulation
+        if (change < 0 && vix > 22) flowIndex -= 20; // Volatile downtrend = distribution
+        if (fg > 60 && change < 0) flowIndex -= 10; // Greedy but selling = smart exit
+        if (fg < 40 && change > 0) flowIndex += 15; // Fearful but buying = smart entry
+        flowIndex = Math.max(0, Math.min(100, Math.round(flowIndex)));
+
+        let flowLabel = flowIndex >= 60 ? 'Inflow' : flowIndex <= 40 ? 'Outflow' : 'Neutral';
+        let flowColor = flowIndex >= 60 ? '#50ffaa' : flowIndex <= 40 ? '#ff7744' : '#8899a6';
+
+        // RISK RADAR (0-100, higher = more risk)
+        let riskRadar = 50;
+        riskRadar += (vix - 18) * 2; // VIX contribution
+        riskRadar -= (fg - 50) * 0.3; // Fear adds risk, greed reduces (inverted)
+        if (yieldSpread < 0) riskRadar += 20; // Inverted curve = recession risk
+        if (Math.abs(change) > 2) riskRadar += 15; // High volatility day
+        riskRadar = Math.max(0, Math.min(100, Math.round(riskRadar)));
+
+        let riskLabel = 'Moderate';
+        let riskColor = '#ffcc00';
+        if (riskRadar >= 70) { riskLabel = 'Elevated'; riskColor = '#ff5050'; }
+        else if (riskRadar >= 55) { riskLabel = 'Caution'; riskColor = '#ff7744'; }
+        else if (riskRadar <= 30) { riskLabel = 'Low'; riskColor = '#00ffaa'; }
+        else if (riskRadar <= 45) { riskLabel = 'Calm'; riskColor = '#50ffaa'; }
+
+        // MOMENTUM MATRIX
+        let momoScore = 50 + (change * 15) + (rsi - 50) * 0.3;
+        momoScore = Math.max(0, Math.min(100, Math.round(momoScore)));
+        let momoLabel = momoScore >= 65 ? '↑ Bullish' : momoScore <= 35 ? '↓ Bearish' : '→ Neutral';
+        let momoColor = momoScore >= 65 ? '#50ffaa' : momoScore <= 35 ? '#ff7744' : '#8899a6';
+
+        // Build the enhanced HTML with custom indices
         aiText.innerHTML = `
             <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                 <span style="background: ${regimeBg}; color: ${regimeColor}; padding: 4px 10px; border-radius: 6px; font-size: 0.8em; font-weight: 700; letter-spacing: 0.5px; box-shadow: 0 0 10px ${regimeColor}44;">
@@ -639,33 +688,36 @@ export default class AppController {
                 <span style="margin-left: auto; font-size: 0.75em; color: ${verdictColor}; font-weight: 600;">${dayVerdict}</span>
             </div>
             
-            <div style="font-size: 0.9em; line-height: 1.7; color: var(--text-main); margin-bottom: 10px;">
+            <div style="font-size: 0.9em; line-height: 1.7; color: var(--text-main); margin-bottom: 12px;">
                 ${narrative}
             </div>
             
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; font-size: 0.75em;">
-                <div style="background: rgba(255,255,255,0.05); padding: 6px 8px; border-radius: 4px; text-align: center;">
-                    <div style="color: var(--text-faint); font-size: 0.85em;">NASDAQ</div>
-                    <div style="color: ${change >= 0 ? '#50ffaa' : '#ff5050'}; font-weight: 600;">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; font-size: 0.7em;">
+                <div style="background: rgba(255,255,255,0.05); padding: 8px 6px; border-radius: 4px; text-align: center; border-bottom: 2px solid ${pulseColor};">
+                    <div style="color: var(--text-faint); font-size: 0.9em; margin-bottom: 2px;">PULSE</div>
+                    <div style="color: ${pulseColor}; font-weight: 700; font-size: 1.1em;">${pulseIndex}</div>
+                    <div style="color: ${pulseColor}; font-size: 0.8em;">${pulseLabel}</div>
                 </div>
-                <div style="background: rgba(255,255,255,0.05); padding: 6px 8px; border-radius: 4px; text-align: center;">
-                    <div style="color: var(--text-faint); font-size: 0.85em;">S&P 500</div>
-                    <div style="color: ${sp500Change >= 0 ? '#50ffaa' : '#ff5050'}; font-weight: 600;">${sp500Change >= 0 ? '+' : ''}${sp500Change.toFixed(2)}%</div>
+                <div style="background: rgba(255,255,255,0.05); padding: 8px 6px; border-radius: 4px; text-align: center; border-bottom: 2px solid ${flowColor};">
+                    <div style="color: var(--text-faint); font-size: 0.9em; margin-bottom: 2px;">FLOW</div>
+                    <div style="color: ${flowColor}; font-weight: 700; font-size: 1.1em;">${flowIndex}</div>
+                    <div style="color: ${flowColor}; font-size: 0.8em;">${flowLabel}</div>
                 </div>
-                <div style="background: rgba(255,255,255,0.05); padding: 6px 8px; border-radius: 4px; text-align: center;">
-                    <div style="color: var(--text-faint); font-size: 0.85em;">VIX</div>
-                    <div style="color: ${vix > 20 ? '#ff5050' : vix < 15 ? '#50ffaa' : '#ffffff'}; font-weight: 600;">${vix.toFixed(1)}</div>
+                <div style="background: rgba(255,255,255,0.05); padding: 8px 6px; border-radius: 4px; text-align: center; border-bottom: 2px solid ${riskColor};">
+                    <div style="color: var(--text-faint); font-size: 0.9em; margin-bottom: 2px;">RISK</div>
+                    <div style="color: ${riskColor}; font-weight: 700; font-size: 1.1em;">${riskRadar}</div>
+                    <div style="color: ${riskColor}; font-size: 0.8em;">${riskLabel}</div>
                 </div>
-                <div style="background: rgba(255,255,255,0.05); padding: 6px 8px; border-radius: 4px; text-align: center;">
-                    <div style="color: var(--text-faint); font-size: 0.85em;">F&G</div>
-                    <div style="color: ${fg < 40 ? '#ff5050' : fg > 60 ? '#50ffaa' : '#ffffff'}; font-weight: 600;">${fg}</div>
+                <div style="background: rgba(255,255,255,0.05); padding: 8px 6px; border-radius: 4px; text-align: center; border-bottom: 2px solid ${momoColor};">
+                    <div style="color: var(--text-faint); font-size: 0.9em; margin-bottom: 2px;">MOMO</div>
+                    <div style="color: ${momoColor}; font-weight: 700; font-size: 1.1em;">${momoScore}</div>
+                    <div style="color: ${momoColor}; font-size: 0.8em;">${momoLabel}</div>
                 </div>
             </div>
             
             <div style="display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.75em; color: var(--text-faint); padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
-                <span>📊 Bull Score: <strong style="color: ${bullScore > 60 ? '#50ffaa' : bullScore < 40 ? '#ff5050' : '#ffffff'}">${bullScore}/100</strong></span>
                 <span>📈 Yield: <strong style="color: ${yieldColor}">${yieldHealth}</strong></span>
-                ${sectorSummary ? `<span>🏭 Sectors: ${sectorSummary}</span>` : ''}
+                ${sectorSummary ? `<span>🏭 ${sectorSummary}</span>` : ''}
             </div>
         `;
         aiText.style.borderLeft = `3px solid ${regimeColor}`;
