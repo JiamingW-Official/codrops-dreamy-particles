@@ -836,20 +836,23 @@ export default class AppController {
 
         // 1. Main NASDAQ Display (Top Left)
         if (document.getElementById('val-index')) {
-            document.getElementById('val-index').textContent = data.indexValue.toLocaleString();
+            document.getElementById('val-index').textContent = data.indexValue.toLocaleString(undefined, { maximumFractionDigits: 2 });
             const valChange = document.getElementById('val-change');
             if (valChange) {
-                valChange.textContent = (data.marketChangePercent > 0 ? '+' : '') + data.marketChangePercent + '%';
+                // Rounding to 2 decimal places
+                const change = parseFloat(data.marketChangePercent).toFixed(2);
+                valChange.textContent = (data.marketChangePercent > 0 ? '+' : '') + change + '%';
                 valChange.className = 'change-pill ' + (data.marketChangePercent > 0 ? 'positive' : 'negative');
             }
         }
 
         // 2. S&P 500 (Main)
         if (document.getElementById('val-sp500')) {
-            document.getElementById('val-sp500').textContent = data.sp500Value.toLocaleString();
+            document.getElementById('val-sp500').textContent = data.sp500Value.toLocaleString(undefined, { maximumFractionDigits: 2 });
             const spChange = document.getElementById('val-sp500-change');
             if (spChange) {
-                spChange.textContent = (data.sp500Change > 0 ? '+' : '') + data.sp500Change + '%';
+                const change = parseFloat(data.sp500Change).toFixed(2);
+                spChange.textContent = (data.sp500Change > 0 ? '+' : '') + change + '%';
                 spChange.className = 'change-pill ' + (data.sp500Change > 0 ? 'positive' : 'negative');
             }
         }
@@ -868,8 +871,10 @@ export default class AppController {
         // 4. VIX
         const valVix = document.getElementById('val-vix');
         if (valVix) {
-            valVix.textContent = data.vix || '--';
+            // Round VIX to 2 decimals
             const v = parseFloat(data.vix);
+            valVix.textContent = !isNaN(v) ? v.toFixed(2) : '--';
+
             if (!isNaN(v)) {
                 valVix.style.color = v > 20 ? '#ff5050' : (v < 15 ? '#00ffaa' : '#ffffff');
             }
@@ -877,14 +882,24 @@ export default class AppController {
 
         // 5. 52W Range
         const val52w = document.getElementById('val-52w-range');
-        if (val52w) val52w.textContent = data.yearLow ? `${data.yearLow} - ${data.yearHigh}` : '--';
+        if (val52w) {
+            // Round range values
+            const low = data.yearLow ? parseFloat(data.yearLow).toFixed(2) : '--';
+            const high = data.yearHigh ? parseFloat(data.yearHigh).toFixed(2) : '--';
+            val52w.textContent = (data.yearLow && data.yearHigh) ? `${low} - ${high}` : '--';
+        }
 
         // 6. Commodities (Gold/Oil)
         if (document.getElementById('val-gold')) {
-            document.getElementById('val-gold').textContent = data.gold ? data.gold.toLocaleString() : '--';
+            // Gold often doesn't need decimals if > 1000, but consistency is nice. Let's do 1 decimal for gold? 
+            // User asked for 2 decimals everywhere potentially? "Round up to 0.01"
+            // Let's safe float it.
+            const g = parseFloat(data.gold);
+            document.getElementById('val-gold').textContent = !isNaN(g) ? g.toLocaleString(undefined, { maximumFractionDigits: 1 }) : '--';
         }
         if (document.getElementById('val-oil')) {
-            document.getElementById('val-oil').textContent = data.oil ? data.oil.toFixed(2) : '--';
+            const o = parseFloat(data.oil);
+            document.getElementById('val-oil').textContent = !isNaN(o) ? o.toFixed(2) : '--';
         }
 
         // --- RESTORED: Main Chart Call ---
