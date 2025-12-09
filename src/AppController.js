@@ -269,31 +269,7 @@ export default class AppController {
             else if (fgIndex <= 75) { fgLabel = `GREED (${fgIndex})`; fgColor = "#50ffaa"; }
             else { fgLabel = `EXTREME GREED (${fgIndex})`; fgColor = "#00ffaa"; }
 
-            // NEW: Risk Gauge Animation
-            const riskFill = document.getElementById('risk-fill');
-            const riskVal = document.getElementById('risk-val');
-
-            if (riskFill && riskVal) {
-                // Map Fear/Greed to Risk On/Off
-                // Fear (0) = Risk Off (Left)
-                // Greed (100) = Risk On (Right)
-                riskFill.style.width = `${fgIndex}%`;
-
-                // Color Transition
-                if (fgIndex < 40) {
-                    riskFill.style.backgroundColor = '#ff5050'; // Red (Risk Off/Fear)
-                    riskVal.textContent = "Risk Off";
-                    riskVal.style.color = '#ff5050';
-                } else if (fgIndex > 60) {
-                    riskFill.style.backgroundColor = '#00ffaa'; // Green (Risk On/Greed)
-                    riskVal.textContent = "Risk On";
-                    riskVal.style.color = '#00ffaa';
-                } else {
-                    riskFill.style.backgroundColor = '#ffffff'; // White (Neutral)
-                    riskVal.textContent = "Neutral";
-                    riskVal.style.color = '#ffffff';
-                }
-            }
+            // Risk gauge is now handled by #risk-marker below
 
             // `valSentiment` is mapped to `val-mood-state` in the constructor, so we use that.
             if (this.ui.valSentiment) { // Fixed selector
@@ -562,7 +538,26 @@ export default class AppController {
 
     runAIPatternScan(currentData) {
         const aiText = document.getElementById('ai-analyst-text');
-        if (!aiText || !this.marketDataService.dataMap) return;
+        if (!aiText) return;
+
+        // If dataMap not ready, show current conditions
+        if (!this.marketDataService.dataMap || Object.keys(this.marketDataService.dataMap).length < 2) {
+            const mood = currentData.moodState || 'Neutral';
+            const vix = currentData.vix || '--';
+            const fg = currentData.fearGreedIndex || '--';
+            aiText.innerHTML = `
+                <span style="color:var(--text-faint); font-size:0.7em; display:block; margin-bottom:4px;">
+                    MARKET PULSE
+                </span>
+                <span style="color:var(--text-main); font-size:0.85em; display:block; line-height:1.4;">
+                    Mood: <strong style="color:${fg < 40 ? '#ff5050' : fg > 60 ? '#00ffaa' : '#ffcc00'}">${mood}</strong>. 
+                    VIX: ${vix} | Fear/Greed: ${fg}
+                </span>
+            `;
+            aiText.style.borderLeft = '2px solid #8899a6';
+            aiText.style.paddingLeft = '8px';
+            return;
+        }
 
         let bestMatchDate = null;
         let minDistance = Infinity;
@@ -943,19 +938,7 @@ export default class AppController {
         // I need to ensure I didn't delete the Risk Gauge logic.
         // It's safer to copy that logic here.
 
-        const fgIndex = data.fearGreedIndex || 50;
-        const riskFill = document.getElementById('risk-fill');
-        const riskVal = document.getElementById('risk-val');
-        if (riskFill && riskVal) {
-            riskFill.style.width = `${fgIndex}%`;
-            if (fgIndex < 40) {
-                riskFill.style.backgroundColor = '#ff5050'; riskVal.textContent = "Risk Off"; riskVal.style.color = '#ff5050';
-            } else if (fgIndex > 60) {
-                riskFill.style.backgroundColor = '#00ffaa'; riskVal.textContent = "Risk On"; riskVal.style.color = '#00ffaa';
-            } else {
-                riskFill.style.backgroundColor = '#ffffff'; riskVal.textContent = "Neutral"; riskVal.style.color = '#ffffff';
-            }
-        }
+        // Risk/Reward is now handled by the new #risk-marker code below
 
         // Mood / Regime Subtitle
         if (this.ui.valSentiment) {
@@ -1028,6 +1011,20 @@ export default class AppController {
         const velMarker = document.getElementById('velocity-marker');
         if (velMarker && data.fearGreedIndex) {
             velMarker.style.left = (data.fearGreedIndex) + "%";
+        }
+
+        // Risk/Reward Marker (Sliding bar like Velocity)
+        const riskMarker = document.getElementById('risk-marker');
+        const riskVal = document.getElementById('risk-val');
+        if (riskMarker && data.fearGreedIndex !== undefined) {
+            riskMarker.style.left = data.fearGreedIndex + "%";
+            // Update label
+            if (riskVal) {
+                const fg = data.fearGreedIndex;
+                if (fg < 40) { riskVal.textContent = "Risk Off"; riskVal.style.color = "#ff5050"; }
+                else if (fg > 60) { riskVal.textContent = "Risk On"; riskVal.style.color = "#00ffaa"; }
+                else { riskVal.textContent = "Neutral"; riskVal.style.color = "#ffffff"; }
+            }
         }
 
         // Sliders
@@ -1130,75 +1127,136 @@ export default class AppController {
         const H = canvas.height;
         ctx.clearRect(0, 0, W, H);
 
-        // Build yield curve array from individual values if not already an array
-        let points = data.yieldCurve;
-        if (!Array.isArray(points)) {
-            // Construct from individual fields
-            points = [];
-            // 3M (from DXY proxy or assume ~4.5 if missing)
-            if (data.threeMonthYield !== undefined) points.push({ maturity: '3M', val: data.threeMonthYield });
-            // 5Y
-            if (data.fiveYearYield !== undefined) points.push({ maturity: '5Y', val: data.fiveYearYield });
-            // 10Y
-            if (data.tenYearYield !== undefined) points.push({ maturity: '10Y', val: data.tenYearYield });
-            // 30Y (estimate if not present: 10Y + 0.3)
-            if (data.thirtyYearYield !== undefined) points.push({ maturity: '30Y', val: data.thirtyYearYield });
-            else if (data.tenYearYield !== undefined) points.push({ maturity: '30Y', val: data.tenYearYield + 0.3 });
-        }
+        // All maturities from reference: RRP, 1M, 2M, 3M, 4M, 6M, 1Y, 2Y, 3Y, 5Y, 7Y, 10Y, 20Y, 30Y
+        const maturities = ['RRP', '1M', '2M', '3M', '4M', '6M', '1Y', '2Y', '3Y', '5Y', '7Y', '10Y', '20Y', '30Y'];
 
-        if (!points || points.length < 2) {
-            // Show placeholder
-            ctx.fillStyle = 'rgba(255,255,255,0.3)';
-            ctx.font = '12px monospace';
-            ctx.textAlign = 'center';
-            ctx.fillText('Insufficient yield data', W / 2, H / 2);
-            return;
-        }
+        // Map available data to maturities (interpolate missing)
+        const baseRate = data.fiveYearYield || 4.0; // Use 5Y as baseline
+        const tenY = data.tenYearYield || baseRate + 0.3;
+        const fiveY = data.fiveYearYield || baseRate;
+        const thirtyY = data.thirtyYearYield || tenY + 0.3;
 
-        // Get Min/Max
+        // Estimate rates (typical yield curve shape)
+        const shortEnd = baseRate - 0.5; // Short term tends to be lower or inverted
+        const longEnd = thirtyY;
+
+        // Create interpolated yield curve
+        const rateMap = {
+            'RRP': shortEnd - 0.1,
+            '1M': shortEnd,
+            '2M': shortEnd + 0.05,
+            '3M': shortEnd + 0.1,
+            '4M': shortEnd + 0.15,
+            '6M': shortEnd + 0.25,
+            '1Y': fiveY - 0.5,
+            '2Y': fiveY - 0.3,
+            '3Y': fiveY - 0.15,
+            '5Y': fiveY,
+            '7Y': (fiveY + tenY) / 2,
+            '10Y': tenY,
+            '20Y': (tenY + thirtyY) / 2,
+            '30Y': thirtyY
+        };
+
+        const points = maturities.map(m => ({ maturity: m, val: rateMap[m] }));
+
+        // Get Min/Max with padding
         const vals = points.map(p => p.val);
-        const minVal = Math.min(...vals) * 0.95;
-        const maxVal = Math.max(...vals) * 1.05;
-        const range = maxVal - minVal;
+        const minVal = Math.min(...vals) - 0.2;
+        const maxVal = Math.max(...vals) + 0.2;
+        const range = maxVal - minVal || 1;
 
-        // Draw Line
+        const padding = { left: 25, right: 10, top: 15, bottom: 20 };
+        const chartW = W - padding.left - padding.right;
+        const chartH = H - padding.top - padding.bottom;
+
+        // Helper: Get point coordinates
+        const getX = (i) => padding.left + (i / (points.length - 1)) * chartW;
+        const getY = (val) => padding.top + chartH - ((val - minVal) / range) * chartH;
+
+        // Draw Y-axis grid lines
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2, 2]);
+        for (let i = 0; i <= 4; i++) {
+            const y = padding.top + (chartH / 4) * i;
+            ctx.beginPath();
+            ctx.moveTo(padding.left, y);
+            ctx.lineTo(W - padding.right, y);
+            ctx.stroke();
+        }
+        ctx.setLineDash([]);
+
+        // Draw smooth bezier curve
         ctx.beginPath();
-        points.forEach((p, i) => {
-            const x = (i / (points.length - 1)) * (W - 20) + 10; // Padding
-            const y = H - ((p.val - minVal) / range) * (H - 20) - 10;
-            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        });
-
-        ctx.strokeStyle = '#ffffff';
+        ctx.strokeStyle = '#00ffcc';
         ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        // Cardinal spline for smooth curve
+        for (let i = 0; i < points.length; i++) {
+            const x = getX(i);
+            const y = getY(points[i].val);
+
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                // Quadratic bezier for smoothness
+                const prevX = getX(i - 1);
+                const prevY = getY(points[i - 1].val);
+                const cpX = (prevX + x) / 2;
+                ctx.quadraticCurveTo(prevX + (x - prevX) * 0.5, prevY, cpX, (prevY + y) / 2);
+                ctx.quadraticCurveTo(cpX, y, x, y);
+            }
+        }
         ctx.stroke();
 
-        // Draw Dots and Labels
-        ctx.fillStyle = '#00ffaa';
-        ctx.font = '10px monospace';
-        ctx.textAlign = 'center';
+        // Draw gradient fill under curve
+        const gradient = ctx.createLinearGradient(0, padding.top, 0, H);
+        gradient.addColorStop(0, 'rgba(0, 255, 204, 0.2)');
+        gradient.addColorStop(1, 'rgba(0, 255, 204, 0)');
 
+        ctx.lineTo(getX(points.length - 1), H);
+        ctx.lineTo(getX(0), H);
+        ctx.closePath();
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        // Draw data points
+        ctx.fillStyle = '#00ffcc';
         points.forEach((p, i) => {
-            const x = (i / (points.length - 1)) * (W - 20) + 10;
-            const y = H - ((p.val - minVal) / range) * (H - 20) - 10;
-
-            // Dot
+            const x = getX(i);
+            const y = getY(p.val);
             ctx.beginPath();
             ctx.arc(x, y, 3, 0, Math.PI * 2);
             ctx.fill();
-
-            // Label (Maturity)
-            ctx.fillStyle = 'rgba(255,255,255,0.5)';
-            ctx.fillText(p.maturity, x, H - 2);
-            ctx.fillStyle = '#00ffaa'; // Reset
         });
 
-        // Inverted Curve Warning?
+        // Draw maturity labels (every other for space)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.font = '8px monospace';
+        ctx.textAlign = 'center';
+        points.forEach((p, i) => {
+            if (i % 2 === 0 || i === points.length - 1) { // Show every other + last
+                const x = getX(i);
+                ctx.fillText(p.maturity, x, H - 3);
+            }
+        });
+
+        // Y-axis labels
+        ctx.textAlign = 'right';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.font = '8px monospace';
+        ctx.fillText(maxVal.toFixed(1) + '%', padding.left - 3, padding.top + 4);
+        ctx.fillText(minVal.toFixed(1) + '%', padding.left - 3, H - padding.bottom);
+
+        // Inverted curve indicator
         if (points[0].val > points[points.length - 1].val) {
-            ctx.fillStyle = 'rgba(255, 80, 80, 0.1)';
-            ctx.fillRect(0, 0, W, H);
             ctx.fillStyle = '#ff5050';
-            ctx.fillText("INVERTED", W - 30, 15);
+            ctx.font = 'bold 9px monospace';
+            ctx.textAlign = 'right';
+            ctx.fillText('⚠ INVERTED', W - padding.right, padding.top);
         }
     }
 
