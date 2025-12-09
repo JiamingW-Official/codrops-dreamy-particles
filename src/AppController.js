@@ -267,6 +267,32 @@ export default class AppController {
             else if (fgIndex <= 75) { fgLabel = `GREED (${fgIndex})`; fgColor = "#50ffaa"; }
             else { fgLabel = `EXTREME GREED (${fgIndex})`; fgColor = "#00ffaa"; }
 
+            // NEW: Risk Gauge Animation
+            const riskFill = document.getElementById('risk-fill');
+            const riskVal = document.getElementById('risk-val');
+
+            if (riskFill && riskVal) {
+                // Map Fear/Greed to Risk On/Off
+                // Fear (0) = Risk Off (Left)
+                // Greed (100) = Risk On (Right)
+                riskFill.style.width = `${fgIndex}%`;
+
+                // Color Transition
+                if (fgIndex < 40) {
+                    riskFill.style.backgroundColor = '#ff5050'; // Red (Risk Off/Fear)
+                    riskVal.textContent = "Risk Off";
+                    riskVal.style.color = '#ff5050';
+                } else if (fgIndex > 60) {
+                    riskFill.style.backgroundColor = '#00ffaa'; // Green (Risk On/Greed)
+                    riskVal.textContent = "Risk On";
+                    riskVal.style.color = '#00ffaa';
+                } else {
+                    riskFill.style.backgroundColor = '#ffffff'; // White (Neutral)
+                    riskVal.textContent = "Neutral";
+                    riskVal.style.color = '#ffffff';
+                }
+            }
+
             // `valSentiment` is mapped to `val-mood-state` in the constructor, so we use that.
             if (this.ui.valSentiment) { // Fixed selector
                 this.ui.valSentiment.textContent = fgLabel;
