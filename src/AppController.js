@@ -609,10 +609,13 @@ export default class AppController {
     updateVisuals(data) {
         if (!this.mask) {
             try { this.mask = Mask.getInstance(); }
-            catch (e) { console.warn("Mask instance not ready yet"); }
+            catch (e) { console.warn("Mask instance not ready yet", e); }
         }
         if (this.mask && this.mask.updateVisualization) {
+            console.log('[AppController] Updating mask visualization with data:', data.date);
             this.mask.updateVisualization(data);
+        } else {
+            console.warn('[AppController] Mask not available for visualization update');
         }
     }
 
@@ -1121,14 +1124,36 @@ export default class AppController {
 
     drawYieldCurve(data) {
         const canvas = document.getElementById('yield-curve-chart');
-        if (!canvas || !data.yieldCurve) return;
+        if (!canvas) return;
         const ctx = canvas.getContext('2d');
         const W = canvas.width;
         const H = canvas.height;
         ctx.clearRect(0, 0, W, H);
 
-        const points = data.yieldCurve; // Expects [{maturity:'3M', val:4.2}, ...]
-        if (!points || points.length < 2) return;
+        // Build yield curve array from individual values if not already an array
+        let points = data.yieldCurve;
+        if (!Array.isArray(points)) {
+            // Construct from individual fields
+            points = [];
+            // 3M (from DXY proxy or assume ~4.5 if missing)
+            if (data.threeMonthYield !== undefined) points.push({ maturity: '3M', val: data.threeMonthYield });
+            // 5Y
+            if (data.fiveYearYield !== undefined) points.push({ maturity: '5Y', val: data.fiveYearYield });
+            // 10Y
+            if (data.tenYearYield !== undefined) points.push({ maturity: '10Y', val: data.tenYearYield });
+            // 30Y (estimate if not present: 10Y + 0.3)
+            if (data.thirtyYearYield !== undefined) points.push({ maturity: '30Y', val: data.thirtyYearYield });
+            else if (data.tenYearYield !== undefined) points.push({ maturity: '30Y', val: data.tenYearYield + 0.3 });
+        }
+
+        if (!points || points.length < 2) {
+            // Show placeholder
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.font = '12px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Insufficient yield data', W / 2, H / 2);
+            return;
+        }
 
         // Get Min/Max
         const vals = points.map(p => p.val);
