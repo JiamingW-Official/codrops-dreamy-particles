@@ -89,6 +89,7 @@ export default class GPGPU {
                 uAudioMid: { value: 0 },
                 uAudioHigh: { value: 0 },
                 uAudioLevel: { value: 0 },
+                uMarketIntensity: { value: 0 },
                 uTime: { value: 0 },
             },
             vertexShader,

@@ -319,6 +319,14 @@ export default class Mask extends Handler {
     });
 
     if (this.gpgpu && this.gpgpu.material) {
+      // Calculate Market Intensity (0.0 = Neutral, 1.0 = Extreme Fear/Greed)
+      const intensity = Math.abs(fg - 50) / 50.0;
+
+      gsap.to(this.gpgpu.material.uniforms.uMarketIntensity, {
+        value: intensity,
+        duration: 2.5
+      });
+
       gsap.to(this.gpgpu.material.uniforms.uForce, {
         value: targetForce,
         duration: 2.5

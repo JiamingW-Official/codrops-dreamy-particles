@@ -8,6 +8,8 @@ uniform float uTime;
 uniform float uAudioBass;
 
 
+uniform float uMarketIntensity; // 0.0 = Neutral, 1.0 = Extreme
+
 void main() {
 	vUv = uv;
 
@@ -22,7 +24,10 @@ void main() {
     // Radial pulse mimicking the original physics push - VISUAL ONLY
     vec3 direction = normalize(newpos);
     float bass = smoothstep(0.4, 0.9, uAudioBass); // Threshold to keep it tight
-    float pulse = bass * 0.20; // Reduced amplitude
+    
+    // Dynamic Amplitude: 0.07 (Neutral) -> 0.15 (Extreme)
+    float amp = 0.07 + (uMarketIntensity * 0.08);
+    float pulse = bass * amp; 
     newpos += direction * pulse;
 
 	vPosition = newpos;
