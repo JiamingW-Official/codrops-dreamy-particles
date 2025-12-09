@@ -212,25 +212,29 @@ def fetch_market_data():
 
             # B. Volatility Score (0-100) - INVERTED (High VIX = Low Score/Fear)
             curr_vix = float(vix_close.loc[date])
-            # Benchmark VIX: 20 is "Neutral" barrier. 
+            # Benchmark VIX: 
             # 10 = Extreme Greed (100)
-            # 40 = Extreme Fear (0)
-            # Linear map: Score = 100 - ((VIX - 10) / 30 * 100)
-            vol_score = 100 - ((curr_vix - 12) / (35 - 12) * 100)
-            vol_score = max(0, min(100, vol_score))
+            # 18 = Neutral (60)
+            # 22+ = Fear/Anxiety (<= 40)
+            # 30+ = Panic (0)
+            
+            # Map 10..30 -> 100..0
+            # S = 100 - ( (V - 10) / 20 * 100 )
+            if curr_vix <= 10:
+                vol_score = 100
+            elif curr_vix >= 30:
+                vol_score = 0
+            else:
+                vol_score = 100 - ((curr_vix - 10) / 20.0 * 100)
             
             # C. RSI Score (0-100) - Short Term Emotion
             # RSI 30 = Fear (20 score), RSI 70 = Greed (80 score)
             curr_rsi = float(rsi_series.loc[date]) if not pd.isna(rsi_series.loc[date]) else 50.0
-            rsi_score = curr_rsi # RSI is already 0-100 friendly
+            rsi_score = curr_rsi 
             
             # Final Index Weighted
-            # VIX (Fear) is dominant in "Fear" mode, Momentum in "Greed".
-            # Let's verify user observation: "31 Fear today".
-            # If VIX is high (e.g. 25+), score should be < 40.
-            # My prev logic was too bullish.
-            
-            fear_greed_idx = int((mom_score * 0.3) + (vol_score * 0.45) + (rsi_score * 0.25))
+            # HEAVY WEIGHT ON VOLATILITY (50%) to match user perception of Fear
+            fear_greed_idx = int((mom_score * 0.2) + (vol_score * 0.5) + (rsi_score * 0.3))
 
         except Exception as e:
             # Fallback

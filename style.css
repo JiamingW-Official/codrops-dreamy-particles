@@ -1219,9 +1219,10 @@ body {
 .sector-treemap-container {
   position: relative;
   width: 100%;
-  min-height: 450px;
+  min-height: 160px;
   /* Taller Vertical Rectangle as requested */
-  height: 450px;
+  height: 160px;
+  /* SQUEEZED HEIGHT (was 220px) */
   background: rgba(0, 0, 0, 0.2);
   border-radius: 4px;
   margin-top: 8px;
