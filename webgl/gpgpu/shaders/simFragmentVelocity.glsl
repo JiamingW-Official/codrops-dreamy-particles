@@ -40,12 +40,13 @@ void main() {
 	// Mouse repel force
     
 	float mouseDistance = distance( position, uMouse );
-	float maxDistance = 0.4 + uAudioBass * 0.1; // Increased radius (was 0.3)
+	float maxDistance = 0.25 + uAudioBass * 0.1; // Reduced from 0.4 for "delicate" brush
 
 	if( mouseDistance < maxDistance ) {
 		vec3 pushDirection = normalize( position - uMouse );
-        // Boosted force: 0.02 (was 0.005) makes it much more reactive
-		velocity += pushDirection * ( 1.0 - mouseDistance / maxDistance ) * (0.02 * uMouseSpeed + uTapIntensity * 0.05); 
+        // Gentle nudge (0.008) instead of harsh blast (0.02)
+        // This prevents the "black void" effect
+		velocity += pushDirection * ( 1.0 - mouseDistance / maxDistance ) * (0.008 * uMouseSpeed + uTapIntensity * 0.03); 
 	}
 
     // Webcam Interaction

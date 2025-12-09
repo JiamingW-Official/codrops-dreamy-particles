@@ -252,6 +252,11 @@ export default class Mask extends Handler {
       dummy.name = "Fallback_Dummy";
       return dummy;
     }
+
+    // SCALING: User requested "make the model larger"
+    m.scale.set(1.7, 1.7, 1.7); // Increased from default 1.0
+    m.updateMatrixWorld(); // Ensure scale is applied before sampling
+
     return m;
   }
 
