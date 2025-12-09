@@ -638,187 +638,233 @@ body {
 }
 
 /* --- TERMINAL 3-COLUMN LAYOUT --- */
+/* --- LAYOUT GRID --- */
 .dashboard-grid {
   position: absolute;
   top: 60px;
+  /* Below Header */
+  left: 20px;
+  right: 20px;
+  bottom: 80px;
+  /* Above Timeline */
+  display: grid;
+  grid-template-columns: 280px 1fr 280px;
+  /* Fixed sidebars, flexible center */
+  gap: 20px;
+  pointer-events: none;
+  /* Allow click-through to 3D scene */
+  z-index: 10;
+}
 
-  #sidebar-left,
-  #sidebar-right {
-    position: absolute;
-    top: 2rem;
-    width: 320px;
-    /* Slightly wider for data density */
-    bottom: 6rem;
-    /* Space for timeline */
-    display: flex;
-    flex-direction: column;
-    pointer-events: all;
-    z-index: 10;
-  }
+#sidebar-left,
+#sidebar-right {
+  position: relative;
+  /* Reset absolute */
+  top: auto;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  pointer-events: all;
+  /* Renable pointer events */
+}
 
-  #sidebar-left {
-    left: 2rem;
-  }
+/* Glass Panel - Fit to Grid */
+.glass-panel {
+  background: rgba(10, 10, 12, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  flex: 1;
+  /* Fill column */
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
 
-  #sidebar-right {
-    right: 2rem;
-  }
+.glass-panel::-webkit-scrollbar {
+  display: none;
+}
 
-  .glass-panel {
-    background: rgba(10, 10, 12, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 4px;
-    padding: 1.2rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    /* Hide scrollbar */
-    scrollbar-width: none;
-  }
+/* --- SECTOR TREEMAP (Restored) --- */
+.sector-treemap-container {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 140px;
+  /* Compact height */
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 4px;
+}
 
-  .glass-panel::-webkit-scrollbar {
-    display: none;
-  }
+.sector-cell {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  transition: all 0.4s ease;
+  cursor: pointer;
+}
 
-  .panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.8rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 0.8rem;
-  }
+.sector-cell:hover {
+  filter: brightness(1.2);
+  z-index: 2;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
 
-  .panel-title {
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    color: var(--text-muted);
-  }
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.6rem;
+}
 
-  .chart-controls {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.9em;
-  }
+.panel-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+}
 
-  .control-arrow {
-    cursor: pointer;
-    font-weight: bold;
-    color: var(--text-muted);
-    transition: color 0.2s;
-  }
+.chart-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9em;
+}
 
-  .control-arrow:hover {
-    color: var(--text-main);
-  }
+.control-arrow {
+  cursor: pointer;
+  font-weight: bold;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
 
-  /* Compact List */
-  .market-data-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
+.control-arrow:hover {
+  color: var(--text-main);
+}
 
-  .data-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 8px;
-    border-radius: 4px;
-    transition: background 0.2s;
-  }
+/* Compact List */
+.market-data-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
-  .data-row.clickable {
-    cursor: pointer;
-  }
+.data-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
 
-  .data-row.clickable:hover {
-    background: rgba(255, 255, 255, 0.05);
-  }
+.data-row.clickable {
+  cursor: pointer;
+}
 
-  .data-row.active-row {
-    background: rgba(255, 255, 255, 0.1);
-    border-left: 2px solid var(--color-accent);
-  }
+.data-row.clickable:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
 
-  .label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-main);
-  }
+.data-row.active-row {
+  background: rgba(255, 255, 255, 0.1);
+  border-left: 2px solid var(--color-accent);
+}
 
-  .value {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.9rem;
-    color: var(--text-main);
-  }
+.label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
 
-  /* Compact Data Group */
-  .data-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
+.value {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
 
-  .data-row-compact {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.8rem;
-  }
+/* Compact Data Group */
+.data-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
-  .value-small {
-    font-family: 'Space Mono', monospace;
-    font-weight: 500;
-  }
+.data-row-compact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
 
-  .separator {
-    height: 1px;
-    background: rgba(255, 255, 255, 0.1);
-    margin: 1rem 0;
-  }
+.value-small {
+  font-family: 'Space Mono', monospace;
+  font-weight: 500;
+}
 
-  /* New Right Sidebar Sections */
-  .section-title-small {
-    font-size: 0.7rem;
-    color: var(--text-muted);
-    letter-spacing: 1px;
-    margin-bottom: 0.5rem;
-    text-transform: uppercase;
-  }
+.separator {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 1rem 0;
+}
 
-  #yield-curve-chart {
-    width: 100%;
-    height: 120px;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 4px;
-  }
+/* New Right Sidebar Sections */
+.section-title-small {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
 
-  #headlines-container p {
-    font-size: 0.8rem;
-    line-height: 1.4;
-    margin-bottom: 8px;
-    border-left: 2px solid rgba(255, 255, 255, 0.1);
-    padding-left: 8px;
-    color: var(--text-faint);
-  }
+#yield-curve-chart {
+  width: 100%;
+  height: 120px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
 
-  #headlines-container a {
-    color: inherit;
-    text-decoration: none;
-    transition: color 0.2s;
-  }
+#headlines-container p {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  margin-bottom: 8px;
+  border-left: 2px solid rgba(255, 255, 255, 0.1);
+  padding-left: 8px;
+  color: var(--text-faint);
+}
 
-  #headlines-container a:hover {
-    color: var(--color-accent);
-  }
+#headlines-container a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s;
+}
 
+#headlines-container a:hover {
+  color: var(--color-accent);
+}
+
+.sector-cell {
+  position: absolute;
   overflow: hidden;
   border: 1px solid rgba(0, 0, 0, 0.3);
   /* Distinct borders */
