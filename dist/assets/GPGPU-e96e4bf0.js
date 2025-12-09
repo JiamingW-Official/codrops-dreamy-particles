@@ -4517,11 +4517,14 @@ void main() {
 	
     
 	float mouseDistance = distance( position, uMouse );
-	float maxDistance = 0.1; 
+	
+	float maxDistance = 0.15 + uTapIntensity * 0.25; 
+	if (maxDistance > 0.4) maxDistance = 0.4; 
 
 	if( mouseDistance < maxDistance ) {
 		vec3 pushDirection = normalize( position - uMouse );
-		velocity += pushDirection * ( 1.0 - mouseDistance / maxDistance ) * 0.007 * uMouseSpeed; 
+		
+		velocity += pushDirection * ( 1.0 - mouseDistance / maxDistance ) * (0.015 * uMouseSpeed + uTapIntensity * 0.02); 
 	}
 
     

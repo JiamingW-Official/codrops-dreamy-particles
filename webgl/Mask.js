@@ -79,7 +79,7 @@ export default class Mask extends Handler {
 
   setupGPGPU() {
     this.gpgpu = new GPGPU({
-      size: 1200,
+      size: 800, // Reduced from 1200 for better performance
       camera: this.camera,
       renderer: this.renderer.webglRenderer,
       mouse: this.mouse,
@@ -257,7 +257,7 @@ export default class Mask extends Handler {
     }
 
     // SCALING: User requested "make the model larger"
-    m.scale.set(1.7, 1.7, 1.7); // Increased from default 1.0
+    m.scale.set(2.2, 2.2, 2.2); // Increased from 1.7 for grander Gods
     m.updateMatrixWorld(); // Ensure scale is applied before sampling
 
     return m;

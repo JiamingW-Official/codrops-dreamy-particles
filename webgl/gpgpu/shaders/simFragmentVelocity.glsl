@@ -37,14 +37,17 @@ void main() {
     }
 
 
-	// Mouse repel force (Original DGFX values)
+	// Mouse repel force with TAP RIPPLE
     
 	float mouseDistance = distance( position, uMouse );
-	float maxDistance = 0.1; // Original: small radius
+	// Base radius 0.15, grows with taps up to 0.4 max
+	float maxDistance = 0.15 + uTapIntensity * 0.25; // Tap makes ripple grow!
+	if (maxDistance > 0.4) maxDistance = 0.4; // Cap at 0.4
 
 	if( mouseDistance < maxDistance ) {
 		vec3 pushDirection = normalize( position - uMouse );
-		velocity += pushDirection * ( 1.0 - mouseDistance / maxDistance ) * 0.007 * uMouseSpeed; // Original gentle nudge
+		// Stronger force (0.015) + tap boost for visible effect
+		velocity += pushDirection * ( 1.0 - mouseDistance / maxDistance ) * (0.015 * uMouseSpeed + uTapIntensity * 0.02); 
 	}
 
     // Webcam Interaction
