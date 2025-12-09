@@ -541,95 +541,105 @@ export default class AppController {
 
     runAIPatternScan(currentData) {
         const aiText = document.getElementById('ai-analyst-text');
-        console.log('[AI] runAIPatternScan called, element:', aiText ? 'found' : 'NOT FOUND', 'data:', currentData ? currentData.date : 'none');
+        if (!aiText || !currentData) return;
 
-        if (!aiText) {
-            console.warn('[AI] ai-analyst-text element not found');
-            return;
-        }
-
-        // If no current data, show loading
-        if (!currentData) {
-            console.log('[AI] No currentData, showing loading');
-            aiText.innerHTML = `<span style="color:#ffcc00;">Loading market data...</span>`;
-            return;
-        }
-
-        const mood = currentData.moodState || 'Neutral';
-        const vix = currentData.vix || '--';
         const fg = currentData.fearGreedIndex || 50;
-        const change = currentData.marketChangePercent || 0;
+        const vix = parseFloat(currentData.vix) || 15;
+        const change = parseFloat(currentData.marketChangePercent) || 0;
+        const sp500Change = parseFloat(currentData.sp500Change) || 0;
+        const volume = currentData.volume || 0;
+        const rsi = currentData.rsi || 50;
 
-        console.log('[AI] Data available - mood:', mood, 'vix:', vix, 'fg:', fg);
+        // Determine market regime
+        let regime = 'NEUTRAL';
+        let regimeColor = '#ffffff';
+        let regimeIcon = '◐';
 
-        // If dataMap not ready or too few entries, show current conditions
-        if (!this.marketDataService.dataMap || Object.keys(this.marketDataService.dataMap).length < 3) {
-            aiText.innerHTML = `
-                <span style="color:var(--text-faint); font-size:0.75em; display:block; margin-bottom:4px;">
-                    MARKET PULSE
-                </span>
-                <span style="color:var(--text-main); font-size:0.9em; display:block; line-height:1.5;">
-                    Mood: <strong style="color:${fg < 40 ? '#ff5050' : fg > 60 ? '#00ffaa' : '#ffcc00'}">${mood}</strong><br/>
-                    VIX: ${vix} | F&G: ${fg} | Chg: ${change > 0 ? '+' : ''}${change}%
-                </span>
-            `;
-            aiText.style.borderLeft = '2px solid #8899a6';
-            aiText.style.paddingLeft = '8px';
-            return;
-        }
+        if (fg <= 25) { regime = 'EXTREME FEAR'; regimeColor = '#ff5050'; regimeIcon = '⚠'; }
+        else if (fg <= 40) { regime = 'FEAR'; regimeColor = '#ff7744'; regimeIcon = '↓'; }
+        else if (fg >= 75) { regime = 'EXTREME GREED'; regimeColor = '#00ffaa'; regimeIcon = '⚡'; }
+        else if (fg >= 60) { regime = 'GREED'; regimeColor = '#50ffaa'; regimeIcon = '↑'; }
+        else if (vix > 25) { regime = 'HIGH VOLATILITY'; regimeColor = '#ff5050'; regimeIcon = '⚡'; }
+        else if (vix < 15 && change > 0) { regime = 'RISK-ON'; regimeColor = '#00ffaa'; regimeIcon = '↑'; }
 
-        // Find best pattern match
-        let bestMatchDate = null;
-        let minDistance = Infinity;
-        const historyKeys = Object.keys(this.marketDataService.dataMap);
+        // VIX analysis
+        let vixSignal = 'normal';
+        let vixColor = '#ffffff';
+        if (vix > 30) { vixSignal = 'Elevated Fear'; vixColor = '#ff5050'; }
+        else if (vix > 20) { vixSignal = 'Caution'; vixColor = '#ffcc00'; }
+        else if (vix < 15) { vixSignal = 'Complacency'; vixColor = '#50ffaa'; }
+        else { vixSignal = 'Normal'; vixColor = '#8899a6'; }
 
-        const tChange = currentData.marketChangePercent || 0;
-        const tVix = currentData.vix || 15;
-        const tRsi = currentData.rsi || 50;
+        // Trend analysis
+        let trendSignal = '';
+        let trendColor = '#8899a6';
+        if (change > 1.5) { trendSignal = 'Strong Rally'; trendColor = '#00ffaa'; }
+        else if (change > 0.5) { trendSignal = 'Bullish'; trendColor = '#50ffaa'; }
+        else if (change < -1.5) { trendSignal = 'Sharp Selloff'; trendColor = '#ff5050'; }
+        else if (change < -0.5) { trendSignal = 'Bearish'; trendColor = '#ff7744'; }
+        else { trendSignal = 'Consolidating'; trendColor = '#8899a6'; }
 
-        historyKeys.forEach(dateKey => {
-            if (dateKey === currentData.date) return;
-            const hist = this.marketDataService.dataMap[dateKey];
-            if (!hist) return;
-            const dChange = (hist.marketChangePercent - tChange) * 2.0;
-            const dVix = (hist.vix - tVix) * 0.5;
-            const dRsi = (hist.rsi - tRsi) * 0.1;
-            const dist = Math.sqrt(dChange * dChange + dVix * dVix + dRsi * dRsi);
-            if (dist < minDistance) {
-                minDistance = dist;
-                bestMatchDate = dateKey;
-            }
-        });
+        // RSI analysis
+        let rsiSignal = '';
+        if (rsi > 70) { rsiSignal = 'Overbought'; }
+        else if (rsi < 30) { rsiSignal = 'Oversold'; }
+        else if (rsi > 55) { rsiSignal = 'Bullish momentum'; }
+        else if (rsi < 45) { rsiSignal = 'Bearish momentum'; }
+        else { rsiSignal = 'Neutral momentum'; }
 
-        if (bestMatchDate) {
-            const matchData = this.marketDataService.dataMap[bestMatchDate];
-            const similarity = Math.max(0, 100 - (minDistance * 10)).toFixed(0);
-            aiText.innerHTML = `
-                <span style="color:var(--text-faint); font-size:0.75em; display:block; margin-bottom:4px;">
-                    PATTERN MATCH: <span style="color:var(--color-accent)">${similarity}%</span> SIMILAR TO ${bestMatchDate}
-                </span>
-                <span style="color:var(--text-main); font-size:0.9em; display:block; line-height:1.5;">
-                    Setup echoes <strong>${matchData.moodState}</strong>. 
-                    Past reaction: <span style="color:${matchData.marketChangePercent > 0 ? '#00ffaa' : '#ff5050'}">
-                    ${matchData.marketChangePercent > 0 ? '+' : ''}${matchData.marketChangePercent}%</span>.
-                </span>
-            `;
-            aiText.style.borderLeft = `2px solid ${similarity > 80 ? '#00ffaa' : '#8899a6'}`;
-            aiText.style.paddingLeft = '8px';
+        // Generate market insight
+        let insight = '';
+        if (fg <= 25 && vix > 20) {
+            insight = 'Capitulation signals present. Historical precedent suggests oversold conditions may attract dip buyers.';
+        } else if (fg >= 75 && change > 1) {
+            insight = 'Euphoric conditions detected. Late-stage rallies often precede mean reversion. Exercise caution.';
+        } else if (vix > 25) {
+            insight = 'Volatility spike indicates market stress. Expect elevated price swings and potential reversals.';
+        } else if (Math.abs(change) < 0.3 && vix < 18) {
+            insight = 'Low volatility consolidation. Markets await catalyst. Watch for breakout or breakdown.';
+        } else if (change > 0 && fg > 50) {
+            insight = 'Risk appetite intact. Momentum favors continuation. Monitor volume for confirmation.';
+        } else if (change < 0 && fg < 50) {
+            insight = 'Defensive posture warranted. Sector rotation to safety likely. Watch bonds and gold.';
         } else {
-            // Fallback: show current conditions
-            aiText.innerHTML = `
-                <span style="color:var(--text-faint); font-size:0.75em; display:block; margin-bottom:4px;">
-                    CURRENT STATE
-                </span>
-                <span style="color:var(--text-main); font-size:0.9em; display:block; line-height:1.5;">
-                    <strong style="color:${fg < 40 ? '#ff5050' : fg > 60 ? '#00ffaa' : '#ffcc00'}">${mood}</strong> regime. 
-                    Change: <span style="color:${change > 0 ? '#00ffaa' : '#ff5050'}">${change > 0 ? '+' : ''}${change}%</span>
-                </span>
-            `;
-            aiText.style.borderLeft = '2px solid #8899a6';
-            aiText.style.paddingLeft = '8px';
+            insight = 'Mixed signals. Market in transition phase. Key levels and catalysts will determine direction.';
         }
+
+        // Sector insight
+        let sectorInsight = '';
+        if (currentData.sectorMap) {
+            const sectors = Object.entries(currentData.sectorMap);
+            let topSector = null, worstSector = null, topVal = -Infinity, worstVal = Infinity;
+            sectors.forEach(([key, val]) => {
+                const v = typeof val === 'object' ? val.change : val;
+                if (v > topVal) { topVal = v; topSector = key; }
+                if (v < worstVal) { worstVal = v; worstSector = key; }
+            });
+            const sectorNames = { 'XLK': 'Tech', 'XLF': 'Financials', 'XLV': 'Healthcare', 'XLE': 'Energy', 'XLI': 'Industrials', 'XLU': 'Utilities' };
+            if (topSector && worstSector && topVal !== worstVal) {
+                sectorInsight = `Rotation: ${sectorNames[topSector] || topSector} leading (+${topVal.toFixed(1)}%), ${sectorNames[worstSector] || worstSector} lagging (${worstVal.toFixed(1)}%)`;
+            }
+        }
+
+        // Build the HTML
+        aiText.innerHTML = `
+            <div style="margin-bottom: 8px;">
+                <span style="background: ${regimeColor}22; color: ${regimeColor}; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: 700; letter-spacing: 0.5px;">
+                    ${regimeIcon} ${regime}
+                </span>
+            </div>
+            <div style="font-size: 0.85em; line-height: 1.6; color: var(--text-main);">
+                <div style="margin-bottom: 6px;">${insight}</div>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.8em; color: var(--text-faint);">
+                    <span>VIX: <strong style="color: ${vixColor}">${vix.toFixed(1)} (${vixSignal})</strong></span>
+                    <span>Trend: <strong style="color: ${trendColor}">${trendSignal}</strong></span>
+                    <span>RSI: <strong>${rsiSignal}</strong></span>
+                </div>
+                ${sectorInsight ? `<div style="margin-top: 6px; font-size: 0.8em; color: var(--text-faint);">${sectorInsight}</div>` : ''}
+            </div>
+        `;
+        aiText.style.borderLeft = `3px solid ${regimeColor}`;
+        aiText.style.paddingLeft = '10px';
     }
 
     updateVisuals(data) {
