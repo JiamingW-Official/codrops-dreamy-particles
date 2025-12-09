@@ -177,7 +177,7 @@ export default class AppController {
             const d = new Date(dateKey + 'T00:00:00');
             this.picker.setDate(d, false);
             this.loadDate(d);
-        }, 100);
+        }, 200); // 200ms = 0.5x speed
     }
 
     stopPlay() {
