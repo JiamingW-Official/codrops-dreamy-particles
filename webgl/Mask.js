@@ -206,8 +206,6 @@ export default class Mask extends Handler {
       // 4. Transition IN (Snap Formation)
       // MAGNETIC SNAP: Boost Attraction + Moderate Brake
       // 4. Transition IN (Snap Formation)
-      // "10x Faster": High Tension Physics
-      // 4. Transition IN (Snap Formation)
       // "10x Faster": Super-Tension + Heavy Brake
       if (this.gpgpu && this.gpgpu.uniforms.velocityUniforms.uAttraction) {
         // 1. GRAVITY WELL: Extreme pull (2.0) -> Strong Hold (0.2)
