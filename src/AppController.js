@@ -395,197 +395,118 @@ export default class AppController {
         // Sort Descending by Weight
         items.sort((a, b) => b.weight - a.weight);
 
-        const W = container.clientWidth || 300;
-        const H = container.clientHeight || 200;
         container.innerHTML = '';
+        const rect = { x: 0, y: 0, w: container.clientWidth, h: container.clientHeight };
 
-        // SQUARIFIED TREEMAP ALGORITHM
-        // Based on Bruls, Huizing, van Wijk "Squarified Treemaps"
+        if (rect.w === 0 || rect.h === 0) return;
 
-        const totalWeight = items.reduce((sum, x) => sum + x.weight, 0);
-
-        // Recursive function
-        // area = width * height available
-        // we map weight -> area
-
-        function worst(row, w) {
-            if (row.length === 0) return Infinity;
-            const rMax = Math.max(...row.map(i => i.weight));
-            const rMin = Math.min(...row.map(i => i.weight));
-            const rSum = row.reduce((s, i) => s + i.weight, 0);
-            const s2 = rSum * rSum;
-            const w2 = w * w;
-            return Math.max((w2 * rMax) / s2, s2 / (w2 * rMin));
-        }
-
-        function layoutRow(row, x, y, w, h, isVertical) {
-            const rSum = row.reduce((s, i) => s + i.weight, 0);
-            const rowArea = rSum; // Normalized to current scale later
-
-            // If vertical strip, width is fixed by weight ratio
-            // Actually, standard algo: 'w' is the short side of the receiving container
-            // We occupy a strip of specific width/height along purely one axis
-
-            /*
-               Wait, simple logic:
-               We have a container (rx, ry, rw, rh).
-               We place 'row' along the short side.
-               If rw < rh, we place row at bottom (or top) with height = (rowWeight/totalWeight)*rh?
-               No, Squarified fills a rectangle of size area.
-            */
-        }
-        // Simplified standard approach implementation
-
-        // 1. Normalize weights to area
-        const scale = (W * H) / totalWeight;
-        items.forEach(i => i.norm = i.weight * scale); // Area in pixels
-
-        let rect = { x: 0, y: 0, w: W, h: H };
-
-        /*
-           Geometry helpers
-        */
-        const getShortSide = (r) => Math.min(r.w, r.h);
-
-        // Row is a list of items
-        // w is length of side they are stacked against
+        // Helpers defined in scope
         const calculateWorst = (row, sideLength) => {
-            if (row.length === 0) return Infinity;
-            const totalArea = row.reduce((s, i) => s + i.norm, 0);
-            const sideSquared = sideLength * sideLength;
-            const maxArea = Math.max(...row.map(i => i.norm));
-            const minArea = Math.min(...row.map(i => i.norm));
-            return Math.max((sideLength * sideLength * maxArea) / (totalArea * totalArea), (totalArea * totalArea) / (sideLength * sideLength * minArea));
-        }
-
-        const layout = (row, container) => {
-            const totalArea = row.reduce((s, i) => s + i.norm, 0);
-            const vertical = container.w < container.h; // Stack horizontally if container is tall? No, stack against short side.
-            // If width < height, short side is width. We stack rectangles horizontally?
-            // No, if container is tall (w < h), we slice off a horizontal strip at the top.
-            // The ROW fills this strip. The items in the row are placed side-by-side.
-            // So if w < h, items are arranged horizontally (x changes), strip has fixed height.
-
-            let side = vertical ? container.w : container.h;
-
-            if (vertical) {
-                // Container is Tall. Row forms a horizontal bar with height 'h'
-                const barHeight = totalArea / container.w;
-                let currentX = container.x;
-                row.forEach(item => {
-                    const itemW = item.norm / barHeight; // Area / Height = Width
-                    drawCell(item, currentX, container.y, itemW, barHeight);
-                    currentX += itemW;
-                });
-                // Update Container
-                container.y += barHeight;
-                container.h -= barHeight;
-            } else {
-                // Container is Wide. Row forms a vertical bar with width 'w'
-                const barWidth = totalArea / container.h;
-                let currentY = container.y;
-                row.forEach(item => {
-                    const itemH = item.norm / barWidth;
-                    drawCell(item, container.x, currentY, barWidth, itemH);
-                    currentY += itemH;
-                });
-                container.x += barWidth;
-                container.w -= barWidth;
+            if (row.length === 0) return 0;
+            const totalArea = row.reduce((sum, item) => sum + item.area, 0);
+            const s2 = sideLength * sideLength;
+            const w2 = totalArea * totalArea;
+            let maxWorst = 0;
+            for (let item of row) {
+                const r = item.area;
+                const worst = Math.max((s2 * r) / w2, w2 / (s2 * r));
+                if (worst > maxWorst) maxWorst = worst;
             }
-        }
+            return maxWorst;
+        };
 
         const drawCell = (item, x, y, w, h) => {
             const cell = document.createElement('div');
             cell.className = 'sector-cell';
             cell.style.left = x + 'px';
             cell.style.top = y + 'px';
-            cell.style.width = Math.max(0, w - 1) + 'px'; // -1 for gap/border visual
+            cell.style.width = Math.max(0, w - 1) + 'px';
             cell.style.height = Math.max(0, h - 1) + 'px';
 
-            // Color Logic (Deep Mode / Finviz Style)
             const val = item.val;
-
             let bgColor, textColor;
 
             if (val >= 0) {
-                // Positive: Deep Green Background, Neon Green Text
-                // Intensity adjusts brightness slightly but keeps it deep
                 const intensity = Math.min(1, val / 3.0);
-                // Base Deep Green #0b2e1e -> lighter #144a32
                 const r = 11, g = 46 + (intensity * 40), b = 30;
                 bgColor = `rgb(${r}, ${g}, ${b})`;
-                textColor = '#4ade80'; // Bright Green
+                textColor = '#4ade80';
             } else {
-                // Negative: Deep Red Background, Neon Red Text
                 const intensity = Math.min(1, Math.abs(val) / 3.0);
-                // Base Deep Red #2e0b0b -> lighter #4a1414
                 const r = 46 + (intensity * 40), g = 11, b = 11;
                 bgColor = `rgb(${r}, ${g}, ${b})`;
-                textColor = '#f87171'; // Bright Red
+                textColor = '#f87171';
             }
 
             cell.style.backgroundColor = bgColor;
             cell.style.color = textColor;
-            cell.style.border = '1px solid rgba(0,0,0,0.3)'; // Sharp border
-            cell.style.boxShadow = 'inset 0 0 10px rgba(0,0,0,0.2)'; // Inner depth
+            cell.style.border = '1px solid rgba(0,0,0,0.3)';
+            cell.style.boxShadow = 'inset 0 0 10px rgba(0,0,0,0.2)';
 
-            const sectorNames = {
-                "XLK": "Technology",
-                "XLF": "Financials",
-                "XLV": "Healthcare",
-                "XLY": "Cons. Disc", // Abbreviated for space
-                "XLP": "Cons. Staples",
-                "XLE": "Energy",
-                "XLI": "Industrials",
-                "XLB": "Materials",
-                "XLC": "Comm. Svcs",
-                "XLU": "Utilities",
-                "^IXIC": "Nasdaq",
-                "^GSPC": "S&P 500"
-            };
-
-            const displayName = sectorNames[item.id] || item.id;
-
+            // Just display ID + Val
             cell.innerHTML = `
-                    <div style="text-align:center; pointer-events:none; width:100%; overflow:hidden;">
-                        <span style="display:block; font-size:0.75em; font-weight:700; color:white; margin-bottom:2px; white-space:nowrap; text-overflow:ellipsis;">${displayName}</span>
-                        <span style="font-size:0.8em; font-weight:600;">${val > 0 ? '+' : ''}${val}%</span>
-                    </div>
-                `;
-            cell.title = `${item.id}\nChange: ${val}%\nTurnover: $${(item.weight / 1e9).toFixed(1)}B`;
+                <div style="text-align:center; pointer-events:none; width:100%; overflow:hidden;">
+                    <span style="display:block; font-size:0.75em; font-weight:700; color:white; margin-bottom:2px;">${item.id}</span>
+                    <span style="font-size:0.8em; font-weight:600;">${val > 0 ? '+' : ''}${val}%</span>
+                </div>
+            `;
+            cell.title = `${item.id}: ${val}%`;
             container.appendChild(cell);
-        }
+        };
 
-        // Main Recursion
+        const layout = (row, containerRect) => {
+            const totalArea = row.reduce((s, i) => s + i.area, 0);
+            const vertical = containerRect.w < containerRect.h;
+            if (vertical) {
+                const barHeight = totalArea / containerRect.w;
+                let currentX = containerRect.x;
+                row.forEach(item => {
+                    const itemW = item.area / barHeight;
+                    drawCell(item, currentX, containerRect.y, itemW, barHeight);
+                    currentX += itemW;
+                });
+                containerRect.y += barHeight;
+                containerRect.h -= barHeight;
+            } else {
+                const barWidth = totalArea / containerRect.h;
+                let currentY = containerRect.y;
+                row.forEach(item => {
+                    const itemH = item.area / barWidth;
+                    drawCell(item, containerRect.x, currentY, barWidth, itemH);
+                    currentY += itemH;
+                });
+                containerRect.x += barWidth;
+                containerRect.w -= barWidth;
+            }
+        };
+
+        // Main Algorithm Execution
+        const totalWeight = items.reduce((sum, x) => sum + x.weight, 0);
+        const scale = (rect.w * rect.h) / totalWeight;
+        items.forEach(i => i.area = i.weight * scale);
+
         let currentRow = [];
-        let remaining = [...items]; // Queue
+        let remaining = [...items];
 
         while (remaining.length > 0) {
             const item = remaining[0];
             const currentSide = Math.min(rect.w, rect.h);
-
-            // Try adding item to current row
             const rowWithItem = [...currentRow, item];
 
+            // Only use calculateWorst if row has items
             const w1 = calculateWorst(currentRow, currentSide);
             const w2 = calculateWorst(rowWithItem, currentSide);
 
             if (currentRow.length === 0 || w2 <= w1) {
-                // Improved or started, accept
                 currentRow.push(item);
                 remaining.shift();
             } else {
-                // Got worse, layout current row and start new
                 layout(currentRow, rect);
                 currentRow = [];
-                // Check stopping condition (if rect is empty)
                 if (rect.w <= 0 || rect.h <= 0) break;
             }
         }
-        // Layout leftovers
-        if (currentRow.length > 0) {
-            layout(currentRow, rect);
-        }
+        if (currentRow.length > 0) layout(currentRow, rect);
     }
 
     drawIndexChart(currentData) {
@@ -660,15 +581,15 @@ export default class AppController {
             const matchData = this.marketDataService.dataMap[bestMatchDate];
             const similarity = Math.max(0, 100 - (minDistance * 10)).toFixed(0);
             aiText.innerHTML = `
-                <span style="color:var(--text-faint); font-size:0.7em; display:block; margin-bottom:4px;">
-                    PATTERN MATCH: <span style="color:var(--color-accent)">${similarity}%</span> SIMILAR TO ${bestMatchDate}
-                </span>
-                <span style="color:var(--text-main); font-size:0.85em; display:block; line-height:1.4;">
-                    Setup echoes <strong>${matchData.moodState}</strong>. 
-                    Past reaction: <span style="color:${matchData.marketChangePercent > 0 ? '#00ffaa' : '#ff5050'}">
-                    ${matchData.marketChangePercent > 0 ? '+' : ''}${matchData.marketChangePercent}%</span>.
-                </span>
-            `;
+    <span style="color:var(--text-faint); font-size:0.7em; display:block; margin-bottom:4px;">
+        PATTERN MATCH: <span style="color:var(--color-accent)">${similarity}%</span> SIMILAR TO ${bestMatchDate}
+    </span>
+    <span style="color:var(--text-main); font-size:0.85em; display:block; line-height:1.4;">
+        Setup echoes <strong>${matchData.moodState}</strong>. 
+        Past reaction: <span style="color:${matchData.marketChangePercent > 0 ? '#00ffaa' : '#ff5050'}">
+        ${matchData.marketChangePercent > 0 ? '+' : ''}${matchData.marketChangePercent}%</span>.
+    </span>
+`;
             aiText.style.borderLeft = `2px solid ${similarity > 80 ? '#00ffaa' : '#8899a6'}`;
             aiText.style.paddingLeft = '8px';
         } else {
