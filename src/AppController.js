@@ -501,9 +501,26 @@ export default class AppController {
             cell.style.border = '1px solid rgba(0,0,0,0.3)'; // Sharp border
             cell.style.boxShadow = 'inset 0 0 10px rgba(0,0,0,0.2)'; // Inner depth
 
+            const sectorNames = {
+                "XLK": "Technology",
+                "XLF": "Financials",
+                "XLV": "Healthcare",
+                "XLY": "Cons. Disc", // Abbreviated for space
+                "XLP": "Cons. Staples",
+                "XLE": "Energy",
+                "XLI": "Industrials",
+                "XLB": "Materials",
+                "XLC": "Comm. Svcs",
+                "XLU": "Utilities",
+                "^IXIC": "Nasdaq",
+                "^GSPC": "S&P 500"
+            };
+
+            const displayName = sectorNames[item.id] || item.id;
+
             cell.innerHTML = `
-                    <div style="text-align:center; pointer-events:none;">
-                        <span style="display:block; font-size:0.85em; font-weight:700; color:white; margin-bottom:2px;">${item.id}</span>
+                    <div style="text-align:center; pointer-events:none; width:100%; overflow:hidden;">
+                        <span style="display:block; font-size:0.75em; font-weight:700; color:white; margin-bottom:2px; white-space:nowrap; text-overflow:ellipsis;">${displayName}</span>
                         <span style="font-size:0.8em; font-weight:600;">${val > 0 ? '+' : ''}${val}%</span>
                     </div>
                 `;
