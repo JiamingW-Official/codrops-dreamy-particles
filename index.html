@@ -24,221 +24,173 @@
 			<div id="market-status" class="market-status hidden">Market Closed</div>
 		</div>
 
-		<!-- 3-COLUMN DASHBOARD GRID -->
-		<div class="dashboard-grid">
-
-			<!-- LEFT PANEL: HARD DATA -->
-			<div class="panel-left glass-panel">
-				<!-- NASDAQ CHART (New) -->
-				<div class="chart-container">
-					<div class="chart-label">NASDAQ 30D</div>
-					<canvas id="market-chart" width="280" height="80"></canvas>
-				</div>
-
-				<div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
-					<span>MARKET DATA</span>
-					<div class="chart-nav">
-						<span id="btn-chart-prev" class="nav-arrow"
-							style="cursor:pointer; padding:0 5px;">&#9664;</span>
-						<span id="chart-title" style="font-size:0.8em; color:#aaa;">NASDAQ</span>
-						<span id="btn-chart-next" class="nav-arrow"
-							style="cursor:pointer; padding:0 5px;">&#9654;</span>
+		<!-- LEFT SIDEBAR -->
+		<div id="sidebar-left">
+			<div class="glass-panel">
+				<div class="panel-header">
+					<span class="panel-title">MARKET DATA</span>
+					<div class="chart-controls">
+						<span id="btn-chart-prev" class="control-arrow">&lt;</span>
+						<span id="chart-title">NASDAQ</span>
+						<span id="btn-chart-next" class="control-arrow">&gt;</span>
 					</div>
 				</div>
 
-				<!-- MAIN CHART (Top Sparkline style) -->
-				<canvas id="market-chart" width="300" height="80"
-					style="width:100%; height:80px; margin-bottom:10px;"></canvas>
-
-				<!-- INDICES LIST (Clickable) -->
-				<div class="metric-group">
-					<div class="data-row-compact clickable active-row" id="row-nasdaq">
+				<div class="market-data-list">
+					<div class="data-row clickable active-row" id="row-nasdaq">
 						<span class="label">NASDAQ</span>
-						<span class="value-mono" id="val-index">--</span>
-						<span class="change-pill" id="val-change">--</span>
+						<span class="value" id="val-index">--</span>
+						<span class="change-pill" id="val-change">--%</span>
 					</div>
-					<div class="data-row-compact clickable" id="row-sp500">
+					<div class="data-row clickable" id="row-sp500">
 						<span class="label">S&P 500</span>
-						<span class="value-mono" id="val-sp500">--</span>
-						<span class="change-pill" id="val-sp500-change">--</span>
+						<span class="value" id="val-sp500">--</span>
+						<span class="change-pill" id="val-sp500-change">--%</span>
+					</div>
+					<div class="data-row clickable" id="row-dow">
+						<span class="label">DOW JONES</span>
+						<span class="value" id="val-dow">--</span>
+						<span class="change-pill" id="val-dow-change">--%</span>
 					</div>
 				</div>
 
-				<!-- RISK GAUGE (New) -->
-				<div class="metric-group">
-					<div class="panel-subheader">RISK / REWARD</div>
-					<div class="risk-gauge-container">
-						<div class="risk-bar">
-							<div id="risk-fill" class="risk-fill" style="width: 50%;"></div>
-						</div>
-						<div class="risk-labels">
-							<span>Risk Off</span>
-							<span id="risk-val">Neutral</span>
-							<span>Risk On</span>
-						</div>
-					</div>
-				</div>
+				<div class="separator"></div>
 
-				<!-- VOLUME & RANGE -->
-				<div class="metric-group">
+				<div class="data-group">
 					<div class="data-row-compact">
-						<span class="label">Volume</span>
-						<span class="value-mono" id="val-volume">--</span>
+						<span class="label-muted">Risk/Reward</span>
+						<div class="risk-gauge-mini">
+							<div id="risk-fill" class="risk-fill"></div>
+						</div>
+						<span class="value-small" id="risk-val">Neutral</span>
 					</div>
 					<div class="data-row-compact">
-						<span class="label">VIX</span>
-						<span class="value-mono" id="val-vix">--</span>
+						<span class="label-muted">Volume</span>
+						<span class="value-small" id="val-volume">--</span>
 					</div>
-					<div class="data-row" style="margin-top:8px">
-						<span class="label">52W Range</span>
-						<span class="value" id="val-52w-range">--</span>
+					<div class="data-row-compact">
+						<span class="label-muted">VIX</span>
+						<span class="value-small" id="val-vix">--</span>
 					</div>
-					<!-- LEFT SIDEBAR -->
-					<div id="sidebar-left">
-						<div class="glass-panel">
-							<div class="panel-header">
-								<span class="panel-title">MARKET DATA</span>
-								<div class="chart-controls">
-									<span id="btn-chart-prev" class="control-arrow">&lt;</span>
-									<span id="chart-title">NASDAQ</span>
-									<span id="btn-chart-next" class="control-arrow">&gt;</span>
-								</div>
-							</div>
-
-							<div class="market-data-list">
-								<div class="data-row clickable active-row" id="row-nasdaq">
-									<span class="label">NASDAQ</span>
-									<span class="value" id="val-index">--</span>
-									<span class="change-pill" id="val-change">--%</span>
-								</div>
-								<div class="data-row clickable" id="row-sp500">
-									<span class="label">S&P 500</span>
-									<span class="value" id="val-sp500">--</span>
-									<span class="change-pill" id="val-sp500-change">--%</span>
-								</div>
-								<div class="data-row clickable" id="row-dow">
-									<span class="label">DOW JONES</span>
-									<span class="value" id="val-dow">--</span>
-									<span class="change-pill" id="val-dow-change">--%</span>
-								</div>
-							</div>
-
-							<div class="separator"></div>
-
-							<div class="data-group">
-								<div class="data-row-compact">
-									<span class="label-muted">Risk/Reward</span>
-									<div class="risk-gauge-mini">
-										<div id="risk-fill" class="risk-fill"></div>
-									</div>
-									<span class="value-small" id="risk-val">Neutral</span>
-								</div>
-								<div class="data-row-compact">
-									<span class="label-muted">Volume</span>
-									<span class="value-small" id="val-volume">--</span>
-								</div>
-								<div class="data-row-compact">
-									<span class="label-muted">VIX</span>
-									<span class="value-small" id="val-vix">--</span>
-								</div>
-								<div class="data-row-compact">
-									<span class="label-muted">52W Range</span>
-									<span class="value-small" id="val-52w-range">--</span>
-								</div>
-							</div>
-
-							<div class="separator"></div>
-
-							<div class="data-group">
-								<div class="data-row-compact">
-									<span class="label-muted">Gold</span>
-									<span class="value-small" id="val-gold">--</span>
-								</div>
-								<div class="data-row-compact">
-									<span class="label-muted">Crude Oil</span>
-									<span class="value-small" id="val-oil">--</span>
-								</div>
-								<div class="data-row-compact">
-									<span class="label-muted">10Y Yield</span>
-									<span class="value-small" id="val-yield">--</span>
-								</div>
-								<div class="data-row-compact">
-									<span class="label-muted">Dollar (DXY)</span>
-									<span class="value-small" id="val-dxy">--</span>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<!-- CENTER: VISUALIZER (Empty to let canvas show) -->
-					<div class="panel-center">
-						<!-- Center remains empty for the 3D Mask -->
-					</div>
-
-					<!-- RIGHT SIDEBAR -->
-					<div id="sidebar-right">
-						<div class="glass-panel">
-							<div class="panel-header">
-								<span class="panel-title">INTELLIGENCE</span>
-							</div>
-
-							<div class="ai-insight-box">
-								<div id="ai-analyst-text" class="typing-text">Initializing AI...</div>
-							</div>
-
-							<div class="separator"></div>
-
-							<div id="yield-curve-section">
-								<div class="section-title-small">US TREASURY YIELD CURVE</div>
-								<canvas id="yield-curve-chart" width="280" height="150"></canvas>
-							</div>
-
-							<div class="separator"></div>
-
-							<div id="headlines-section">
-								<div class="section-title-small">HEADLINES</div>
-								<div id="headlines-container">
-									<!-- JS Injected -->
-								</div>
-							</div>
-
-							<div class="separator"></div>
-
-							<div class="control-group">
-								<span class="label-muted">Visual Model</span>
-								<select id="model-select" class="dropdown">
-									<option value="mask">Classic Mask</option>
-									<option value="venecia">Venecia</option>
-									<option value="cyborg">Cyborg</option>
-									<option value="samurai">Samurai</option>
-									<option value="subway">Subway</option>
-								</select>
-							</div>
-						</div>
+					<div class="data-row-compact">
+						<span class="label-muted">52W Range</span>
+						<span class="value-small" id="val-52w-range">--</span>
 					</div>
 				</div>
 
-				<!-- NEW: Timeline Interaction -->
-				<div class="timeline-wrapper">
-					<div class="timeline-controls-row">
-						<button id="btn-play" class="btn-icon">▶</button>
-						<div class="timeline-track">
-							<canvas id="timeline-canvas"></canvas>
-							<input type="range" id="timeline-slider" min="0" max="100" value="100"
-								class="timeline-slider">
-						</div>
+				<div class="separator"></div>
+
+				<div class="data-group">
+					<div class="data-row-compact">
+						<span class="label-muted">Gold</span>
+						<span class="value-small" id="val-gold">--</span>
 					</div>
-					<div class="timeline-labels">
-						<span id="timeline-start">Past</span>
-						<span id="timeline-current">Today</span>
+					<div class="data-row-compact">
+						<span class="label-muted">Crude Oil</span>
+						<span class="value-small" id="val-oil">--</span>
+					</div>
+					<div class="data-row-compact">
+						<span class="label-muted">10Y Yield</span>
+						<span class="value-small" id="val-yield">--</span>
+					</div>
+					<div class="data-row-compact">
+						<span class="label-muted">Dollar (DXY)</span>
+						<span class="value-small" id="val-dxy">--</span>
 					</div>
 				</div>
-
 			</div>
+		</div>
 
-			<!-- Scripts -->
-			<script type="module" src="./src/index.js"></script>
-			<script type="module" src="./webgl/Mask.js"></script>
+		<!-- RIGHT SIDEBAR -->
+		<div id="sidebar-right">
+			<div class="glass-panel">
+				<div class="panel-header">
+					<span class="panel-title">INTELLIGENCE</span>
+				</div>
+
+				<div class="ai-insight-box">
+					<div id="ai-analyst-text" class="typing-text">Initializing AI...</div>
+				</div>
+
+				<div class="separator"></div>
+
+				<!-- RESTORED: Treemap (Heatmap) -->
+				<div id="sector-momentum">
+					<div class="section-title-small">SECTOR HEATMAP</div>
+					<div id="treemap-container" class="sector-treemap-container"></div>
+				</div>
+
+				<div class="separator"></div>
+
+				<!-- Yield Curve (Below Heatmap) -->
+				<div id="yield-curve-section">
+					<div class="section-title-small">YIELD CURVE</div>
+					<canvas id="yield-curve-chart" width="280" height="100"></canvas>
+				</div>
+
+				<div class="separator"></div>
+
+				<!-- RESTORED: Sentiment Velocity -->
+				<div id="market-breadth">
+					<div class="section-title-small">VELOCITY</div>
+					<div class="velocity-track">
+						<div id="velocity-marker" class="velocity-marker"></div>
+					</div>
+					<div class="flex-row space-between" style="font-size:0.7rem; opacity:0.5; margin-top:4px;">
+						<span>Cooling</span>
+						<span>Heating</span>
+					</div>
+				</div>
+
+				<div class="separator"></div>
+
+				<!-- MOVED: Headlines (Right) -->
+				<div id="headlines-section">
+					<div class="section-title-small">HEADLINES</div>
+					<div id="headlines-container">
+						<!-- JS Injected -->
+					</div>
+				</div>
+
+				<div class="separator"></div>
+
+				<div class="control-group">
+					<span class="label-muted">Visual Model</span>
+					<select id="model-select" class="dropdown">
+						<option value="mask">Classic Mask</option>
+						<option value="venecia">Venecia</option>
+						<option value="cyborg">Cyborg</option>
+						<option value="samurai">Samurai</option>
+						<option value="subway">Subway</option>
+					</select>
+				</div>
+			</div>
+		</div>
+
+		<!-- BOTTOM TIMELINE -->
+		<div class="timeline-wrapper">
+			<div class="timeline-controls-row">
+				<button id="btn-play" class="btn-icon">▶</button>
+				<div class="timeline-track">
+					<canvas id="timeline-canvas"></canvas>
+					<input type="range" id="timeline-slider" min="0" max="100" value="100" class="timeline-slider">
+				</div>
+				<!-- HIDDEN DATE PICKER (Critical for AppController logic) -->
+				<div style="width:0; height:0; overflow:hidden; opacity:0;">
+					<input type="text" id="date-picker">
+				</div>
+			</div>
+			<div class="timeline-labels">
+				<span id="timeline-start">Past</span>
+				<span id="timeline-current">Today</span>
+			</div>
+		</div>
+
+	</div>
+
+	<!-- Scripts -->
+	<script type="module" src="./src/index.js"></script>
+	<script type="module" src="./webgl/Mask.js"></script>
 </body>
 
 </html>
