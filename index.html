@@ -14,33 +14,35 @@
 <body class="is-loading">
 	<canvas class="experience__canvas"></canvas>
 
-	<!-- Unified Rational UI Grid -->
+	<!-- UI LAYER -->
 	<div class="ui-layer">
 
-		<!-- Header -->
+		<!-- HEADER -->
 		<div class="header">
 			<div class="logo">MARKET SENTIMENT VISUALIZER</div>
 			<div class="sub-logo">RATIONAL DATA & GENERATIVE MOODS</div>
 			<div id="market-status" class="market-status hidden">Market Closed</div>
-			<div class="panel-left glass-panel">
-				<!-- NASDAQ CHART (New) -->
-				<div class="chart-container" style="margin-bottom: 2rem;">
+		</div>
+
+		<!-- LEFT SIDEBAR -->
+		<div id="sidebar-left">
+			<div class="glass-panel">
+				<!-- CHART -->
+				<div class="chart-container">
 					<div class="chart-label">MARKET TREND (30D)</div>
 					<canvas id="market-chart" width="280" height="80"></canvas>
 				</div>
 
-				<div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
-					<span>MARKET DATA</span>
-					<div class="chart-nav">
-						<span id="btn-chart-prev" class="nav-arrow"
-							style="cursor:pointer; padding:0 5px;">&#9664;</span>
-						<span id="chart-title" style="font-size:0.8em; color:#aaa;">NASDAQ</span>
-						<span id="btn-chart-next" class="nav-arrow"
-							style="cursor:pointer; padding:0 5px;">&#9654;</span>
+				<div class="panel-header">
+					<span class="panel-title">MARKET DATA</span>
+					<div class="chart-controls">
+						<span id="btn-chart-prev" class="control-arrow">&#9664;</span>
+						<span id="chart-title">NASDAQ</span>
+						<span id="btn-chart-next" class="control-arrow">&#9654;</span>
 					</div>
 				</div>
 
-				<!-- INDICES LIST (Clickable) -->
+				<!-- INDICES -->
 				<div class="market-data-list">
 					<div class="data-row clickable active-row" id="row-nasdaq">
 						<span class="label">NASDAQ</span>
@@ -61,12 +63,10 @@
 
 				<div class="separator"></div>
 
+				<!-- METRICS -->
 				<div class="data-group">
 					<div class="data-row-compact">
 						<span class="label-muted">Risk/Reward</span>
-						<div class="risk-gauge-mini">
-							<div id="risk-fill" class="risk-fill"></div>
-						</div>
 						<span class="value-small" id="risk-val">Neutral</span>
 					</div>
 					<div class="data-row-compact">
@@ -85,6 +85,7 @@
 
 				<div class="separator"></div>
 
+				<!-- COMMODITIES -->
 				<div class="data-group">
 					<div class="data-row-compact">
 						<span class="label-muted">Gold</span>
@@ -119,7 +120,7 @@
 
 				<div class="separator"></div>
 
-				<!-- RESTORED: Treemap (Heatmap) -->
+				<!-- HEATMAP -->
 				<div id="sector-momentum">
 					<div class="section-title-small">SECTOR HEATMAP</div>
 					<div id="treemap-container" class="sector-treemap-container"></div>
@@ -127,7 +128,7 @@
 
 				<div class="separator"></div>
 
-				<!-- Yield Curve (Below Heatmap) -->
+				<!-- YIELD CURVE -->
 				<div id="yield-curve-section">
 					<div class="section-title-small">YIELD CURVE</div>
 					<canvas id="yield-curve-chart" width="280" height="100"></canvas>
@@ -135,13 +136,13 @@
 
 				<div class="separator"></div>
 
-				<!-- RESTORED: Sentiment Velocity -->
+				<!-- VELOCITY -->
 				<div id="market-breadth">
 					<div class="section-title-small">VELOCITY</div>
 					<div class="velocity-track">
 						<div id="velocity-marker" class="velocity-marker"></div>
 					</div>
-					<div class="flex-row space-between" style="font-size:0.7rem; opacity:0.5; margin-top:4px;">
+					<div class="velocity-labels">
 						<span>Cooling</span>
 						<span>Heating</span>
 					</div>
@@ -149,7 +150,7 @@
 
 				<div class="separator"></div>
 
-				<!-- MOVED: Headlines (Right) -->
+				<!-- HEADLINES -->
 				<div id="headlines-section">
 					<div class="section-title-small">HEADLINES</div>
 					<div id="headlines-container">
@@ -159,6 +160,7 @@
 
 				<div class="separator"></div>
 
+				<!-- MODEL SELECT -->
 				<div class="control-group">
 					<span class="label-muted">Visual Model</span>
 					<select id="model-select" class="dropdown">
@@ -172,7 +174,7 @@
 			</div>
 		</div>
 
-		<!-- BOTTOM TIMELINE -->
+		<!-- TIMELINE -->
 		<div class="timeline-wrapper">
 			<div class="timeline-controls-row">
 				<button id="btn-play" class="btn-icon">▶</button>
@@ -180,7 +182,7 @@
 					<canvas id="timeline-canvas"></canvas>
 					<input type="range" id="timeline-slider" min="0" max="100" value="100" class="timeline-slider">
 				</div>
-				<!-- HIDDEN DATE PICKER (Critical for AppController logic) -->
+				<!-- Hidden Date Picker (Required by AppController) -->
 				<div style="width:0; height:0; overflow:hidden; opacity:0;">
 					<input type="text" id="date-picker">
 				</div>
