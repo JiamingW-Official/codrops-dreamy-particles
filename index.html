@@ -18,69 +18,170 @@
 	<div class="ui-layer">
 
 		<!-- Header -->
-		<header class="header">
-			<div>
-				<h1>Market Sentiment Visualizer</h1>
-				<p>Rational Data & Generative Moods</p>
-			</div>
-			<!-- Status Pill under header in mobile, or absolute? Grid handles it. -->
+		<div class="header">
+			<div class="logo">MARKET SENTIMENT VISUALIZER</div>
+			<div class="sub-logo">RATIONAL DATA & GENERATIVE MOODS</div>
 			<div id="market-status" class="market-status hidden">Market Closed</div>
-		</header>
+		</div>
 
-		<!-- Sidebar: Key Indices (Left) -->
-		<div class="market-hero">
-			<!-- Nasdaq -->
-			<div class="stat-group">
-				<span class="index-label">Nasdaq Composite</span>
-				<div class="big-number" id="val-index">--</div>
-				<div class="change-row">
-					<span id="val-change" class="change-pill">--%</span>
+		<!-- 3-COLUMN DASHBOARD GRID -->
+		<div class="dashboard-grid">
+
+			<!-- LEFT PANEL: HARD DATA -->
+			<div class="panel-left glass-panel">
+				<!-- NASDAQ CHART (New) -->
+				<div class="chart-container">
+					<div class="chart-label">NASDAQ 30D</div>
+					<canvas id="market-chart" width="280" height="80"></canvas>
 				</div>
+
+				<div class="panel-header">MARKET DATA</div>
+
+				<!-- INDICES -->
+				<div class="metric-group">
+					<div class="metric-row">
+						<span class="label">NASDAQ</span>
+						<span class="value" id="val-index">--</span>
+						<span class="change-pill" id="val-change">--%</span>
+					</div>
+					<div class="metric-row">
+						<span class="label">S&P 500</span>
+						<span class="value-sm" id="val-sp500">--</span>
+						<span class="change-pill" id="val-sp500-change">--%</span>
+					</div>
+				</div>
+
+				<!-- RISK GAUGE (New) -->
+				<div class="metric-group">
+					<div class="panel-subheader">RISK / REWARD</div>
+					<div class="risk-gauge-container">
+						<div class="risk-bar">
+							<div id="risk-fill" class="risk-fill" style="width: 50%;"></div>
+						</div>
+						<div class="risk-labels">
+							<span>Risk Off</span>
+							<span id="risk-val">Neutral</span>
+							<span>Risk On</span>
+						</div>
+					</div>
+				</div>
+
+				<!-- VOLUME & RANGE -->
+				<div class="metric-group">
+					<div class="data-row-compact">
+						<span class="label">Volume</span>
+						<span class="value-mono" id="val-volume">--</span>
+					</div>
+					<div class="data-row-compact">
+						<span class="label">VIX</span>
+						<span class="value-mono" id="val-vix">--</span>
+					</div>
+					<div class="data-row" style="margin-top:8px">
+						<span class="label">52W Range</span>
+						<span class="value" id="val-52w-range">--</span>
+					</div>
+
+					<!-- NEW: Market Breadth Widget -->
+					<div id="market-breadth-container" class="market-breadth-container"
+						style="margin-top:16px; opacity:0; transition: opacity 1s ease;">
+						<div class="label" style="margin-bottom:4px; font-size:0.7em; letter-spacing:1px;">MARKET
+							BREADTH</div>
+						<div class="breadth-bar-bg">
+							<div id="breadth-fill" class="breadth-bar-fill"></div>
+						</div>
+						<div class="breadth-labels"
+							style="display:flex; justify-content:space-between; font-size:0.7em; margin-top:2px;">
+							<span id="breadth-down" style="color:#ff5050">0 Down</span>
+							<span id="breadth-up" style="color:#00ffaa">0 Up</span>
+						</div>
+					</div>
+				</div>
+				<!-- HEADLINES (Moved Inside Left Panel) -->
+				<div class="headlines-compact"
+					style="margin-top:16px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
+					<div class="widget-title">HEADLINES</div>
+					<div id="headlines-container"></div>
+				</div>
+
+				<!-- DATE CONTROLS (Moved Within Left Panel) -->
+				<div class="control-group"
+					style="margin-top:auto; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1);">
+					<label>Visual Model</label>
+					<select id="model-select" class="glass-select">
+						<option value="mask">Classic Mask</option>
+						<option value="veneciaMask">Venecia</option>
+						<option value="samurai">Samurai</option>
+						<option value="cyborg">Cyborg</option>
+						<option value="subway">Subway</option>
+					</select>
+					<div class="date-picker-container" style="margin-top: 5px;">
+						<input type="text" id="date-picker" placeholder="Select Date">
+					</div>
+				</div>
+
+				<!-- Footer / Info -->
+				<div id="market-info" class="market-info hidden"></div>
 			</div>
 
-			<!-- S&P 500 -->
-			<div class="stat-group"
-				style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--glass-border);">
-				<span class="index-label">S&P 500</span>
-				<div class="big-number" style="font-size: 1.8rem;" id="val-sp500">--</div>
-				<div class="change-row">
-					<span id="val-sp500-change" class="change-pill">--%</span>
+			<!-- CENTER: VISUALIZER (Empty to let canvas show) -->
+			<div class="panel-center">
+				<!-- Center remains empty for the 3D Mask -->
+			</div>
+
+			<!-- RIGHT PANEL: INTELLIGENCE -->
+			<div class="panel-right glass-panel">
+				<div class="panel-header">INTELLIGENCE</div>
+
+				<!-- MARKET STATE -->
+				<div class="state-card">
+					<div id="val-mood-state" class="state-big">NEUTRAL</div>
+					<div id="val-regime" class="state-sub">Goldilocks Regime</div>
 				</div>
+
+				<!-- AI ANALYST -->
+				<div class="widget-box">
+					<div class="widget-title">AI ANALYST INSIGHT</div>
+					<div id="ai-analyst-text" class="ai-text">
+						Analysis loading...
+					</div>
+				</div>
+
+				<!-- SECTOR HEATMAP -->
+				<div class="widget-box">
+					<div class="widget-title">SECTOR MOMENTUM</div>
+					<!-- TREEMAP CONTAINER -->
+					<div id="treemap-container" class="sector-treemap-container"></div>
+				</div>
+
+				<!-- SENTIMENT VELOCITY -->
+				<div class="widget-box">
+					<div class="widget-title">SENTIMENT VELOCITY</div>
+					<div class="velocity-track">
+						<div id="velocity-marker" class="velocity-marker"></div>
+					</div>
+					<div class="velocity-labels">
+						<span>Cooling</span>
+						<span>Heating</span>
+					</div>
+				</div>
+
+				<!-- HEADLINES (Moved to Left) -->
+
 			</div>
 		</div>
 
-		<!-- Sidebar: Date Controls (Left, Row 3) -->
-		<div class="controls">
-			<div class="date-picker-container">
-				<input type="text" id="date-picker" placeholder="Select Date">
+		<!-- NEW: Timeline Interaction -->
+		<div class="timeline-wrapper">
+			<div class="timeline-controls-row">
+				<button id="btn-play" class="btn-icon">▶</button>
+				<div class="timeline-track">
+					<canvas id="timeline-canvas"></canvas>
+					<input type="range" id="timeline-slider" min="0" max="100" value="100" class="timeline-slider">
+				</div>
 			</div>
-			<button id="btn-today" class="btn-ghost"
-				style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.1); border:none; color:white; cursor:pointer;">Jump
-				to Today</button>
-		</div>
-
-		<!-- Right Panel: Data Context -->
-		<div id="market-info" class="info-card hidden">
-			<div class="data-row">
-				<span class="data-label">Market Mood</span>
-				<span class="data-value" id="val-sentiment" style="font-weight: 500;">--</span>
-			</div>
-			<div class="data-row">
-				<span class="data-label">Fear & Greed</span>
-				<span class="data-value" id="val-fear-greed" style="font-family: monospace;">--</span>
-			</div>
-			<div class="data-row">
-				<span class="data-label">VIX (Volatility)</span>
-				<span class="data-value" id="val-vix" style="font-family: monospace;">--</span>
-			</div>
-
-			<div class="headlines">
-				<h3>Top Headlines</h3>
-				<div id="headlines-container"></div>
-			</div>
-
-			<div class="sources" style="font-size: 0.6rem; color: var(--text-faint); margin-top: auto;">
-				Data: Yahoo Finance & Google News
+			<div class="timeline-labels">
+				<span id="timeline-start">Past</span>
+				<span id="timeline-current">Today</span>
 			</div>
 		</div>
 

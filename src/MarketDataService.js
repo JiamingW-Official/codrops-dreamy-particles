@@ -70,7 +70,20 @@ export default class MarketDataService {
             sentiment: 0,
             marketChangePercent: 0,
             headlines: ["Data unavailable for this date", "Please check fetch_data.py"],
-            volatility: 0.2
+            volatility: 0.2,
+            vix: 20,
+            indexValue: 0,
+            sp500Value: 0,
+            volume: 0,
+            dayHigh: 0,
+            dayLow: 0,
+            yearHigh: 0,
+            yearLow: 0,
+            sectorStat: 0,
+            rsi: 50,
+            tenYearYield: 4.0,
+            moodState: "Neutral",
+            regime: "Data Missing"
         };
     }
 }

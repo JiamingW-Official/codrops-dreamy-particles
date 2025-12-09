@@ -2,6 +2,7 @@ import Experience from './Experience.js';
 import Handler from './abstract/Handler.js';
 import * as THREE from 'three';
 import GPGPU from './gpgpu/GPGPU.js'
+import KeywordCloud from './KeywordCloud.js';
 import gsap from 'gsap';
 
 
@@ -53,10 +54,18 @@ export default class Mask extends Handler {
 
 
   setupMask() {
-    let mask = this.resources.models.mask.scene.children[0];
+    const modelName = this.currentModelName || 'mask';
+    const modelResource = this.resources.models[modelName];
+
+    if (!modelResource) {
+      console.error(`Model ${modelName} not found!`);
+      return;
+    }
+
+    let mask = modelResource.scene.children[0];
 
     if (!mask.geometry) {
-      this.resources.models.mask.scene.traverse((child) => {
+      modelResource.scene.traverse((child) => {
         if (child.isMesh && !mask.geometry) {
           mask = child;
         }
@@ -64,13 +73,14 @@ export default class Mask extends Handler {
     }
 
     this.model = mask;
-  }
 
+    // PhD Vis: Keyword Cloud
+    if (!this.keywordCloud) this.keywordCloud = new KeywordCloud();
+  }
 
   setupCameraPosition() {
     // OrbitControls removed
   }
-
 
   setupGPGPU() {
     this.gpgpu = new GPGPU({
@@ -88,203 +98,211 @@ export default class Mask extends Handler {
     })
   }
 
-
   setupDebug() {
     if (this.debug.active) {
       if (this.particlesFolder) {
         this.particlesFolder.destroy();
       }
+      this.debug.gui.width = 300;
       this.particlesFolder = this.debug.gui.addFolder('particles');
 
-      this.particlesFolder.addColor(this.gpgpu.material.uniforms.uColor, 'value').name('Color').onChange((value) => {
-        this.params.color.copy(value);
-      });
-      this.particlesFolder.add(this.gpgpu.material.uniforms.uParticleSize, 'value').name('Size').min(1).max(10).step(0.1).onChange((value) => {
-        this.params.size = value;
-      });
-      this.particlesFolder.add(this.gpgpu.uniforms.velocityUniforms.uForce, 'value').name('Force').min(0).max(0.8).step(0.01).onChange((value) => {
-        this.params.force = value;
-      });
-      this.particlesFolder.add(this.gpgpu.material.uniforms.uMinAlpha, 'value').name('Min Alpha').min(0).max(1).step(0.01).onChange((value) => {
-        this.params.minAlpha = value;
-      });
-      this.particlesFolder.add(this.gpgpu.material.uniforms.uMaxAlpha, 'value').name('Max Alpha').min(0).max(1).step(0.01).onChange((value) => {
-        this.params.maxAlpha = value;
-      });
+      this.particlesFolder
+        .addColor(this.params, 'color')
+        .name('Color')
+        .onChange(() => {
+          if (this.gpgpu && this.gpgpu.material && this.gpgpu.material.uniforms.uColor) {
+            this.gpgpu.material.uniforms.uColor.value.copy(this.params.color);
+          }
+        });
 
-      const obj = {
-        randomize: () => {
-          this.params.color.setHex(Math.random() * 0xffffff);
-          this.params.size = Math.random() * 9 + 1;
-          this.params.force = Math.random() * 0.8;
+      this.particlesFolder
+        .add(this.gpgpu.material.uniforms.uParticleSize, 'value')
+        .min(0.1)
+        .max(10)
+        .step(0.1)
+        .name('Size');
 
-          this.gpgpu.material.uniforms.uColor.value.copy(this.params.color);
-          this.gpgpu.material.uniforms.uParticleSize.value = this.params.size;
-          this.gpgpu.uniforms.velocityUniforms.uForce.value = this.params.force;
+      this.particlesFolder
+        .add(this.gpgpu.uniforms.velocityUniforms.uForce, 'value')
+        .min(0)
+        .max(1)
+        .step(0.01)
+        .name('Force');
 
-          this.particlesFolder.controllers.forEach(c => c.updateDisplay());
-        },
-        model: this.currentModelName
-      };
+      this.particlesFolder
+        .add(this.params, 'minAlpha')
+        .min(0)
+        .max(1)
+        .step(0.01)
+        .name('Min Alpha')
+        .onChange(() => {
+          if (this.gpgpu.material.uniforms.uMinAlpha)
+            this.gpgpu.material.uniforms.uMinAlpha.value = this.params.minAlpha;
+        });
 
-      this.particlesFolder.add(obj, 'randomize');
-      this.particlesFolder.add(obj, 'model', ['mask', 'veneciaMask', 'samurai', 'cyborg', 'subway']).onChange((value) => {
-        this.changeModel(value);
-      });
+      this.particlesFolder
+        .add(this.params, 'maxAlpha')
+        .min(0)
+        .max(1)
+        .step(0.01)
+        .name('Max Alpha')
+        .onChange(() => {
+          if (this.gpgpu.material.uniforms.uMaxAlpha)
+            this.gpgpu.material.uniforms.uMaxAlpha.value = this.params.maxAlpha;
+        });
+
+      // Debug Randomize
+      this.particlesFolder.add(this, 'randomize');
+
+      // Model Switcher
+      const models = { mask: 'mask', veneciaMask: 'veneciaMask', samurai: 'samurai', cyborg: 'cyborg', subway: 'subway' };
+      this.particlesFolder.add({ model: 'mask' }, 'model', models)
+        .onChange((val) => this.changeModel(val));
+    }
+  }
+
+  randomize() {
+    if (this.gpgpu && this.gpgpu.material && this.gpgpu.material.uniforms.uRandom) {
+      this.gpgpu.material.uniforms.uRandom.value = Math.random();
     }
   }
 
   changeModel(modelName) {
+    if (this.currentModelName === modelName) return;
+    console.log(`[Mask] Switching to model: ${modelName}`);
+
     this.currentModelName = modelName;
 
+    // Cleanup old GPGPU
     if (this.gpgpu) {
-      this.scene.remove(this.gpgpu.mesh);
-      this.gpgpu.mesh.geometry.dispose();
-      this.gpgpu.mesh.material.dispose();
-    }
-
-    let selectedModel = this.resources.models[modelName].scene.children[0];
-
-    // If the selected object is not a mesh (e.g. a Group), find the first mesh inside it
-    if (!selectedModel.geometry) {
-      console.warn(`Object ${modelName} is not a Mesh (likely a Group). Searching for mesh...`);
-      let foundMesh = null;
-      this.resources.models[modelName].scene.traverse((child) => {
-        if (child.isMesh && !foundMesh) {
-          foundMesh = child;
-        }
-      });
-
-      if (foundMesh) {
-        console.log('Found nested mesh:', foundMesh);
-        selectedModel = foundMesh;
-      } else {
-        console.error(`Could not find any mesh in ${modelName} model!`);
-        return; // Stop to prevent crash
+      // Assume GPGPU has a dispose or access to mesh
+      if (this.gpgpu.particles) {
+        this.scene.remove(this.gpgpu.particles);
+        if (this.gpgpu.particles.geometry) this.gpgpu.particles.geometry.dispose();
+        if (this.gpgpu.particles.material) this.gpgpu.particles.material.dispose();
       }
+      // Also need to dispose computation renderer if possible, but basic mesh cleanup is key
+      this.gpgpu = null;
     }
 
-    this.model = selectedModel;
-
+    this.setupMask();
     this.setupGPGPU();
-    this.setupDebug();
   }
 
   updateVisualization(data) {
     if (!data) return;
+    this.currentData = data;
 
-    const s = data.marketChangePercent; // Direction
-    const vix = data.vix || 20; // Uncertainty
-    const fg = data.fearGreedIndex || 50; // Emotion
-    const volRatio = data.volumeRatio || 1.0; // Heat
-    const yieldVal = data.tenYearYield || 4.0; // Atmosphere
+    const s = data.marketChangePercent || 0;
+    const vix = data.vix || 20;
+    const fg = data.fearGreedIndex || 50;
+    const volRatio = data.volumeRatio || 1.0;
+    const yieldVal = data.tenYearYield || 4.0;
 
-    // --- 1. DETERMINE MOOD STATE ---
-    let moodHue, moodSat, moodLight;
-    let moodName = "Neutral";
+    // Update Keywords
+    if (this.keywordCloud && data.headlines) {
+      this.keywordCloud.updateHeadlines(data.headlines);
+    }
 
-    if (s >= 0) {
-      // --- BULLISH STATES ---
-      if (s > 1.0 && vix < 20) {
-        // EUPHORIA (Perfect conditions)
-        moodName = "Euphoria";
-        moodHue = 45; // Gold/Yellow
-        moodSat = 95;
-        moodLight = 60;
-      } else if (s > 0.5 && yieldVal < 4.0) {
-        // HEALTHY GROWTH (Low stress)
-        moodName = "Growth";
-        moodHue = 160; // Emerald/Teal
-        moodSat = 80;
-        moodLight = 50;
-      } else if (yieldVal > 4.2) {
-        // CAUTION (Gains but high yields/stress)
-        moodName = "Caution";
-        moodHue = 60; // Olive/Amber
-        moodSat = 70;
-        moodLight = 45;
-      } else {
-        // STANDARD DAY
-        moodName = "Steady";
-        moodHue = 180; // Cyan/Teal
-        moodSat = 65;
-        moodLight = 45;
-      }
-    } else {
-      // --- BEARISH STATES ---
-      if (s < -1.5 || vix > 30) {
-        // PANIC (Crash or High Fear)
-        moodName = "Panic";
-        moodHue = 340; // Hot Magenta/Red
-        moodSat = 95;
-        moodLight = 45;
-      } else if (Math.abs(s) < 0.2 && vix > 25) {
-        // CONFUSION (Flat but volatile)
-        moodName = "Confusion";
-        moodHue = 260; // Foggy Purple
-        moodSat = 40;
-        moodLight = 50;
-      } else if (s < -1.0 && volRatio < 0.8) {
-        // DESPAIR (Drop with low interest)
-        moodName = "Despair";
-        moodHue = 240; // Desaturated Violet
-        moodSat = 30; // Drained
-        moodLight = 30; // Dark
-      } else {
-        // CORRECTION (Normal drop)
-        moodName = "Correction";
-        moodHue = 220; // Slate Blue
-        moodSat = 50;
-        moodLight = 40;
+    // --- 1. CONTINUOUS MOOD INTERPOLATION ---
+    const anchors = {
+      0: { h: 340, s: 95, l: 40, name: "Extreme Panic" },
+      25: { h: 260, s: 60, l: 40, name: "Fear" },
+      45: { h: 220, s: 40, l: 40, name: "Nervous" },
+      55: { h: 180, s: 40, l: 45, name: "Neutral" },
+      75: { h: 160, s: 70, l: 50, name: "Greed" },
+      100: { h: 50, s: 95, l: 60, name: "Euphoria" }
+    };
+
+    const lerpHSL = (a, b, t) => {
+      return {
+        h: a.h + (b.h - a.h) * t,
+        s: a.s + (b.s - a.s) * t,
+        l: a.l + (b.l - a.l) * t
+      };
+    };
+
+    let startKey = 0;
+    let endKey = 100;
+    const sortedKeys = Object.keys(anchors).map(k => parseInt(k)).sort((a, b) => a - b);
+
+    for (let i = 0; i < sortedKeys.length - 1; i++) {
+      if (fg >= sortedKeys[i] && fg <= sortedKeys[i + 1]) {
+        startKey = sortedKeys[i];
+        endKey = sortedKeys[i + 1];
+        break;
       }
     }
+
+    const range = endKey - startKey;
+    const t = (fg - startKey) / range;
+    const baseHSL = lerpHSL(anchors[startKey], anchors[endKey], t);
+
+    let moodHue = baseHSL.h;
+    let moodSat = baseHSL.s;
+    let moodLight = baseHSL.l;
 
     // --- 2. APPLY MODIFIERS ---
 
-    // YIELD TEMPERATURE SHIFT
-    // High Yields (>4.0) -> Warmer (+Hue towards Yellow)
-    // Low Yields (<3.5) -> Cooler (-Hue towards Blue)
-    // We apply a subtle shift.
-    const tempShift = (yieldVal - 4.0) * 10; // +/- 10 degrees
-    // Don't shift Red/Magenta too much as it breaks meaning
-    if (moodHue > 100 && moodHue < 300) {
-      moodHue -= tempShift; // Higher yield = lower hue (Blue -> Teal -> Green -> Yellow) = Warmer for cool colors?
-      // Actually: Blue(240) -> Teal(180) -> Green(120) -> Yellow(60). So Subtracting Hue = Warmer.
-      // Yes. High Yield (4.5) -> shift -5. Low Yield (3.5) -> shift +5.
+    // Yield Temp Shift
+    const yieldStress = Math.max(0, yieldVal - 4.0);
+    if (yieldStress > 0) {
+      moodHue -= (yieldStress * 15);
     }
 
-    // VOLUME HEAT (SATURATION BOOSTER)
-    // High Volume = More Intense
-    const heatFactor = (volRatio - 1.0) * 20; // +/- 20%
+    // Volume Heat
+    const heatFactor = (volRatio - 1.0) * 20;
     moodSat = Math.max(20, Math.min(100, moodSat + heatFactor));
+    if (volRatio > 1.5) moodLight += 5;
 
-    // GREED BRIGHTNESS override
-    if (fg > 80) {
-      moodLight += 10;
-      moodSat += 10; // Glowing
-    }
+    // Micro-Variation
+    moodHue += ((data.day || 1) % 5) * 2;
 
-    // Micro-Variation based on Day
-    moodHue += (data.day % 5) * 2;
+    // Safety Bounds
+    moodHue = moodHue % 360;
+    if (moodHue < 0) moodHue += 360;
+    moodSat = Math.max(0, Math.min(100, moodSat));
+    moodLight = Math.max(0, Math.min(100, moodLight));
 
+    const finalColor = new THREE.Color(`hsl(${Math.round(moodHue)}, ${Math.round(moodSat)}%, ${Math.round(moodLight)}%)`);
 
-    const finalColor = new THREE.Color(`hsl(${moodHue}, ${moodSat}%, ${moodLight}%)`);
-    // console.log(`Mood: ${moodName} | Color: ${moodHue.toFixed(0)}/${moodSat.toFixed(0)}/${moodLight.toFixed(0)}`);
+    // --- 3. DEEP PHYSICS & ATMOSPHERE ---
+    // Expanded attributes for PhD-level simulation
 
-
-    // --- 3. PHYSICS & ATMOSPHERE ---
-    // (Retaining logic from previous plan but mapping to new vars)
-
+    // A. BLOOM / HEAT (Volume)
     const volumeFactor = volRatio;
-    const targetForce = 0.2 + (data.volatility * 0.8) + (volumeFactor * 0.2);
-    const targetNoiseFreq = 0.5 + (volumeFactor * 0.5);
+    // Map volume to bloom strength (1.0 -> 1.0, 2.0 -> 2.5)
+    const targetBloom = 0.5 + (volumeFactor * 0.8);
 
+    // B. SPARKLE / JITTER (Intraday Range)
+    const rangeVal = data.intradayRange || 1.0;
+    const jitterAmount = Math.min(1.0, rangeVal / 3.0);
+
+    // C. VELOCITY / BURST (Market Gap)
+    const gapVal = Math.abs(data.marketGap || 0);
+    const shockFactor = Math.min(1.0, gapVal / 2.0);
+
+    // D. PANIC ENGINE (VIX + Drop)
+    // If VIX > 30 or Drop < -2%, trigger Glitch & Shake
+    let panicLevel = 0.0;
+    if (vix > 28 || s < -1.8) {
+      panicLevel = Math.min(1.0, ((vix - 25) / 20.0) + (Math.abs(s) / 5.0));
+      // Use Red flash for panic
+      if (panicLevel > 0.5) finalColor.lerp(new THREE.Color(0xff0000), 0.3);
+    }
+    const targetGlitch = panicLevel * 0.015;
+    const targetShake = panicLevel * 0.2;
+
+    // Physics Targets
+    const targetForce = 0.2 + ((data.volatility || 0.4) * 0.8) + (volumeFactor * 0.1) + (shockFactor * 0.3) + (panicLevel * 0.5);
     const atmosphereWeight = Math.min(1.0, Math.max(0, (yieldVal - 3.0) / 2.0));
     const targetAlpha = 0.04 + (atmosphereWeight * 0.05);
 
+    // Size Calculation (Greed + Jitter)
     const greedFactor = fg / 100.0;
     const moveSignificance = Math.abs(s);
-    const targetSize = 1.5 + (moveSignificance * 1.5) + (greedFactor * 1.0);
+    let targetSize = 1.5 + (moveSignificance * 1.5) + (greedFactor * 1.0);
+    targetSize += (Math.random() * jitterAmount * 1.5);
 
     // --- TRANSITIONS ---
     gsap.to(this.params.color, {
@@ -294,7 +312,7 @@ export default class Mask extends Handler {
       duration: 2.0,
       ease: 'power2.out',
       onUpdate: () => {
-        if (this.gpgpu && this.gpgpu.material) {
+        if (this.gpgpu && this.gpgpu.material && this.gpgpu.material.uniforms.uColor) {
           this.gpgpu.material.uniforms.uColor.value.copy(this.params.color);
         }
       }
@@ -306,10 +324,12 @@ export default class Mask extends Handler {
         duration: 2.5
       });
 
+      const sizeEase = jitterAmount > 0.5 ? "elastic.out(1, 0.3)" : "back.out(1.0)";
+
       gsap.to(this.gpgpu.material.uniforms.uParticleSize, {
         value: targetSize,
         duration: 2.5,
-        ease: 'back.out(1.0)'
+        ease: sizeEase
       });
 
       gsap.to(this.params, {
@@ -318,50 +338,65 @@ export default class Mask extends Handler {
       });
     }
 
+    // Camera & Post-Processing Effects
+    if (this.renderer && this.renderer.postprocessing) {
+      const pp = this.renderer.postprocessing;
+      pp.setGlitch(targetGlitch);
+
+      if (!this.fxParams) this.fxParams = { bloom: 1.0, shake: 0.0 };
+
+      gsap.to(this.fxParams, {
+        bloom: targetBloom,
+        shake: targetShake,
+        duration: 2.0,
+        onUpdate: () => {
+          pp.setBloom(this.fxParams.bloom);
+          if (this.camera) this.camera.shakeIntensity = this.fxParams.shake;
+        }
+      });
+    }
+
     this.currentBaseSize = targetSize;
-    if (this.particlesFolder) this.particlesFolder.controllers.forEach(c => c.updateDisplay());
   }
 
+  // onUpdate loop (called from Experience.update)
   update() {
+    // 1. GPGPU Compute
     if (this.gpgpu) {
-      // Continuous modulation
-      if (this.currentData) {
+      this.gpgpu.compute();
+
+      // 2. Continuous Physics Modulation (Pulse/Noise)
+      if (this.currentData && this.gpgpu.material && this.gpgpu.uniforms.velocityUniforms) {
         const time = performance.now() * 0.001;
         const vix = this.currentData.vix || 20;
 
-        // Pulse Speed: High VIX = Fast Hypervenilation. Low VIX = Slow Deep Breath.
-        let pulseSpeed = 1.0 + (vix / 10.0); // 2.0 to 5.0 rad/s
+        // Pulse Logic
+        let pulseSpeed = 1.0 + (vix / 10.0);
         let pulseAmp = 0.4;
 
-        // PANIC EFFECT: Fast jittery pulse
         if (vix > 30) {
           pulseSpeed = 8.0;
-          pulseAmp = 0.2; // Shallow fast breaths
+          pulseAmp = 0.2;
         }
 
         const pulse = 1.0 + Math.sin(time * pulseSpeed) * pulseAmp;
 
-        // Apply
-        const finalSize = this.params.size * pulse;
-        this.gpgpu.material.uniforms.uParticleSize.value = finalSize;
-
-        // Noise/Wobble on Force
-        if (this.gpgpu.uniforms.velocityUniforms) {
-          // Add noise based on VIX
-          const noise = (Math.random() - 0.5) * (vix / 100.0);
-          this.gpgpu.uniforms.velocityUniforms.uForce.value = this.params.force + noise;
+        // Apply Pulse to Size
+        // Note: uParticleSize is on the material, force is on velocityUniforms
+        if (this.gpgpu.material.uniforms.uParticleSize) {
+          this.gpgpu.material.uniforms.uParticleSize.value = (this.params.size || 1.5) * pulse;
         }
-      } else {
-        // Fallback if no data loaded yet
-        if (this.gpgpu.uniforms.velocityUniforms)
-          this.gpgpu.uniforms.velocityUniforms.uForce.value = this.params.force;
-      }
 
-      this.gpgpu.compute();
+        // Apply Noise to Force
+        const noise = (Math.random() - 0.5) * (vix / 100.0);
+        this.gpgpu.uniforms.velocityUniforms.uForce.value = (this.params.force || 0.5) + noise;
+      }
+    }
+
+    // 3. Update Keywords
+    // 3. Update Keywords
+    if (this.keywordCloud && this.experience.time) {
+      this.keywordCloud.update(this.experience.time.elapsed / 1000);
     }
   }
 }
-
-window.addEventListener('DOMContentLoaded', () => {
-  new Experience(document.querySelector('canvas.experience__canvas'), Mask);
-})

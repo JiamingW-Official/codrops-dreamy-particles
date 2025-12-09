@@ -2,7 +2,34 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { MotionBloomPass } from './MotionBloomPass.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { Vector2 } from 'three';
+
+const RGBShiftShader = {
+    uniforms: {
+        'tDiffuse': { value: null },
+        'amount': { value: 0.005 },
+        'angle': { value: 0.0 }
+    },
+    vertexShader: /* glsl */`
+		varying vec2 vUv;
+		void main() {
+			vUv = uv;
+			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+		}`,
+    fragmentShader: /* glsl */`
+		uniform sampler2D tDiffuse;
+		uniform float amount;
+		uniform float angle;
+		varying vec2 vUv;
+		void main() {
+			vec2 offset = amount * vec2( cos(angle), sin(angle));
+			vec4 cr = texture2D(tDiffuse, vUv + offset);
+			vec4 cga = texture2D(tDiffuse, vUv);
+			vec4 cb = texture2D(tDiffuse, vUv - offset);
+			gl_FragColor = vec4(cr.r, cga.g, cb.b, cga.a);
+		}`
+};
 
 export default class PostProcessing {
 
@@ -30,6 +57,7 @@ export default class PostProcessing {
             radius: 0,
             directionX: 1.5,
             directionY: 1,
+            rgbAmount: 0.0, // Default 0
         };
 
 
@@ -55,12 +83,26 @@ export default class PostProcessing {
         this.bloomPass.strength = this.params.strength;
         this.bloomPass.radius = this.params.radius;
 
+        // RGB Shift Pass for Panic Glitch
+        this.rgbShiftPass = new ShaderPass(RGBShiftShader);
+        this.rgbShiftPass.uniforms['amount'].value = 0.0;
+
         const outputPass = new OutputPass();
 
         this.composer = new EffectComposer(this.renderer);
         this.composer.addPass(renderScene);
         this.composer.addPass(this.bloomPass);
+        this.composer.addPass(this.rgbShiftPass);
         this.composer.addPass(outputPass);
+    }
+
+    // --- API For Scene To Control FX ---
+    setBloom(strength) {
+        if (this.bloomPass) this.bloomPass.strength = strength;
+    }
+
+    setGlitch(amount) {
+        if (this.rgbShiftPass) this.rgbShiftPass.uniforms['amount'].value = amount;
     }
 
 
@@ -86,6 +128,10 @@ export default class PostProcessing {
 
             bloomFolder.add(this.params, 'directionY', 0.0, 10.0).step(0.01).onChange((value) => {
                 this.bloomPass.BlurDirectionX.x = Number(value);
+            });
+
+            this.debugFolder.add(this.params, 'rgbAmount', 0.0, 0.1).step(0.001).onChange((value) => {
+                this.rgbShiftPass.uniforms['amount'].value = Number(value);
             });
         }
     }

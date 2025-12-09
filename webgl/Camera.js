@@ -153,5 +153,13 @@ export default class Camera extends Handler {
     const damping = 0.15;
     this.target.position.lerp(this.cameraTarget.position, damping);
     this.target.quaternion.slerp(this.cameraTarget.quaternion, damping);
+
+    // --- CAMERA SHAKE (Visceral Panic) ---
+    if (this.shakeIntensity > 0) {
+      const shakeAmount = this.shakeIntensity * 0.1; // Scale factor
+      this.target.position.x += (Math.random() - 0.5) * shakeAmount;
+      this.target.position.y += (Math.random() - 0.5) * shakeAmount;
+      this.target.position.z += (Math.random() - 0.5) * shakeAmount;
+    }
   }
 }

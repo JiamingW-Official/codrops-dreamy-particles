@@ -109,65 +109,192 @@ def fetch_market_data():
     logging.info("Starting PhD-Level Data Pipeline...")
     
     # Define date range: Last 180 days -> Future (to catch current date)
+    # We need extra history for Moving Averages (125 days for Momentum)
+    output_days = 360
+    buffer_days = 300 # Increased to ensure >125 trading days
     end_date = datetime.now() + timedelta(days=1) 
-    start_date = end_date - timedelta(days=180)
+    start_date = end_date - timedelta(days=output_days + buffer_days)
     
     # Fetch Data
-    tickers = ["^IXIC", "^GSPC", "^VIX", "^TNX", "XLK", "XLP"]
+    # 10 Major Sectors + Indices
+    tickers = ["^IXIC", "^GSPC", "^VIX", "^TNX", 
+               "XLK", "XLF", "XLV", "XLY", "XLP", "XLE", "XLI", "XLB", "XLC", "XLU"]
+    
     data = yf.download(tickers, start=start_date, end=end_date, group_by='ticker', progress=False)
     
+    # Forward Fill to handle data gaps (robustness)
+    data = data.ffill()
+
     # Flatten Data
     nasdaq = data['^IXIC']
     sp500 = data['^GSPC']
     vix = data['^VIX']
     tnx = data['^TNX'] # 10 Year Treasury Yield
-    xlk = data['XLK']  # Tech Sector
-    xlp = data['XLP']  # Consumer Staples (Defensive)
+    
+    # Sectors
+    sectors = {
+        "XLK": data['XLK'], # Tech
+        "XLF": data['XLF'], # Financials
+        "XLV": data['XLV'], # Health
+        "XLY": data['XLY'], # Consumer Disc
+        "XLP": data['XLP'], # Consumer Staples
+        "XLE": data['XLE'], # Energy
+        "XLI": data['XLI'], # Industrial
+        "XLB": data['XLB'], # Materials
+        "XLC": data['XLC'], # Communication
+        "XLU": data['XLU']  # Utilities
+    }
     
     market_data = {}
     
+    # Pre-calculate Indicators
+    # 1. Market Momentum (SP500 vs 125-day MA). Allow 100 days min.
+    sp500_close = sp500['Close']
+    sp500_ma125 = sp500_close.rolling(window=125, min_periods=100).mean()
+    sp500_ma200 = sp500_close.rolling(window=200, min_periods=100).mean() # For Regime
+    
+    # 2. Volatility Regime (VIX vs 50-day MA). Allow 40 days min.
+    vix_close = vix['Close']
+    vix_ma50 = vix_close.rolling(window=50, min_periods=40).mean()
+
+    # 3. 52-Week Range (Rolling 252 days or max available)
+    nasdaq_high_52 = nasdaq['High'].rolling(window=252, min_periods=100).max()
+    nasdaq_low_52 = nasdaq['Low'].rolling(window=252, min_periods=100).min()
+    
+    # 4. Volume MA
+    nasdaq['VolumeMA30'] = nasdaq['Volume'].rolling(window=30, min_periods=20).mean()
+    
+    # 5. RSI (Relative Strength Index) - 14 Day
+    delta = nasdaq['Close'].diff()
+    gain = (delta.where(delta > 0, 0)).fillna(0)
+    loss = (-delta.where(delta < 0, 0)).fillna(0)
+    avg_gain = gain.rolling(window=14, min_periods=14).mean()
+    avg_loss = loss.rolling(window=14, min_periods=14).mean()
+    rs = avg_gain / avg_loss
+    rsi_series = 100 - (100 / (1 + rs))
+
     # Iterate through days using Nasdaq index as base
     dates = nasdaq.index
     total_days = len(dates)
     
-    # Pre-calculate 30-day Volume MA for Nasdaq
-    nasdaq['VolumeMA30'] = nasdaq['Volume'].rolling(window=30).mean()
+    # Determine start date for OUTPUT (exclude buffer)
+    output_start_date = (end_date - timedelta(days=output_days)).strftime("%Y-%m-%d")
 
-    logging.info(f"Processing {total_days} trading days...")
+    logging.info(f"Processing {total_days} days (Buffer included)... Output starts > {output_start_date}")
 
     for i, date in enumerate(dates):
         date_str = date.strftime("%Y-%m-%d")
         
-        # Skip if data is missing
-        if pd.isna(nasdaq.loc[date]['Close']) or pd.isna(sp500.loc[date]['Close']):
+        # Skip buffer days (only output requested range)
+        if date_str < output_start_date:
             continue
+        
+        # Skip if data is missing
+        try:
+             # Basic Data Existence Check
+             if pd.isna(nasdaq.loc[date]['Close']) or pd.isna(sp500.loc[date]['Close']):
+                 continue
+        except KeyError:
+             continue
+
+        # --- FEAR & GREED PROXY CALCULATION ---
+        try:
+            # A. Momentum Score (0-100)
+            curr_sp500 = float(sp500_close.loc[date])
+            ma_125_val = float(sp500_ma125.loc[date])
+            ma_200_val = float(sp500_ma200.loc[date]) if not pd.isna(sp500_ma200.loc[date]) else ma_125_val
             
+            if pd.isna(ma_125_val):
+                mom_score = 50
+            else:
+                diff_pct = (curr_sp500 - ma_125_val) / ma_125_val
+                mom_score = 50 + (diff_pct * 500) 
+                mom_score = max(0, min(100, mom_score))
+
+            # B. Volatility Score (0-100)
+            curr_vix = float(vix_close.loc[date])
+            ma_50_vix = float(vix_ma50.loc[date])
+            
+            # Safe Div
+            vix_ratio = 1.0
+            if not pd.isna(ma_50_vix) and ma_50_vix > 0:
+                 vix_ratio = curr_vix / ma_50_vix
+            
+            vol_score = 50 + ((1.0 - vix_ratio) * 100)
+            vol_score = max(0, min(100, vol_score))
+                
+            # Final Index
+            fear_greed_idx = int((mom_score * 0.6) + (vol_score * 0.4))
+            
+        except Exception as e:
+            # Fallback
+            fear_greed_idx = 50
+
+        # RSI Value
+        try:
+             rsi_val = float(rsi_series.loc[date])
+             if pd.isna(rsi_val): rsi_val = 50.0
+        except:
+             rsi_val = 50.0
+
         # Nasdaq Metrics
         try:
+            # Handle MultiIndex tuples if necessary, or just straight access
             close_price = float(nasdaq.loc[date]['Close'])
             open_price = float(nasdaq.loc[date]['Open'])
+            high_price = float(nasdaq.loc[date]['High'])
+            low_price = float(nasdaq.loc[date]['Low'])
             volume = float(nasdaq.loc[date]['Volume'])
-            volume_ma = float(nasdaq.loc[date]['VolumeMA30']) if not pd.isna(nasdaq.loc[date]['VolumeMA30']) else volume
+            volume_ma = float(nasdaq.loc[date]['VolumeMA30']) if 'VolumeMA30' in nasdaq and not pd.isna(nasdaq.loc[date]['VolumeMA30']) else volume
+            
+            # Previous Close for Gap Calculation
+            if i > 0:
+                prev_date = dates[i-1]
+                prev_close = float(nasdaq.loc[prev_date]['Close'])
+            else:
+                prev_close = open_price # Fallback
+                
         except:
             continue
         
-        # Calculate Change & Volume Ratio
+        # Calculate Change
         if pd.isna(open_price) or open_price == 0:
             change_percent = 0.0
         else:
-            change_percent = ((close_price - open_price) / open_price) * 100
-            
-        # Volume Ratio (Energy) - Cap at 3.0x for sanity
-        volume_ratio = min(3.0, volume / volume_ma) if volume_ma > 0 else 1.0
-
-        # S&P 500 Metrics
+            # Use prev close for change if possible, else open
+            if prev_close > 0:
+                 change_percent = ((close_price - prev_close) / prev_close) * 100
+            else:
+                 change_percent = ((close_price - open_price) / open_price) * 100
+        
+        # S&P 500 Metrics (For Dashboard)
         try:
-            sp500_close = float(sp500.loc[date]['Close'])
-            sp500_open = float(sp500.loc[date]['Open'])
-            sp500_change = ((sp500_close - sp500_open) / sp500_open) * 100 if sp500_open != 0 else 0.0
-        except:
+            sp500_val = float(sp500.loc[date]['Close'])
+            # Calc change
+            sp500_prev = float(sp500.loc[dates[i-1]]['Close']) if i > 0 else sp500_val
             sp500_change = 0.0
-            sp500_close = 0.0
+            if sp500_prev > 0:
+                sp500_change = ((sp500_val - sp500_prev) / sp500_prev) * 100
+        except:
+            sp500_val = 0.0
+            sp500_change = 0.0
+
+        # --- NEW TEXTURE ATTRIBUTES ---
+        
+        # 1. Intraday Range (Volatility Texture)
+        if open_price > 0:
+             intraday_range = ((high_price - low_price) / open_price) * 100
+        else:
+             intraday_range = 0.0
+             
+        # 2. Market Gap (Shock)
+        if prev_close > 0:
+            market_gap = ((open_price - prev_close) / prev_close) * 100
+        else:
+            market_gap = 0.0
+             
+        # Volume Ratio (Energy)
+        volume_ratio = min(3.0, volume / volume_ma) if volume_ma > 0 else 1.0
 
         # VIX
         try:
@@ -179,88 +306,142 @@ def fetch_market_data():
         try:
             yield_val = float(tnx.loc[date]['Close'])
         except:
-            yield_val = 4.0 # Default fallback
+            yield_val = 4.0 
             
-        # Sector Rotation (Flow Texture)
-        # Tech vs Defensive
-        try:
-            xlk_close = float(xlk.loc[date]['Close'])
-            xlk_open = float(xlk.loc[date]['Open'])
-            xlk_change = ((xlk_close - xlk_open) / xlk_open) * 100
-            
-            xlp_close = float(xlp.loc[date]['Close'])
-            xlp_open = float(xlp.loc[date]['Open'])
-            xlp_change = ((xlp_close - xlp_open) / xlp_open) * 100
-            
-            # Positive = Risk On (Tech), Negative = Defensive
-            sector_trend = xlk_change - xlp_change 
-        except:
-            sector_trend = 0.0
+        # Sector Map (Full 10 Sectors with Weights)
+        sector_map = {}
+        sector_trend = 0.0 
         
-        # Derived Logic
-        if vix_val > 25:
-            fear_greed_idx = max(0, 100 - (vix_val * 2)) 
-        elif change_percent > 1.0:
-            fear_greed_idx = min(100, 50 + (change_percent * 20)) 
-        else:
-            fear_greed_idx = 50 
-
+        try:
+            # Calculate change and weight (Volume * Price) for each sector
+            changes = []
+            for sym, df in sectors.items():
+                # Price Data
+                curr = float(df.loc[date]['Close'])
+                prev = float(df.loc[dates[i-1]]['Close']) if i > 0 else curr
+                change = ((curr - prev)/prev)*100 if prev > 0 else 0.0
+                
+                # Weight Data (Turnover = Close * Volume)
+                # Use Volume if available, else default to equal weight
+                vol = float(df.loc[date]['Volume']) if 'Volume' in df.columns else 1000000
+                weight = curr * vol
+                
+                # Store object: { val: change, weight: weight }
+                sector_map[sym] = {
+                    "change": round(change, 2),
+                    "weight": weight
+                }
+                changes.append(change)
+            
+            # Simple bias: Average of Tech vs Defensive
+            scale_xlk = sector_map.get("XLK", {}).get("change", 0)
+            scale_xlp = sector_map.get("XLP", {}).get("change", 0)
+            sector_trend = scale_xlk - scale_xlp
+            
+        except Exception as e:
+            # print(f"Sector Error: {e}")
+            pass
+            
+        # --- 8-STATE MOOD CLASSIFICATION ---
+        mood_state = "Neutral"
+        
+        if rsi_val < 25 and vix_val > 28:     mood_state = "Capitulation"
+        elif vix_val > 28:                    mood_state = "Panic"
+        elif rsi_val > 75 and vix_val < 15:   mood_state = "Euphoria"
+        elif fear_greed_idx > 75:             mood_state = "Greed"
+        elif fear_greed_idx < 25:             mood_state = "Fear"
+        elif vix_val > 20:                    mood_state = "Anxiety"
+        elif change_percent > 0.5:            mood_state = "Optimism"
+        else:                                 mood_state = "Neutral"
+             
+        # --- REGIME CLASSIFICATION ---
+        regime = "Goldilocks"
+        try:
+             # Need current SP500 vs MA200
+             curr_sp = float(sp500.loc[date]['Close'])
+             ma200 = float(sp500_ma200.loc[date]) if not pd.isna(sp500_ma200.loc[date]) else curr_sp
+             
+             if curr_sp < ma200 and vix_val > 20:   regime = "Bear Volatile"
+             elif curr_sp < ma200:                  regime = "Bear Calm"
+             elif vix_val > 20:                     regime = "Bull Volatile"
+             elif vix_val < 15 and rsi_val > 60:    regime = "Bull Euphoric"
+             else:                                  regime = "Goldilocks"
+        except:
+             regime = "Goldilocks"
+        
+        # Derived Visuals
         sentiment = max(0, min(1, (change_percent + 2) / 4)) 
-        volatility = min(1.0, vix_val / 40.0)
 
         # --- REAL NEWS FETCHING ---
         mood_query = assess_market_mood(change_percent, vix_val)
         
-        # Polite Delay
-        time.sleep(0.4) 
-        
+        # Polite Delay for scraping (removed here as we don't scrape inside loop heavily if using RSS)
+        # headlines = fetch_rss_headlines(date_str, mood_query)
+        # But keeping calling code:
         headlines = fetch_rss_headlines(date_str, mood_query)
         
-        # Fallback
         if not headlines:
              headlines = [
                 {"title": f"Market Moves: Nasdaq {change_percent:.2f}%", "link": f"https://finance.yahoo.com/quote/%5EIXIC"},
-                {"title": f"S&P 500 Daily Action {sp500_change:.2f}%", "link": f"https://finance.yahoo.com/quote/%5EGSPC"},
-                {"title": f"VIX Closely Watched at {vix_val:.2f}", "link": f"https://finance.yahoo.com/quote/%5EVIX"}
+                {"title": f"S&P 500 Daily Action", "link": f"https://finance.yahoo.com/quote/%5EGSPC"},
+                {"title": f"VIX at {vix_val:.2f}", "link": f"https://finance.yahoo.com/quote/%5EVIX"}
             ]
 
-        # Structure
-        entry = {
+        # Metadata for UI
+        vol_val = volume
+        day_high = high_price
+        day_low = low_price
+        
+        try:
+             year_high = float(nasdaq_high_52.loc[date])
+             year_low = float(nasdaq_low_52.loc[date])
+        except:
+             year_high = day_high
+             year_low = day_low
+        
+        market_data[date_str] = {
             "date": date_str,
             "indexValue": round(close_price, 2),
             "marketChangePercent": round(change_percent, 2),
-            "sp500Value": round(sp500_close, 2),
+            "sp500Value": round(sp500_val, 2),
             "sp500Change": round(sp500_change, 2),
-            "fearGreedIndex": int(fear_greed_idx),
             "sentiment": round(sentiment, 2),
-            "volatility": round(volatility, 2),
-            
-            # New Dimensions
+            "vix": round(vix_val, 2),
+            "fearGreedIndex": int(fear_greed_idx),
             "volumeRatio": round(volume_ratio, 2),
             "tenYearYield": round(yield_val, 2),
-            "sectorTrend": round(sector_trend, 2), # >0 Tech, <0 Defensive
+            "marketGap": round(market_gap, 2),
+            "intradayRange": round(intraday_range, 2),
             
+            # Expanded Data
+            "volume": round(volume, 2),
+            "dayHigh": round(day_high, 2),
+            "dayLow": round(day_low, 2),
+            "yearHigh": round(year_high, 2),
+            "yearLow": round(year_low, 2),
+            
+            # Mood
+            "sectorMap": sector_map,
+            "sectorStat": round(sector_trend, 2),
+            "rsi": round(rsi_val, 2),
+            "moodState": mood_state,
+            "regime": regime,
             "headlines": headlines,
-            "vix": round(vix_val, 2),
-            "sources": [
-                "Nasdaq, S&P 500, VIX, TNX, XLK, XLP via Yahoo Finance",
-                "Real Historical News via Google News Archive"
-            ]
+            "sources": ["Yahoo Finance", "Google News"]
         }
         
-        market_data[date_str] = entry
+        print(f"[{i+1}/{total_days}] {date_str}: {mood_state} ({regime}) | FG:{fear_greed_idx}")
         
-        # Log progress
-        print(f"[{i+1}/{total_days}] {date_str}: {mood_query} | VolRatio: {volume_ratio:.2f} | Yield: {yield_val:.2f} | Sector: {sector_trend:.2f}")
-        
-        # Incremental Save
-        if (i + 1) % 10 == 0:
-             with open('public/data/market_data.json', 'w') as f:
-                json.dump(market_data, f, indent=2)
-
-    # Final Save
-    with open('public/data/market_data.json', 'w') as f:
+    # Final Atomic Save
+    temp_file = 'public/data/market_data.tmp.json'
+    final_file = 'public/data/market_data.json'
+    
+    with open(temp_file, 'w') as f:
         json.dump(market_data, f, indent=2)
+        
+    import os
+    os.replace(temp_file, final_file)
+    
     
     logging.info(f"Successfully generated PhD-Level Data for {len(market_data)} days.")
 
