@@ -204,11 +204,12 @@ export default class Mask extends Handler {
       this.currentModelName = modelKey;
 
       // 4. Transition IN (Snap Formation)
-      // Boost Force to 1.0 (5x normal) instantly to snap particles
+      // "Opposite approach": Moderate Force + Longer Settle Time
+      // Force 0.6 is strong enough to snap, but low enough to avoid overshoot/vibration
       if (this.gpgpu && this.gpgpu.uniforms.velocityUniforms.uForce) {
         gsap.fromTo(this.gpgpu.uniforms.velocityUniforms.uForce,
-          { value: 1.0 },
-          { value: 0.2, duration: 2.0, ease: "power2.out" }
+          { value: 0.8 }, // Reduced from 5.0 to 0.8 (Sweet spot)
+          { value: 0.2, duration: 1.5, ease: "power2.out" } // Longer settling
         );
       }
 
