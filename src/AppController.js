@@ -87,7 +87,9 @@ export default class AppController {
             });
         }
 
+        console.log('[AppController] About to call setupEventListeners');
         this.setupEventListeners();
+        console.log('[AppController] setupEventListeners completed');
 
         const lastValidDate = validDates.sort().pop();
         if (lastValidDate) {
@@ -192,6 +194,1018 @@ export default class AppController {
                 this.stopPlay();
                 this.picker.setDate(new Date(), true);
             });
+        }
+
+        // Initialize Command Search (Cmd+K)
+        this.initCommandSearch();
+    }
+
+    initCommandSearch() {
+        console.log('[CommandSearch] Initializing...');
+
+        const overlay = document.getElementById('command-search-overlay');
+        const modal = document.getElementById('command-search-modal');
+        const input = document.getElementById('command-search-input');
+        const resultsContainer = document.getElementById('search-results');
+        const searchButton = document.getElementById('btn-search');
+
+        console.log('[CommandSearch] Elements found:', {
+            overlay: !!overlay,
+            modal: !!modal,
+            input: !!input,
+            resultsContainer: !!resultsContainer,
+            searchButton: !!searchButton
+        });
+
+        if (!overlay || !input) {
+            console.error('[CommandSearch] Required elements not found! Aborting.');
+            return;
+        }
+
+        this.searchState = {
+            isOpen: false,
+            selectedIndex: -1,
+            results: [],
+            activeFilter: null
+        };
+
+        // Search button click handler
+        if (searchButton) {
+            console.log('[CommandSearch] Adding click listener to search button');
+            searchButton.addEventListener('click', () => {
+                console.log('[CommandSearch] Search button clicked!');
+                this.openCommandSearch();
+            });
+        }
+
+        // Keyboard shortcut: Cmd+K (Mac) or Ctrl+K (Windows)
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                this.toggleCommandSearch();
+            }
+
+            // ESC to close
+            if (e.key === 'Escape' && this.searchState.isOpen) {
+                this.closeCommandSearch();
+            }
+
+            // Arrow navigation
+            if (this.searchState.isOpen) {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    this.navigateSearchResults(1);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    this.navigateSearchResults(-1);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.executeSelectedResult();
+                }
+            }
+        });
+
+        // Click overlay to close
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                this.closeCommandSearch();
+            }
+        });
+
+        // Input handler
+        input.addEventListener('input', (e) => {
+            console.log('[CommandSearch] Input changed:', e.target.value);
+            this.handleSearchInput(e.target.value);
+        });
+
+        // Hint item clicks
+        document.querySelectorAll('.hint-item').forEach(hint => {
+            hint.addEventListener('click', () => {
+                input.value = hint.dataset.query;
+                this.handleSearchInput(hint.dataset.query);
+            });
+        });
+
+        // Quick action items
+        document.querySelectorAll('.result-item[data-action]').forEach(item => {
+            item.addEventListener('click', () => {
+                this.executeQuickAction(item.dataset.action);
+            });
+        });
+
+        // Sector chips
+        document.querySelectorAll('.sector-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                this.filterBySector(chip.dataset.sector);
+                chip.classList.toggle('active');
+            });
+        });
+
+        // Condition items
+        document.querySelectorAll('.condition-item').forEach(item => {
+            item.addEventListener('click', () => {
+                this.filterByCondition(item.dataset.condition);
+            });
+        });
+    }
+
+    toggleCommandSearch() {
+        this.searchState.isOpen ? this.closeCommandSearch() : this.openCommandSearch();
+    }
+
+    openCommandSearch() {
+        const overlay = document.getElementById('command-search-overlay');
+        const input = document.getElementById('command-search-input');
+
+        overlay.classList.remove('hidden');
+        this.searchState.isOpen = true;
+
+        // Focus input after animation
+        setTimeout(() => input.focus(), 100);
+
+        // Stop playback when search opens
+        this.stopPlay();
+    }
+
+    closeCommandSearch() {
+        const overlay = document.getElementById('command-search-overlay');
+        const input = document.getElementById('command-search-input');
+
+        overlay.classList.add('hidden');
+        this.searchState.isOpen = false;
+        input.value = '';
+        this.searchState.selectedIndex = -1;
+
+        // Reset results display
+        this.resetSearchResults();
+    }
+
+    resetSearchResults() {
+        // Show default sections again
+        document.querySelectorAll('.search-section').forEach(s => s.style.display = 'block');
+
+        // Remove any dynamic results
+        const dynamicResults = document.querySelector('.dynamic-results');
+        if (dynamicResults) dynamicResults.remove();
+
+        // Clear selected states
+        document.querySelectorAll('.result-item.selected').forEach(item => {
+            item.classList.remove('selected');
+        });
+    }
+
+    handleSearchInput(query) {
+        console.log('[handleSearchInput] Called with:', query);
+        query = query.trim().toLowerCase();
+
+        if (!query) {
+            this.resetSearchResults();
+            return;
+        }
+
+        const results = [];
+        const suggestions = [];
+        const validDates = Object.keys(this.marketDataService.dataMap || {}).sort();
+        console.log('[handleSearchInput] Valid dates count:', validDates.length);
+
+        // Helper to get change value correctly
+        const getChange = (data) => {
+            return data?.marketChangePercent ?? data?.dailyChange ?? data?.percentChange ?? 0;
+        };
+
+        // ============================================
+        // SMART SUGGESTIONS - Show as user types
+        // ============================================
+        const suggestionPatterns = this.generateSmartSuggestions(query, validDates);
+        console.log('[handleSearchInput] Suggestions:', suggestionPatterns.length);
+
+        // ============================================
+        // COMPREHENSIVE SEARCH PATTERNS
+        // ============================================
+
+        // 1. DIRECT DATE MATCH
+        const dateMatch = this.parseDateQuery(query);
+        if (dateMatch) {
+            const data = this.marketDataService.dataMap[dateMatch];
+            if (data) {
+                results.push({
+                    type: 'date',
+                    date: dateMatch,
+                    label: `📅 ${dateMatch} - NASDAQ ${data.indexValue?.toLocaleString() || '--'}`,
+                    change: getChange(data),
+                    extra: `VIX: ${data.vix?.toFixed(1) || '--'} | F&G: ${data.fearGreedIndex || '--'}`
+                });
+            }
+        }
+
+        // 2. HIGHEST/LOWEST/PEAK/VALLEY QUERIES
+        if (query.match(/highest|peak|best|top|max|record/)) {
+            const indexResults = this.findExtremes('highest', query, validDates, getChange);
+            results.push(...indexResults.slice(0, 8));
+        }
+
+        if (query.match(/lowest|valley|worst|bottom|min|crash|dip/)) {
+            const indexResults = this.findExtremes('lowest', query, validDates, getChange);
+            results.push(...indexResults.slice(0, 8));
+        }
+
+        // 3. INDEX AT SPECIFIC VALUE (e.g., "nasdaq 18000", "s&p 5000")
+        const valueMatch = query.match(/(nasdaq|sp|s&p|dow|djia)\s*(?:at|near|hits?|reached?|crossed?)?\s*(\d{3,6})/i);
+        if (valueMatch) {
+            const indexResults = this.findByIndexValue(valueMatch[1], parseInt(valueMatch[2]), validDates, getChange);
+            results.push(...indexResults.slice(0, 8));
+        }
+
+        // 4. VIX QUERIES
+        if (query.match(/vix|volatil|spike|calm|stable/)) {
+            const vixResults = this.searchByVIX(query, validDates, getChange);
+            results.push(...vixResults.slice(0, 8));
+        }
+
+        // 5. FEAR & GREED QUERIES
+        if (query.match(/fear|greed|panic|euphori|sentiment/)) {
+            const fgResults = this.searchByFearGreed(query, validDates, getChange);
+            results.push(...fgResults.slice(0, 8));
+        }
+
+        // 6. CHANGE PERCENT QUERIES
+        if (query.match(/gain|loss|rally|crash|selloff|drop|surge|jump|biggest|largest|green|red|\+\d|\-\d|\d%/)) {
+            const changeResults = this.searchByChange(query, validDates, getChange);
+            results.push(...changeResults.slice(0, 8));
+        }
+
+        // 7. SECTOR QUERIES
+        if (query.match(/tech|financ|energy|health|industrial|utility|material|consumer|real estate|communication/)) {
+            const sectorResults = this.searchBySector(query, validDates, getChange);
+            results.push(...sectorResults.slice(0, 8));
+        }
+
+        // 8. TIME-BASED QUERIES
+        if (query.match(/today|yesterday|last week|this month|this year|recent|latest|q1|q2|q3|q4/)) {
+            const timeResults = this.searchByTimeframe(query, validDates, getChange);
+            results.push(...timeResults.slice(0, 8));
+        }
+
+        // 9. YIELD CURVE QUERIES
+        if (query.match(/yield|inverted|bond|treasury|rate|10y|2y|spread/)) {
+            const yieldResults = this.searchByYield(query, validDates, getChange);
+            results.push(...yieldResults.slice(0, 8));
+        }
+
+        // 10. VOLATILITY PATTERN QUERIES
+        if (query.match(/volatile|swing|whipsaw|range|breakout|consolidat/)) {
+            const volResults = this.searchByVolatilityPattern(query, validDates, getChange);
+            results.push(...volResults.slice(0, 8));
+        }
+
+        // 11. STREAK QUERIES
+        if (query.match(/streak|consecutive|row|days up|days down|winning|losing/)) {
+            const streakResults = this.findStreaks(query, validDates, getChange);
+            results.push(...streakResults.slice(0, 8));
+        }
+
+        // 12. COMPARISON QUERIES
+        if (query.match(/vs|versus|compare|outperform|underperform|beat|lag/)) {
+            const compareResults = this.searchByComparison(query, validDates, getChange);
+            results.push(...compareResults.slice(0, 8));
+        }
+
+        console.log('[handleSearchInput] Final results:', results.length, 'suggestions:', suggestionPatterns.length);
+        this.displaySearchResults(results, suggestionPatterns);
+    }
+
+    generateSmartSuggestions(query, validDates) {
+        const suggestions = [];
+        const q = query.toLowerCase();
+
+        // Autocomplete suggestions based on partial input
+        const allSuggestions = [
+            { trigger: 'high', text: '📈 Highest NASDAQ day', action: 'highest nasdaq' },
+            { trigger: 'high', text: '📈 Highest S&P 500 day', action: 'highest sp500' },
+            { trigger: 'low', text: '📉 Lowest NASDAQ day', action: 'lowest nasdaq' },
+            { trigger: 'low', text: '📉 Lowest S&P 500 day', action: 'lowest sp500' },
+            { trigger: 'peak', text: '🏔️ Market peak (all-time high)', action: 'peak nasdaq' },
+            { trigger: 'valley', text: '🕳️ Market valley (bottom)', action: 'valley nasdaq' },
+            { trigger: 'crash', text: '💥 Biggest crash day', action: 'biggest crash' },
+            { trigger: 'rally', text: '🚀 Biggest rally day', action: 'biggest rally' },
+            { trigger: 'vix', text: '⚡ VIX spike days (>30)', action: 'vix > 30' },
+            { trigger: 'vix', text: '😌 Low VIX days (<15)', action: 'vix < 15' },
+            { trigger: 'fear', text: '😱 Extreme fear days', action: 'extreme fear' },
+            { trigger: 'greed', text: '🤑 Extreme greed days', action: 'extreme greed' },
+            { trigger: 'nasd', text: '📊 NASDAQ at specific value...', action: 'nasdaq ' },
+            { trigger: 'sp', text: '📊 S&P 500 at specific value...', action: 'sp500 ' },
+            { trigger: 's&p', text: '📊 S&P 500 at specific value...', action: 'sp500 ' },
+            { trigger: 'best', text: '🏆 Best performing day', action: 'best day' },
+            { trigger: 'worst', text: '💀 Worst performing day', action: 'worst day' },
+            { trigger: 'streak', text: '🔥 Winning streaks', action: 'winning streak' },
+            { trigger: 'streak', text: '❄️ Losing streaks', action: 'losing streak' },
+            { trigger: 'volatile', text: '📊 Most volatile days', action: 'most volatile' },
+            { trigger: 'tech', text: '💻 Tech sector performance', action: 'tech sector' },
+            { trigger: 'financ', text: '🏦 Financials sector', action: 'financial sector' },
+            { trigger: 'energy', text: '⛽ Energy sector', action: 'energy sector' },
+            { trigger: 'yield', text: '📈 Inverted yield curve days', action: 'inverted yield' },
+            { trigger: 'today', text: '📅 Today\'s data', action: 'today' },
+            { trigger: 'last', text: '📅 Last week', action: 'last week' },
+            { trigger: 'recent', text: '📅 Recent trading days', action: 'recent' },
+            { trigger: '+', text: '📈 Days with gains over...', action: 'gain > ' },
+            { trigger: '-', text: '📉 Days with losses over...', action: 'loss > ' },
+            { trigger: 'record', text: '🎯 Record high days', action: 'record high' },
+            { trigger: 'panic', text: '🚨 Panic selling days', action: 'panic' },
+            { trigger: 'euphori', text: '🎉 Euphoria days', action: 'euphoria' },
+        ];
+
+        return allSuggestions.filter(s =>
+            q.length > 0 && s.trigger.startsWith(q.substring(0, Math.min(q.length, s.trigger.length)))
+        ).slice(0, 5);
+    }
+
+    parseDateQuery(query) {
+        // Try direct date format: YYYY-MM-DD
+        const directMatch = query.match(/(\d{4}-\d{2}-\d{2})/);
+        if (directMatch && this.marketDataService.dataMap[directMatch[1]]) {
+            return directMatch[1];
+        }
+
+        // Try month name + day (e.g., "august 5" or "aug 5, 2024")
+        const monthNames = ['january', 'february', 'march', 'april', 'may', 'june',
+            'july', 'august', 'september', 'october', 'november', 'december'];
+        const shortMonths = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+
+        for (let i = 0; i < monthNames.length; i++) {
+            const regex = new RegExp(`(${monthNames[i]}|${shortMonths[i]})\\s*(\\d{1,2})(?:,?\\s*(\\d{4}))?`, 'i');
+            const match = query.match(regex);
+            if (match) {
+                const month = String(i + 1).padStart(2, '0');
+                const day = String(match[2]).padStart(2, '0');
+                const year = match[3] || new Date().getFullYear();
+                const dateKey = `${year}-${month}-${day}`;
+                if (this.marketDataService.dataMap[dateKey]) {
+                    return dateKey;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    findExtremes(type, query, dates, getChange) {
+        const results = [];
+        let searchField = 'indexValue'; // Default to NASDAQ
+        let fieldLabel = 'NASDAQ';
+
+        if (query.match(/sp|s&p|500/)) {
+            searchField = 'sp500Value';
+            fieldLabel = 'S&P 500';
+        } else if (query.match(/dow|djia/)) {
+            searchField = 'dowValue';
+            fieldLabel = 'DOW';
+        } else if (query.match(/vix/)) {
+            searchField = 'vix';
+            fieldLabel = 'VIX';
+        } else if (query.match(/gain|change|rally|move/)) {
+            searchField = 'marketChangePercent';
+            fieldLabel = 'Daily Change';
+        }
+
+        // Find extreme values
+        let extremeDate = null;
+        let extremeValue = type === 'highest' ? -Infinity : Infinity;
+
+        for (const date of dates) {
+            const data = this.marketDataService.dataMap[date];
+            const value = data?.[searchField] ?? 0;
+
+            if (type === 'highest' && value > extremeValue) {
+                extremeValue = value;
+                extremeDate = date;
+            } else if (type === 'lowest' && value < extremeValue) {
+                extremeValue = value;
+                extremeDate = date;
+            }
+        }
+
+        if (extremeDate) {
+            const data = this.marketDataService.dataMap[extremeDate];
+            const displayValue = searchField === 'marketChangePercent'
+                ? `${extremeValue >= 0 ? '+' : ''}${extremeValue.toFixed(2)}%`
+                : extremeValue.toLocaleString();
+
+            results.push({
+                type: 'extreme',
+                date: extremeDate,
+                label: `${type === 'highest' ? '📈' : '📉'} ${type.toUpperCase()} ${fieldLabel}: ${displayValue} on ${extremeDate}`,
+                change: getChange(data),
+                value: extremeValue
+            });
+        }
+
+        // Also add top 5 for context
+        const sorted = dates
+            .map(date => ({
+                date,
+                data: this.marketDataService.dataMap[date],
+                value: this.marketDataService.dataMap[date]?.[searchField] ?? 0
+            }))
+            .filter(d => d.value !== 0)
+            .sort((a, b) => type === 'highest' ? b.value - a.value : a.value - b.value)
+            .slice(0, 5);
+
+        for (const item of sorted) {
+            if (item.date !== extremeDate) {
+                const displayValue = searchField === 'marketChangePercent'
+                    ? `${item.value >= 0 ? '+' : ''}${item.value.toFixed(2)}%`
+                    : item.value.toLocaleString();
+                results.push({
+                    type: 'extreme',
+                    date: item.date,
+                    label: `${fieldLabel}: ${displayValue} on ${item.date}`,
+                    change: getChange(item.data),
+                    value: item.value
+                });
+            }
+        }
+
+        return results;
+    }
+
+    findByIndexValue(indexType, targetValue, dates, getChange) {
+        const results = [];
+        let searchField = 'indexValue';
+        let fieldLabel = 'NASDAQ';
+
+        if (indexType.match(/sp|s&p/i)) {
+            searchField = 'sp500Value';
+            fieldLabel = 'S&P 500';
+        } else if (indexType.match(/dow|djia/i)) {
+            searchField = 'dowValue';
+            fieldLabel = 'DOW';
+        }
+
+        // Find days where index was near target value
+        const tolerance = targetValue * 0.01; // 1% tolerance
+
+        for (const date of dates) {
+            const data = this.marketDataService.dataMap[date];
+            const value = data?.[searchField] ?? 0;
+
+            if (Math.abs(value - targetValue) <= tolerance) {
+                results.push({
+                    type: 'value-match',
+                    date: date,
+                    label: `🎯 ${fieldLabel} at ${value.toLocaleString()} on ${date}`,
+                    change: getChange(data),
+                    value: value,
+                    diff: Math.abs(value - targetValue)
+                });
+            }
+        }
+
+        // Sort by closest match
+        results.sort((a, b) => a.diff - b.diff);
+
+        // If no exact matches, find closest
+        if (results.length === 0) {
+            const closest = dates
+                .map(date => ({
+                    date,
+                    data: this.marketDataService.dataMap[date],
+                    value: this.marketDataService.dataMap[date]?.[searchField] ?? 0,
+                    diff: Math.abs((this.marketDataService.dataMap[date]?.[searchField] ?? 0) - targetValue)
+                }))
+                .filter(d => d.value > 0)
+                .sort((a, b) => a.diff - b.diff)
+                .slice(0, 5);
+
+            for (const item of closest) {
+                results.push({
+                    type: 'value-near',
+                    date: item.date,
+                    label: `📊 ${fieldLabel} at ${item.value.toLocaleString()} (target: ${targetValue.toLocaleString()})`,
+                    change: getChange(item.data),
+                    value: item.value
+                });
+            }
+        }
+
+        return results;
+    }
+
+    searchByVIX(query, dates, getChange) {
+        const results = [];
+        let threshold = 20;
+        let operator = '>';
+
+        const condMatch = query.match(/vix\s*([<>]=?)\s*(\d+)/i);
+        if (condMatch) {
+            operator = condMatch[1];
+            threshold = parseFloat(condMatch[2]);
+        } else if (query.match(/high|spike|fear|panic/)) {
+            threshold = 25;
+            operator = '>';
+        } else if (query.match(/low|calm|stable|quiet/)) {
+            threshold = 15;
+            operator = '<';
+        }
+
+        for (const date of dates) {
+            const data = this.marketDataService.dataMap[date];
+            const vix = data?.vix || 0;
+
+            let matches = false;
+            if (operator === '>' && vix > threshold) matches = true;
+            if (operator === '>=' && vix >= threshold) matches = true;
+            if (operator === '<' && vix < threshold) matches = true;
+            if (operator === '<=' && vix <= threshold) matches = true;
+
+            if (matches) {
+                results.push({
+                    type: 'vix',
+                    date: date,
+                    label: `⚡ VIX ${vix.toFixed(1)} on ${date}`,
+                    change: getChange(data),
+                    vix: vix
+                });
+            }
+        }
+
+        results.sort((a, b) => operator.includes('>') ? b.vix - a.vix : a.vix - b.vix);
+        return results;
+    }
+
+    searchByFearGreed(query, dates, getChange) {
+        const results = [];
+        let targetMin = 0, targetMax = 100;
+
+        if (query.match(/extreme fear|panic/)) {
+            targetMin = 0; targetMax = 25;
+        } else if (query.match(/fear/)) {
+            targetMin = 0; targetMax = 45;
+        } else if (query.match(/extreme greed|euphori/)) {
+            targetMin = 75; targetMax = 100;
+        } else if (query.match(/greed/)) {
+            targetMin = 55; targetMax = 100;
+        } else if (query.match(/neutral/)) {
+            targetMin = 40; targetMax = 60;
+        }
+
+        for (const date of dates) {
+            const data = this.marketDataService.dataMap[date];
+            const fg = data?.fearGreedIndex ?? 50;
+
+            if (fg >= targetMin && fg <= targetMax) {
+                const emoji = fg < 25 ? '😱' : fg < 45 ? '😰' : fg < 55 ? '😐' : fg < 75 ? '😊' : '🤑';
+                results.push({
+                    type: 'feargreed',
+                    date: date,
+                    label: `${emoji} F&G ${fg} on ${date}`,
+                    change: getChange(data),
+                    fg: fg
+                });
+            }
+        }
+
+        if (query.match(/fear|panic/)) {
+            results.sort((a, b) => a.fg - b.fg);
+        } else {
+            results.sort((a, b) => b.fg - a.fg);
+        }
+
+        return results;
+    }
+
+    searchByChange(query, dates, getChange) {
+        const results = [];
+
+        for (const date of dates) {
+            const data = this.marketDataService.dataMap[date];
+            const change = getChange(data);
+
+            results.push({
+                type: 'change',
+                date: date,
+                label: `${change >= 0 ? '📈' : '📉'} ${change >= 0 ? '+' : ''}${change.toFixed(2)}% on ${date}`,
+                change: change
+            });
+        }
+
+        if (query.match(/gain|rally|surge|jump|green|best|top|\+/)) {
+            results.sort((a, b) => b.change - a.change);
+        } else {
+            results.sort((a, b) => a.change - b.change);
+        }
+
+        return results;
+    }
+
+    searchBySector(query, dates, getChange) {
+        const results = [];
+        const sectorMap = {
+            'tech': { symbol: 'XLK', name: 'Technology' },
+            'financ': { symbol: 'XLF', name: 'Financials' },
+            'energy': { symbol: 'XLE', name: 'Energy' },
+            'health': { symbol: 'XLV', name: 'Healthcare' },
+            'industrial': { symbol: 'XLI', name: 'Industrials' },
+            'utility': { symbol: 'XLU', name: 'Utilities' },
+            'material': { symbol: 'XLB', name: 'Materials' },
+            'consumer': { symbol: 'XLY', name: 'Consumer' },
+            'real estate': { symbol: 'XLRE', name: 'Real Estate' },
+            'communication': { symbol: 'XLC', name: 'Communication' }
+        };
+
+        let targetSector = null;
+        for (const [key, value] of Object.entries(sectorMap)) {
+            if (query.includes(key)) {
+                targetSector = value;
+                break;
+            }
+        }
+
+        if (!targetSector) return results;
+
+        for (const date of dates) {
+            const data = this.marketDataService.dataMap[date];
+            const sectorData = data?.sectors?.find(s => s.symbol === targetSector.symbol);
+
+            if (sectorData) {
+                const sectorChange = sectorData.change ?? 0;
+                results.push({
+                    type: 'sector',
+                    date: date,
+                    label: `🏭 ${targetSector.name} ${sectorChange >= 0 ? '+' : ''}${sectorChange.toFixed(2)}% on ${date}`,
+                    change: getChange(data),
+                    sectorChange: sectorChange
+                });
+            }
+        }
+
+        results.sort((a, b) => Math.abs(b.sectorChange) - Math.abs(a.sectorChange));
+        return results;
+    }
+
+    searchByTimeframe(query, dates, getChange) {
+        const results = [];
+        const now = new Date();
+        let startDate = null;
+        let endDate = now;
+
+        if (query.includes('today')) {
+            startDate = now;
+        } else if (query.includes('yesterday')) {
+            startDate = new Date(now);
+            startDate.setDate(startDate.getDate() - 1);
+            endDate = startDate;
+        } else if (query.includes('last week')) {
+            startDate = new Date(now);
+            startDate.setDate(startDate.getDate() - 7);
+        } else if (query.includes('this month')) {
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        } else if (query.includes('recent') || query.includes('latest')) {
+            startDate = new Date(now);
+            startDate.setDate(startDate.getDate() - 5);
+        }
+
+        if (!startDate) return results;
+
+        for (const date of dates.reverse()) {
+            const d = new Date(date + 'T00:00:00');
+            if (d >= startDate && d <= endDate) {
+                const data = this.marketDataService.dataMap[date];
+                results.push({
+                    type: 'timeframe',
+                    date: date,
+                    label: `📅 ${date} - NASDAQ ${data?.indexValue?.toLocaleString() || '--'}`,
+                    change: getChange(data)
+                });
+            }
+            if (results.length >= 10) break;
+        }
+
+        return results;
+    }
+
+    searchByYield(query, dates, getChange) {
+        const results = [];
+
+        for (const date of dates) {
+            const data = this.marketDataService.dataMap[date];
+            const yc = data?.yieldCurve;
+
+            if (yc) {
+                const spread = (yc.y10 ?? 0) - (yc.y2 ?? yc.y3m ?? 0);
+                const isInverted = spread < 0;
+
+                if (query.includes('invert') && isInverted) {
+                    results.push({
+                        type: 'yield',
+                        date: date,
+                        label: `📉 Inverted curve (spread: ${spread.toFixed(2)}%) on ${date}`,
+                        change: getChange(data),
+                        spread: spread
+                    });
+                } else if (!query.includes('invert')) {
+                    results.push({
+                        type: 'yield',
+                        date: date,
+                        label: `📈 Yield spread: ${spread.toFixed(2)}% on ${date}`,
+                        change: getChange(data),
+                        spread: spread
+                    });
+                }
+            }
+        }
+
+        results.sort((a, b) => a.spread - b.spread);
+        return results;
+    }
+
+    searchByVolatilityPattern(query, dates, getChange) {
+        const results = [];
+
+        // Calculate rolling volatility
+        for (let i = 5; i < dates.length; i++) {
+            const window = dates.slice(i - 5, i);
+            const changes = window.map(d => Math.abs(getChange(this.marketDataService.dataMap[d])));
+            const avgVol = changes.reduce((a, b) => a + b, 0) / changes.length;
+
+            if (avgVol > 1.5) { // High volatility threshold
+                const data = this.marketDataService.dataMap[dates[i]];
+                results.push({
+                    type: 'volatility',
+                    date: dates[i],
+                    label: `📊 High volatility period (avg ${avgVol.toFixed(2)}%) on ${dates[i]}`,
+                    change: getChange(data),
+                    volatility: avgVol
+                });
+            }
+        }
+
+        results.sort((a, b) => b.volatility - a.volatility);
+        return results;
+    }
+
+    findStreaks(query, dates, getChange) {
+        const results = [];
+        let currentStreak = 0;
+        let streakType = query.includes('winning') || query.includes('up') ? 'up' : 'down';
+        let streakStart = null;
+
+        for (let i = 0; i < dates.length; i++) {
+            const change = getChange(this.marketDataService.dataMap[dates[i]]);
+            const isPositive = change > 0;
+
+            if ((streakType === 'up' && isPositive) || (streakType === 'down' && !isPositive)) {
+                if (currentStreak === 0) streakStart = dates[i];
+                currentStreak++;
+            } else {
+                if (currentStreak >= 3) {
+                    results.push({
+                        type: 'streak',
+                        date: dates[i - 1],
+                        label: `${streakType === 'up' ? '🔥' : '❄️'} ${currentStreak}-day ${streakType === 'up' ? 'winning' : 'losing'} streak ending ${dates[i - 1]}`,
+                        change: getChange(this.marketDataService.dataMap[dates[i - 1]]),
+                        streakLength: currentStreak
+                    });
+                }
+                currentStreak = 0;
+            }
+        }
+
+        results.sort((a, b) => b.streakLength - a.streakLength);
+        return results;
+    }
+
+    searchByComparison(query, dates, getChange) {
+        const results = [];
+        // Compare NASDAQ vs S&P 500
+        for (const date of dates) {
+            const data = this.marketDataService.dataMap[date];
+            const nasdaqChange = data?.marketChangePercent ?? 0;
+            const spChange = data?.sp500Change ?? 0;
+            const diff = nasdaqChange - spChange;
+
+            if (query.includes('outperform') && diff > 0.5) {
+                results.push({
+                    type: 'compare',
+                    date: date,
+                    label: `📊 NASDAQ outperformed S&P by ${diff.toFixed(2)}% on ${date}`,
+                    change: getChange(data),
+                    diff: diff
+                });
+            } else if (query.includes('underperform') && diff < -0.5) {
+                results.push({
+                    type: 'compare',
+                    date: date,
+                    label: `📊 NASDAQ underperformed S&P by ${Math.abs(diff).toFixed(2)}% on ${date}`,
+                    change: getChange(data),
+                    diff: diff
+                });
+            }
+        }
+
+        results.sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
+        return results;
+    }
+
+    displaySearchResults(results, suggestions = []) {
+        const container = document.getElementById('search-results');
+        const input = document.getElementById('command-search-input');
+
+        // Hide default sections when showing dynamic results
+        if (results.length > 0 || suggestions.length > 0) {
+            document.querySelectorAll('.search-section').forEach(s => s.style.display = 'none');
+        }
+
+        // Remove old dynamic results
+        const oldDynamic = document.querySelector('.dynamic-results');
+        if (oldDynamic) oldDynamic.remove();
+
+        const dynamicDiv = document.createElement('div');
+        dynamicDiv.className = 'dynamic-results';
+
+        // Add smart suggestions if available
+        let suggestionsHTML = '';
+        if (suggestions.length > 0) {
+            suggestionsHTML = `
+                <div class="suggestions-section">
+                    <div class="section-label">💡 SUGGESTIONS</div>
+                    ${suggestions.map(s => `
+                        <div class="suggestion-item" data-action="${s.action}">
+                            ${s.text}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        if (results.length === 0 && suggestions.length === 0) {
+            dynamicDiv.innerHTML = '<div class="no-results">No matches found. Try: "highest nasdaq", "vix > 25", "crash days"</div>';
+            container.appendChild(dynamicDiv);
+            return;
+        }
+
+        // Build results HTML with proper change values
+        const resultsHTML = results.length > 0 ? `
+            <div class="search-section">
+                <div class="section-label">🔍 RESULTS (${results.length})</div>
+                ${results.slice(0, 10).map((r, i) => {
+            const changeVal = r.change ?? 0;
+            const isPositive = changeVal >= 0;
+            return `
+                        <div class="result-item ${i === 0 ? 'selected' : ''}" data-date="${r.date}">
+                            <span class="result-label">${r.label}</span>
+                            <span class="change-badge ${isPositive ? 'positive' : 'negative'}">
+                                ${isPositive ? '+' : ''}${changeVal.toFixed(2)}%
+                            </span>
+                        </div>
+                    `;
+        }).join('')}
+            </div>
+        ` : '';
+
+        dynamicDiv.innerHTML = suggestionsHTML + resultsHTML;
+        container.appendChild(dynamicDiv);
+
+        // Add click handlers to suggestions
+        dynamicDiv.querySelectorAll('.suggestion-item').forEach(item => {
+            item.addEventListener('click', () => {
+                input.value = item.dataset.action;
+                this.handleSearchInput(item.dataset.action);
+            });
+        });
+
+        // Add click handlers to results
+        dynamicDiv.querySelectorAll('.result-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const date = item.dataset.date;
+                if (date) {
+                    this.navigateToDate(date);
+                    this.closeCommandSearch();
+                }
+            });
+        });
+
+        this.searchState.results = results;
+        this.searchState.selectedIndex = results.length > 0 ? 0 : -1;
+    }
+
+    navigateSearchResults(direction) {
+        const items = document.querySelectorAll('.dynamic-results .result-item, .search-results .result-item[data-action]');
+        if (items.length === 0) return;
+
+        // Remove current selection
+        items.forEach(item => item.classList.remove('selected'));
+
+        // Update index
+        this.searchState.selectedIndex += direction;
+        if (this.searchState.selectedIndex < 0) this.searchState.selectedIndex = items.length - 1;
+        if (this.searchState.selectedIndex >= items.length) this.searchState.selectedIndex = 0;
+
+        // Add selection
+        items[this.searchState.selectedIndex].classList.add('selected');
+        items[this.searchState.selectedIndex].scrollIntoView({ block: 'nearest' });
+    }
+
+    executeSelectedResult() {
+        const selected = document.querySelector('.result-item.selected');
+        if (!selected) return;
+
+        if (selected.dataset.date) {
+            this.navigateToDate(selected.dataset.date);
+            this.closeCommandSearch();
+        } else if (selected.dataset.action) {
+            this.executeQuickAction(selected.dataset.action);
+        }
+    }
+
+    executeQuickAction(action) {
+        const validDates = Object.keys(this.marketDataService.dataMap || {}).sort();
+        let targetDate = null;
+
+        switch (action) {
+            case 'biggest-gain':
+                let maxGain = -Infinity;
+                for (const date of validDates) {
+                    const change = this.marketDataService.dataMap[date]?.dailyChange || 0;
+                    if (change > maxGain) { maxGain = change; targetDate = date; }
+                }
+                break;
+
+            case 'biggest-loss':
+                let maxLoss = Infinity;
+                for (const date of validDates) {
+                    const change = this.marketDataService.dataMap[date]?.dailyChange || 0;
+                    if (change < maxLoss) { maxLoss = change; targetDate = date; }
+                }
+                break;
+
+            case 'highest-vix':
+                let maxVix = 0;
+                for (const date of validDates) {
+                    const vix = this.marketDataService.dataMap[date]?.vix || 0;
+                    if (vix > maxVix) { maxVix = vix; targetDate = date; }
+                }
+                break;
+
+            case 'extreme-fear':
+                for (const date of validDates.reverse()) {
+                    const fg = this.marketDataService.dataMap[date]?.fearGreedIndex ?? 50;
+                    if (fg < 25) { targetDate = date; break; }
+                }
+                break;
+
+            case 'extreme-greed':
+                for (const date of validDates.reverse()) {
+                    const fg = this.marketDataService.dataMap[date]?.fearGreedIndex ?? 50;
+                    if (fg > 75) { targetDate = date; break; }
+                }
+                break;
+        }
+
+        if (targetDate) {
+            this.navigateToDate(targetDate);
+            this.closeCommandSearch();
+        }
+    }
+
+    filterBySector(sectorSymbol) {
+        const input = document.getElementById('command-search-input');
+        input.value = `sector:${sectorSymbol}`;
+        this.handleSearchInput(input.value);
+    }
+
+    filterByCondition(condition) {
+        const input = document.getElementById('command-search-input');
+
+        // Parse condition like "change-gt-1" or "vix-gt-20" (HTML-safe format)
+        if (condition.includes('change')) {
+            if (condition.includes('-gt-')) {
+                input.value = 'biggest gains';
+            } else if (condition.includes('-lt-')) {
+                input.value = 'biggest losses';
+            }
+        } else if (condition.includes('vix')) {
+            const gtMatch = condition.match(/vix-gt-(\d+)/);
+            const ltMatch = condition.match(/vix-lt-(\d+)/);
+            if (gtMatch) {
+                input.value = `vix > ${gtMatch[1]}`;
+            } else if (ltMatch) {
+                input.value = `vix < ${ltMatch[1]}`;
+            }
+        }
+
+        this.handleSearchInput(input.value);
+    }
+
+    navigateToDate(dateKey) {
+        const date = new Date(dateKey + 'T00:00:00');
+        this.picker.setDate(date, false);
+        this.loadDate(date);
+
+        // Update timeline slider
+        const validDates = Object.keys(this.marketDataService.dataMap || {}).sort();
+        const idx = validDates.indexOf(dateKey);
+        if (idx >= 0 && this.ui.timelineSlider) {
+            this.ui.timelineSlider.value = idx;
         }
     }
 
@@ -608,60 +1622,59 @@ export default class AppController {
         // Generate detailed market narrative based on conditions
         let narrative = '';
         const absChange = Math.abs(change);
-        const sp500Str = sp500Change >= 0 ? `+${sp500Change.toFixed(2)}%` : `${sp500Change.toFixed(2)}%`;
-        const changeStr = change >= 0 ? `+${change.toFixed(2)}%` : `${change.toFixed(2)}%`;
 
+        // Generate descriptive market narrative (no specific %s - those are on sidebar)
         // EXTREME FEAR + HIGH VIX = Panic day
         if (fg <= 25 && vix > 25) {
-            narrative = `� PANIC MODE: Extreme fear (F&G: ${fg}) with VIX at ${vix.toFixed(1)}. NASDAQ ${changeStr}, S&P ${sp500Str}. ${worstSectorName ? `${worstSectorName} crushed (${worstSectorVal.toFixed(1)}%).` : ''} Capitulation conditions — historically a contrarian buy signal.`;
+            narrative = `🚨 Capitulation conditions present. Extreme fear with volatility spiking. ${worstSectorName ? `${worstSectorName} under heavy selling pressure.` : ''} Historically, these washouts mark bottoms. Smart money accumulates here.`;
         }
         // EXTREME FEAR + DOWN DAY = Fear selling
         else if (fg <= 25 && change < -1) {
-            narrative = `📉 FEAR SELLOFF: Markets plunging with F&G at ${fg}. NASDAQ down ${absChange.toFixed(2)}%. VIX elevated at ${vix.toFixed(1)}. ${topSectorName ? `Only ${topSectorName} showing resilience.` : ''} Oversold bounce possible.`;
+            narrative = `📉 Broad risk-off as fear dominates. Markets searching for support levels. ${topSectorName ? `Only ${topSectorName} showing any resilience.` : ''} Oversold conditions may trigger a technical bounce.`;
         }
         // EXTREME GREED + BIG UP = Euphoria
         else if (fg >= 75 && change > 1) {
-            narrative = `� EUPHORIA: Extreme greed (${fg}) and NASDAQ surging ${changeStr}. VIX low at ${vix.toFixed(1)}. ${topSectorName ? `${topSectorName} leading (+${topSectorVal.toFixed(1)}%).` : ''} Overbought — late buyers at risk.`;
+            narrative = `🚀 Euphoric rally pushing into overbought territory. ${topSectorName ? `${topSectorName} leading the charge.` : ''} Late-stage momentum — exercise caution. Mean reversion risk elevated.`;
         }
         // GREED + UP = Strong bull
         else if (fg >= 60 && change > 0.5) {
-            narrative = `💪 BULL RUN: Greed sentiment (${fg}) with NASDAQ ${changeStr}. S&P ${sp500Str}. VIX calm at ${vix.toFixed(1)}. ${topSectorName ? `${topSectorName} outperforming.` : ''} Trend continuation likely.`;
+            narrative = `💪 Bulls firmly in control with strong breadth. ${topSectorName ? `${topSectorName} outperforming the broader market.` : ''} Momentum favors continuation. Dips likely to be bought.`;
         }
         // HIGH VIX SPIKE = Volatility event
         else if (vix > 25) {
-            narrative = `⚡ VOL SPIKE: VIX surged to ${vix.toFixed(1)}! NASDAQ ${changeStr}. F&G at ${fg}. ${absChange > 1 ? 'Wild swings expected.' : 'Tension building.'} ${worstSectorName ? `${worstSectorName} hardest hit.` : ''} Options expensive.`;
+            narrative = `⚡ Volatility surging — expect wild price swings. ${worstSectorName ? `${worstSectorName} taking the brunt of selling.` : ''} Options premiums elevated. Consider hedging or reducing exposure.`;
         }
         // BIG DOWN DAY
         else if (change < -1.5) {
-            narrative = `🔴 SELLOFF: NASDAQ dropped ${absChange.toFixed(2)}%, S&P ${sp500Str}. VIX at ${vix.toFixed(1)}, F&G ${fg}. ${worstSectorName ? `${worstSectorName} led losses (${worstSectorVal.toFixed(1)}%).` : ''} Watch support levels.`;
+            narrative = `🔴 Sharp selling across the board. ${worstSectorName ? `${worstSectorName} leading losses.` : ''} Key support levels being tested. Watch for follow-through or reversal signals.`;
         }
         // BIG UP DAY
         else if (change > 1.5) {
-            narrative = `🟢 STRONG DAY: NASDAQ rallied ${changeStr}, S&P ${sp500Str}. VIX subdued at ${vix.toFixed(1)}. ${topSectorName ? `${topSectorName} surging (+${topSectorVal.toFixed(1)}%).` : ''} Bullish momentum intact.`;
+            narrative = `🟢 Strong rally with broad participation. ${topSectorName ? `${topSectorName} surging.` : ''} Bulls in command — momentum intact. Technical breakout signals possible.`;
         }
         // Quiet consolidation
         else if (absChange < 0.3 && vix < 18) {
-            narrative = `😴 QUIET: NASDAQ ${changeStr}, S&P ${sp500Str}. VIX low at ${vix.toFixed(1)}, F&G ${fg}. Low volatility consolidation. Market awaits catalyst for next directional move.`;
+            narrative = `😴 Quiet consolidation day. Markets coiling for the next move. Low volatility suggests complacency. Watch for breakout catalysts.`;
         }
         // Mild up with fear = recovery
         else if (change > 0 && fg < 45) {
-            narrative = `🌱 RECOVERY: NASDAQ edging higher ${changeStr} despite fear (F&G: ${fg}). VIX at ${vix.toFixed(1)}. ${topSectorName ? `${topSectorName} leading.` : ''} Tentative buying returning.`;
+            narrative = `🌱 Tentative green despite lingering fear. ${topSectorName ? `${topSectorName} leading.` : ''} Early signs of stabilization. Sentiment still fragile but improving.`;
         }
         // Mild down with greed = profit taking
         else if (change < 0 && fg > 55) {
-            narrative = `� PULLBACK: NASDAQ ${changeStr} amid greedy sentiment (${fg}). VIX at ${vix.toFixed(1)}. ${worstSectorName ? `${worstSectorName} lagging.` : ''} Healthy profit-taking or start of rotation?`;
+            narrative = `📊 Mild pullback amid greedy sentiment. ${worstSectorName ? `${worstSectorName} seeing some profit-taking.` : ''} Healthy consolidation or start of rotation? Monitor closely.`;
         }
         // Generic up
         else if (change > 0) {
-            narrative = `📈 GREEN: NASDAQ ${changeStr}, S&P ${sp500Str}. F&G ${fg}, VIX ${vix.toFixed(1)}. ${topSectorName ? `${topSectorName} (+${topSectorVal.toFixed(1)}%) outperforming.` : ''} Modest risk appetite.`;
+            narrative = `📈 Modest gains with balanced sentiment. ${topSectorName ? `${topSectorName} showing relative strength.` : ''} Risk appetite present but not aggressive.`;
         }
         // Generic down
         else if (change < 0) {
-            narrative = `📉 RED: NASDAQ ${changeStr}, S&P ${sp500Str}. F&G ${fg}, VIX ${vix.toFixed(1)}. ${worstSectorName ? `${worstSectorName} (${worstSectorVal.toFixed(1)}%) underperforming.` : ''} Caution warranted.`;
+            narrative = `📉 Slight weakness across indices. ${worstSectorName ? `${worstSectorName} underperforming.` : ''} Cautious tone but no panic. Watch for continuation or support.`;
         }
         // Flat
         else {
-            narrative = `⚖️ UNCHANGED: NASDAQ flat at ${changeStr}. S&P ${sp500Str}. VIX ${vix.toFixed(1)}, F&G ${fg}. Markets in wait-and-see mode. Direction unclear.`;
+            narrative = `⚖️ Indecisive session with markets little changed. Neither bulls nor bears with conviction. Wait for clearer directional signals.`;
         }
 
         // Yield curve health
@@ -1297,6 +2310,9 @@ export default class AppController {
             idx = (idx + 1) % charts.length;
             setChart(charts[idx]);
         });
+
+        // Initialize Command Search (Cmd+K)
+        this.initCommandSearch();
     }
 
     drawYieldCurve(data) {

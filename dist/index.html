@@ -9,9 +9,9 @@
 	<title>GPGPU Shining Mask - Mask</title>
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
-  <script type="module" crossorigin src="/codrops-dreamy-particles/assets/index-c484ac0c.js"></script>
-  <link rel="modulepreload" crossorigin href="/codrops-dreamy-particles/assets/GPGPU-dd6e254d.js">
-  <link rel="stylesheet" href="/codrops-dreamy-particles/assets/GPGPU-2eac5640.css">
+  <script type="module" crossorigin src="/codrops-dreamy-particles/assets/index-82a0d840.js"></script>
+  <link rel="modulepreload" crossorigin href="/codrops-dreamy-particles/assets/GPGPU-45d1cb2f.js">
+  <link rel="stylesheet" href="/codrops-dreamy-particles/assets/GPGPU-36fa42fe.css">
 </head>
 
 <body class="is-loading">
@@ -24,6 +24,11 @@
 		<div class="header">
 			<div class="logo">MARKET SENTIMENT VISUALIZER</div>
 			<div class="sub-logo">RATIONAL DATA & GENERATIVE MOODS</div>
+			<button id="btn-search" class="search-trigger" title="Search (⌘K)">
+				<span class="search-trigger-icon">🔍</span>
+				<span class="search-trigger-text">Search...</span>
+				<span class="search-trigger-shortcut">⌘K</span>
+			</button>
 			<div id="market-status" class="market-status hidden">Market Closed</div>
 		</div>
 
@@ -206,6 +211,64 @@
 			<div class="timeline-labels">
 				<span id="timeline-start">Past</span>
 				<span id="timeline-current">Today</span>
+			</div>
+		</div>
+
+		<!-- COMMAND SEARCH MODAL (Cmd+K) -->
+		<div id="command-search-overlay" class="command-search-overlay hidden">
+			<div id="command-search-modal" class="command-search-modal">
+				<div class="search-header">
+					<span class="search-icon">🔍</span>
+					<input type="text" id="command-search-input" class="command-search-input"
+						placeholder="Search dates, events, sectors, conditions..." autocomplete="off">
+					<span class="search-shortcut">ESC</span>
+				</div>
+
+				<div class="search-hints">
+					<span class="hint-item" data-query="2024-08-05">📅 Date: 2024-08-05</span>
+					<span class="hint-item" data-query="VIX > 25">⚡ VIX > 25</span>
+					<span class="hint-item" data-query="sector:Tech">🏭 Tech Sector</span>
+					<span class="hint-item" data-query="fear">😰 Fear Days</span>
+				</div>
+
+				<div id="search-results" class="search-results">
+					<div class="search-section">
+						<div class="section-label">💡 QUICK SUGGESTIONS</div>
+						<div class="result-item" data-action="biggest-gain">📈 Biggest gain this year</div>
+						<div class="result-item" data-action="biggest-loss">📉 Biggest loss this year</div>
+						<div class="result-item" data-action="highest-vix">⚡ Highest VIX day</div>
+						<div class="result-item" data-action="extreme-fear">😱 Extreme fear days</div>
+						<div class="result-item" data-action="extreme-greed">🤑 Extreme greed days</div>
+					</div>
+
+					<div class="search-section">
+						<div class="section-label">🏭 SECTORS</div>
+						<div class="sector-chips">
+							<span class="sector-chip" data-sector="XLK">Tech</span>
+							<span class="sector-chip" data-sector="XLF">Financials</span>
+							<span class="sector-chip" data-sector="XLE">Energy</span>
+							<span class="sector-chip" data-sector="XLV">Healthcare</span>
+							<span class="sector-chip" data-sector="XLI">Industrials</span>
+							<span class="sector-chip" data-sector="XLU">Utilities</span>
+						</div>
+					</div>
+
+					<div class="search-section">
+						<div class="section-label">📊 CONDITIONS</div>
+						<div class="condition-grid">
+							<div class="condition-item" data-condition="change-gt-1">Rally Days (+1%)</div>
+							<div class="condition-item" data-condition="change-lt-1">Selloff Days (-1%)</div>
+							<div class="condition-item" data-condition="vix-gt-20">High VIX (&gt;20)</div>
+							<div class="condition-item" data-condition="vix-lt-15">Low VIX (&lt;15)</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="search-footer">
+					<span>⌘K to search</span>
+					<span>↑↓ to navigate</span>
+					<span>Enter to select</span>
+				</div>
 			</div>
 		</div>
 
