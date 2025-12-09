@@ -164,6 +164,7 @@ def fetch_market_data():
     nasdaq = data['^IXIC'].copy()
     sp500 = data['^GSPC'].copy()
     dow = data['^DJI'].copy() # NEW
+    
     vix = data['^VIX'].copy()
     tnx = data['^TNX'].copy() # 10Y
     fvx = data['^FVX'].copy() # 5Y
@@ -171,28 +172,31 @@ def fetch_market_data():
     gold = data['GC=F'].copy()
     oil = data['CL=F'].copy()
     
-    try:
-         # Fill NaN in macro data to avoid gaps
-         tnx.fillna(method='ffill', inplace=True)
-         fvx.fillna(method='ffill', inplace=True)
-         dxy.fillna(method='ffill', inplace=True)
-         gold.fillna(method='ffill', inplace=True)
-         oil.fillna(method='ffill', inplace=True)
-         dow.fillna(method='ffill', inplace=True)
-    except: pass
+    # Align all DataFrames to Nasdaq Index (Master Timeframe)
+    # This prevents "None" values when indices mismatch slightly
     
-    sectors = {
-        "XLE": data['XLE'].copy(),
-        "XLF": data['XLF'].copy(), 
-        "XLK": data['XLK'].copy(),
-        "XLV": data['XLV'].copy(),
-        "XLI": data['XLI'].copy(), 
-        "XLY": data['XLY'].copy(),
-        "XLP": data['XLP'].copy(), 
-        "XLU": data['XLU'].copy(),
-        "XLB": data['XLB'].copy(), 
-        "XLRE": data['XLRE'].copy()
-    }
+    # Indices
+    sp500 = sp500.reindex(nasdaq.index, method='ffill')
+    dow = dow.reindex(nasdaq.index, method='ffill')
+    vix = vix.reindex(nasdaq.index, method='ffill')
+    
+    # Macro
+    tnx = tnx.reindex(nasdaq.index, method='ffill')
+    fvx = fvx.reindex(nasdaq.index, method='ffill')
+    dxy = dxy.reindex(nasdaq.index, method='ffill')
+    
+    # Commodities
+    gold = gold.reindex(nasdaq.index, method='ffill')
+    oil = oil.reindex(nasdaq.index, method='ffill')
+    
+    sectors = {}
+    sector_list = ["XLE", "XLF", "XLK", "XLV", "XLI", "XLY", "XLP", "XLU", "XLB", "XLRE"]
+    for s in sector_list:
+        df = data[s].copy()
+        # Align sector to master index
+        df = df.reindex(nasdaq.index, method='ffill')
+        df = df.bfill() # Backward fill start if needed
+        sectors[s] = df
 
     market_data = {}
     
@@ -498,28 +502,38 @@ def fetch_market_data():
             except:
                 return default
 
-        # Get Dow, Dollar, Yields
+        # Get Dow, SP500, Dollar, Yields
         dow_close = float(dow.loc[date]['Close']) if not pd.isna(dow.loc[date]['Close']) else 0.0
+        sp500_val = float(sp500.loc[date]['Close']) if not pd.isna(sp500.loc[date]['Close']) else 0.0
         dxy_val = float(dxy.loc[date]['Close']) if date in dxy.index and not pd.isna(dxy.loc[date]['Close']) else 0.0
         tnx_val = float(tnx.loc[date]['Close']) if date in tnx.index and not pd.isna(tnx.loc[date]['Close']) else 0.0
         fvx_val = float(fvx.loc[date]['Close']) if date in fvx.index and not pd.isna(fvx.loc[date]['Close']) else 0.0
         
         # Checks
         if dow_close <= 1.0: dow_close = 0.0 
+        if sp500_val <= 1.0: sp500_val = 0.0
 
         # Calculate Changes
         dow_change = 0.0
+        sp500_change = 0.0
+        
         if i > 0:
             try:
                 prev_dow = float(dow.loc[dates[i-1]]['Close'])
                 if prev_dow > 0:
                     dow_change = ((dow_close - prev_dow) / prev_dow) * 100
+                
+                prev_sp = float(sp500.loc[dates[i-1]]['Close'])
+                if prev_sp > 0:
+                    sp500_change = ((sp500_val - prev_sp) / prev_sp) * 100
             except: pass
 
         market_data[date_str] = {
             'date': date_str,
             'indexValue': round(close_price, 2),
-            # ...
+            'marketChangePercent': round(change_percent, 2),
+            'sp500Value': round(sp500_val, 2),
+            'sp500Change': round(sp500_change, 2),
             'dowValue': round(dow_close, 2),
             'dowChange': round(dow_change, 2),
             'sentiment': 0.0, # Placeholder
