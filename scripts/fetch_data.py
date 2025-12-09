@@ -325,6 +325,11 @@ def fetch_market_data():
             volume = float(nasdaq.loc[date]['Volume'])
             volume_ma = float(nasdaq.loc[date]['VolumeMA30']) if 'VolumeMA30' in nasdaq and not pd.isna(nasdaq.loc[date]['VolumeMA30']) else volume
             
+            # STRICT VALIDATION: Skip days with 0 price, 0 volume, or NaN (Ghost Future Dates)
+            # comparisons with NaN are always False, so we must check isna explicitly
+            if pd.isna(close_price) or close_price <= 1.0 or pd.isna(volume) or volume <= 0:
+                continue
+
             # Previous Close for Gap Calculation
             if i > 0:
                 prev_date = dates[i-1]
@@ -481,7 +486,8 @@ def fetch_market_data():
         def safe_float(val, default=0.0):
             try:
                 f = float(val)
-                if pd.isna(f) or np.isnan(f): return default
+                # Use pd.isna which handles both None and NaN
+                if pd.isna(f): return default
                 return f
             except:
                 return default
