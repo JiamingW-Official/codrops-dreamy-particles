@@ -197,47 +197,58 @@ def fetch_market_data():
         except KeyError:
              continue
 
-        # --- FEAR & GREED PROXY CALCULATION ---
+        # --- FEAR & GREED PROXY (ADVANCED 4-FACTOR) ---
         try:
-            # A. Momentum Score (0-100) - SP500 vs 125D MA
+            # 1. Momentum (20%) - SP500 vs 125MA
             curr_sp500 = float(sp500_close.loc[date])
             ma_125_val = float(sp500_ma125.loc[date])
-            if pd.isna(ma_125_val):
-                mom_score = 50
+            if pd.isna(ma_125_val): mom_s = 50
             else:
-                # 5% above MA is "extreme greed" (100), 5% below is "extreme fear" (0)
-                diff_pct = (curr_sp500 - ma_125_val) / ma_125_val
-                mom_score = 50 + (diff_pct * 1000) # Sensitivity: 0.05 * 1000 = 50 -> 100
-                mom_score = max(0, min(100, mom_score))
+                 # +5% = 100, -5% = 0
+                diff = (curr_sp500 - ma_125_val) / ma_125_val
+                mom_s = 50 + (diff * 1000)
+            mom_s = max(0, min(100, mom_s))
 
-            # B. Volatility Score (0-100) - INVERTED (High VIX = Low Score/Fear)
+            # 2. Volatility (40%) - VIX
             curr_vix = float(vix_close.loc[date])
-            # Benchmark VIX: 
-            # 10 = Extreme Greed (100)
-            # 18 = Neutral (60)
-            # 22+ = Fear/Anxiety (<= 40)
-            # 30+ = Panic (0)
-            
-            # Map 10..30 -> 100..0
-            # S = 100 - ( (V - 10) / 20 * 100 )
-            if curr_vix <= 10:
-                vol_score = 100
-            elif curr_vix >= 30:
-                vol_score = 0
+            # 12 = 100 (Greed), 18 = 60 (Neutral), 22 = 40 (Fear), 35 = 0 (Panic)
+            if curr_vix <= 12: vol_s = 100
+            elif curr_vix >= 35: vol_s = 0
             else:
-                vol_score = 100 - ((curr_vix - 10) / 20.0 * 100)
+                # Linear Interp between 12 and 35
+                # Range is 23. 100 -> 0.
+                vol_s = 100 - ((curr_vix - 12) / 23.0 * 100)
+            vol_s = max(0, min(100, vol_s))
             
-            # C. RSI Score (0-100) - Short Term Emotion
-            # RSI 30 = Fear (20 score), RSI 70 = Greed (80 score)
+            # 3. RSI (20%) - Speed
             curr_rsi = float(rsi_series.loc[date]) if not pd.isna(rsi_series.loc[date]) else 50.0
-            rsi_score = curr_rsi 
-            
-            # Final Index Weighted
-            # HEAVY WEIGHT ON VOLATILITY (50%) to match user perception of Fear
-            fear_greed_idx = int((mom_score * 0.2) + (vol_score * 0.5) + (rsi_score * 0.3))
+            rsi_s = curr_rsi 
 
+            # 4. Yield Stress (20%) - 10Y Yield (^TNX)
+            try:
+                curr_yield = float(tnx.loc[date]['Close'])
+            except:
+                curr_yield = 4.0 # Fallback if TNX data is missing for the day
+            
+            # Yield > 4.0 is stressful. > 5.0 is Panic. < 3.0 is Greed.
+            # Map 3.0 (100) ... 5.0 (0)
+            if curr_yield <= 3.0: yield_s = 100
+            elif curr_yield >= 5.0: yield_s = 0
+            else:
+                yield_s = 100 - ((curr_yield - 3.0) / 2.0 * 100)
+            yield_s = max(0, min(100, yield_s))
+
+            # FINAL WEIGHTED SCORE
+            # Heavy Volatility (Fear) Bias as requested.
+            raw_score = (mom_s * 0.2) + (vol_s * 0.4) + (rsi_s * 0.2) + (yield_s * 0.2)
+            
+            # BEAR BIAS ADJUSTMENT
+            # User says "31" when we calc "40-70".
+            # Let's shift the curve down by 5 points generally to account for missing "Put/Call" fear data.
+            fear_greed_idx = int(raw_score - 5)
+            fear_greed_idx = max(5, min(95, fear_greed_idx)) # Clamp
+            
         except Exception as e:
-            # Fallback
             fear_greed_idx = 50
 
         # RSI Value
