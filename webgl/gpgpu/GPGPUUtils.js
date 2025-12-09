@@ -13,7 +13,17 @@ export default class GPGPUUtils {
 
         this.mesh = mesh;
 
-        this.sampler = new MeshSurfaceSampler(this.mesh).build();
+        try {
+            this.sampler = new MeshSurfaceSampler(this.mesh).build();
+        } catch (e) {
+            console.error("GPGPUUtils: Failed to build sampler from mesh", e);
+            console.warn("Using fallback box geometry for simulation");
+            // Fallback
+            const geo = new THREE.BoxGeometry(1, 1, 1);
+            const mat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            const dummyMesh = new THREE.Mesh(geo, mat);
+            this.sampler = new MeshSurfaceSampler(dummyMesh).build();
+        }
 
 
 
