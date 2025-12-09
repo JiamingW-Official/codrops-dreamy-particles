@@ -879,6 +879,14 @@ export default class AppController {
         const val52w = document.getElementById('val-52w-range');
         if (val52w) val52w.textContent = data.yearLow ? `${data.yearLow} - ${data.yearHigh}` : '--';
 
+        // 6. Commodities (Gold/Oil)
+        if (document.getElementById('val-gold')) {
+            document.getElementById('val-gold').textContent = data.gold ? data.gold.toLocaleString() : '--';
+        }
+        if (document.getElementById('val-oil')) {
+            document.getElementById('val-oil').textContent = data.oil ? data.oil.toFixed(2) : '--';
+        }
+
         // --- RESTORED: Main Chart Call ---
         // This draws the big 30D chart in the "MARKET DATA" section
         if (this.drawIndexChart) {
