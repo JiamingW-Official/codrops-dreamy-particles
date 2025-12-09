@@ -894,9 +894,45 @@ body {
   text-transform: uppercase;
 }
 
+/* Fixed Heights for Sidebar Sections */
+.ai-insight-box {
+  max-height: 260px;
+  min-height: 260px;
+  overflow: hidden;
+}
+
+#sector-momentum {
+  max-height: 180px;
+  min-height: 180px;
+  overflow: hidden;
+}
+
+#yield-curve-section {
+  max-height: 140px;
+  min-height: 140px;
+  overflow: hidden;
+}
+
+#market-breadth {
+  max-height: 50px;
+  min-height: 50px;
+  overflow: hidden;
+}
+
+#headlines-section {
+  max-height: 160px;
+  min-height: 160px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+#headlines-section::-webkit-scrollbar {
+  display: none;
+}
+
 #yield-curve-chart {
   width: 100%;
-  height: 120px;
+  height: 110px;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 4px;
 }

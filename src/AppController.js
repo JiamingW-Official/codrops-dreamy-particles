@@ -680,12 +680,12 @@ export default class AppController {
 
         // Build the enhanced HTML with custom indices
         aiText.innerHTML = `
-            <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                <span style="background: ${regimeBg}; color: ${regimeColor}; padding: 4px 10px; border-radius: 6px; font-size: 0.8em; font-weight: 700; letter-spacing: 0.5px; box-shadow: 0 0 10px ${regimeColor}44;">
+            <div style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; white-space: nowrap; overflow: hidden;">
+                <span style="background: ${regimeBg}; color: ${regimeColor}; padding: 3px 8px; border-radius: 4px; font-size: 0.7em; font-weight: 700; letter-spacing: 0.3px; box-shadow: 0 0 8px ${regimeColor}44; flex-shrink: 0;">
                     ${regimeIcon} ${regime}
                 </span>
-                <span style="font-size: 0.75em; color: var(--text-faint);">${date}</span>
-                <span style="margin-left: auto; font-size: 0.75em; color: ${verdictColor}; font-weight: 600;">${dayVerdict}</span>
+                <span style="font-size: 0.7em; color: var(--text-faint); flex-shrink: 0;">${date}</span>
+                <span style="margin-left: auto; font-size: 0.7em; color: ${verdictColor}; font-weight: 600; flex-shrink: 0;">${dayVerdict}</span>
             </div>
             
             <div style="font-size: 0.9em; line-height: 1.7; color: var(--text-main); margin-bottom: 12px;">
@@ -1331,7 +1331,7 @@ export default class AppController {
         const maxVal = Math.max(...vals) + 0.2;
         const range = maxVal - minVal || 1;
 
-        const padding = { left: 25, right: 10, top: 15, bottom: 20 };
+        const padding = { left: 35, right: 10, top: 15, bottom: 20 };
         const chartW = W - padding.left - padding.right;
         const chartH = H - padding.top - padding.bottom;
 
