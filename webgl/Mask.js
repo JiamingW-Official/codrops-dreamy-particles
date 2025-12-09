@@ -58,21 +58,15 @@ export default class Mask extends Handler {
     const modelName = this.currentModelName || 'mask';
     const modelResource = this.resources.models[modelName];
 
+    let mask;
     if (!modelResource) {
-      console.error(`Model ${modelName} not found!`);
-      return;
+      console.error(`Model ${modelName} not found! Using fallback.`);
+      const geo = new THREE.BoxGeometry(1, 1, 1);
+      const mat = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
+      mask = new THREE.Mesh(geo, mat);
+    } else {
+      mask = this.resolveMesh(modelResource.scene);
     }
-
-    let mask = modelResource.scene.children[0];
-
-    if (!mask.geometry) {
-      modelResource.scene.traverse((child) => {
-        if (child.isMesh && !mask.geometry) {
-          mask = child;
-        }
-      });
-    }
-
     this.model = mask;
 
     // PhD Vis: Keyword Cloud
@@ -222,9 +216,25 @@ export default class Mask extends Handler {
   }
 
   resolveMesh(scene) {
-    let m = scene.children[0];
-    if (!m.geometry) {
-      scene.traverse((c) => { if (c.isMesh && !m.geometry) m = c; });
+    let m = null;
+    if (scene.traverse) {
+      scene.traverse((c) => {
+        if (!m && c.isMesh && c.geometry) {
+          m = c;
+        }
+      });
+    }
+
+    if (!m) {
+      console.warn("Mask.resolveMesh: No mesh found in scene", scene);
+      console.warn("Mask.resolveMesh: detailed scene", scene.children);
+
+      // CRITICAL FALLBACK: Return a dummy mesh to prevent crash
+      const geometry = new THREE.BoxGeometry(1, 1, 1);
+      const material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
+      const dummy = new THREE.Mesh(geometry, material);
+      dummy.name = "Fallback_Dummy";
+      return dummy;
     }
     return m;
   }
