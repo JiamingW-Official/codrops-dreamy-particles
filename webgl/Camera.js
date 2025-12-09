@@ -127,9 +127,9 @@ export default class Camera extends Handler {
 
 
   update(state) {
-    if (this.controls && this.controls.isLocked) {
+    if (this.controls) {
       const delta = state ? state.delta : 0.016;
-      const speed = 10.0 * delta;
+      const speed = 5.0 * delta; // Slower, more controlled speed
 
       // Move the dummy target
       if (this.moveForward) this.controls.moveForward(speed);
@@ -149,8 +149,8 @@ export default class Camera extends Handler {
     }
 
     // Smoothly interpolate actual camera to dummy target
-    // Damping factor: lower = smoother/slower
-    const damping = 0.15;
+    // Damping factor: lower = smoother/slower (Phase In/Out feel)
+    const damping = 0.08;
     this.target.position.lerp(this.cameraTarget.position, damping);
     this.target.quaternion.slerp(this.cameraTarget.quaternion, damping);
 
