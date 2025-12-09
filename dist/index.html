@@ -9,18 +9,18 @@
 	<title>GPGPU Shining Mask - Mask</title>
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
-  <script type="module" crossorigin src="/codrops-dreamy-particles/assets/index-5fe75e09.js"></script>
-  <link rel="modulepreload" crossorigin href="/codrops-dreamy-particles/assets/GPGPU-a080bfc9.js">
-  <link rel="stylesheet" href="/codrops-dreamy-particles/assets/GPGPU-ab4adfd0.css">
+  <script type="module" crossorigin src="/codrops-dreamy-particles/assets/index-bd199b3c.js"></script>
+  <link rel="modulepreload" crossorigin href="/codrops-dreamy-particles/assets/GPGPU-26afe3dd.js">
+  <link rel="stylesheet" href="/codrops-dreamy-particles/assets/GPGPU-c36b26a9.css">
 </head>
 
 <body class="is-loading">
 	<canvas class="experience__canvas"></canvas>
 
-	<!-- Unified Rational UI Grid -->
+	<!-- UI LAYER -->
 	<div class="ui-layer">
 
-		<!-- Header -->
+		<!-- HEADER -->
 		<div class="header">
 			<div class="logo">MARKET SENTIMENT VISUALIZER</div>
 			<div class="sub-logo">RATIONAL DATA & GENERATIVE MOODS</div>
@@ -30,15 +30,22 @@
 		<!-- LEFT SIDEBAR -->
 		<div id="sidebar-left">
 			<div class="glass-panel">
+				<!-- CHART -->
+				<div class="chart-container">
+					<div class="chart-label">MARKET TREND (30D)</div>
+					<canvas id="market-chart" width="280" height="80"></canvas>
+				</div>
+
 				<div class="panel-header">
 					<span class="panel-title">MARKET DATA</span>
 					<div class="chart-controls">
-						<span id="btn-chart-prev" class="control-arrow">&lt;</span>
+						<span id="btn-chart-prev" class="control-arrow">&#9664;</span>
 						<span id="chart-title">NASDAQ</span>
-						<span id="btn-chart-next" class="control-arrow">&gt;</span>
+						<span id="btn-chart-next" class="control-arrow">&#9654;</span>
 					</div>
 				</div>
 
+				<!-- INDICES -->
 				<div class="market-data-list">
 					<div class="data-row clickable active-row" id="row-nasdaq">
 						<span class="label">NASDAQ</span>
@@ -59,13 +66,24 @@
 
 				<div class="separator"></div>
 
+				<!-- METRICS -->
 				<div class="data-group">
-					<div class="data-row-compact">
-						<span class="label-muted">Risk/Reward</span>
-						<div class="risk-gauge-mini">
-							<div id="risk-fill" class="risk-fill"></div>
+					<!-- Risk/Reward as Sliding Marker (like Velocity) -->
+					<div class="data-row-compact" style="flex-direction:column; align-items:stretch;">
+						<span class="label-muted" style="margin-bottom:4px;">Risk/Reward</span>
+						<div class="risk-track">
+							<div id="risk-marker" class="risk-marker"></div>
 						</div>
-						<span class="value-small" id="risk-val">Neutral</span>
+						<div
+							style="display:flex; justify-content:space-between; font-size:0.65rem; opacity:0.5; margin-top:3px;">
+							<span>Risk Off</span>
+							<span id="risk-val" style="font-weight:bold;">Neutral</span>
+							<span>Risk On</span>
+						</div>
+					</div>
+					<div class="data-row-compact">
+						<span class="label-muted">CNN Fear & Greed</span>
+						<span class="value-small" id="val-fear-greed" style="font-weight:bold;">--</span>
 					</div>
 					<div class="data-row-compact">
 						<span class="label-muted">Volume</span>
@@ -83,6 +101,7 @@
 
 				<div class="separator"></div>
 
+				<!-- COMMODITIES -->
 				<div class="data-group">
 					<div class="data-row-compact">
 						<span class="label-muted">Gold</span>
@@ -112,12 +131,12 @@
 				</div>
 
 				<div class="ai-insight-box">
-					<div id="ai-analyst-text" class="typing-text">Initializing AI...</div>
+					<div id="ai-analyst-text" class="typing-text">Analyzing market patterns...</div>
 				</div>
 
 				<div class="separator"></div>
 
-				<!-- RESTORED: Treemap (Heatmap) -->
+				<!-- HEATMAP -->
 				<div id="sector-momentum">
 					<div class="section-title-small">SECTOR HEATMAP</div>
 					<div id="treemap-container" class="sector-treemap-container"></div>
@@ -125,7 +144,7 @@
 
 				<div class="separator"></div>
 
-				<!-- Yield Curve (Below Heatmap) -->
+				<!-- YIELD CURVE -->
 				<div id="yield-curve-section">
 					<div class="section-title-small">YIELD CURVE</div>
 					<canvas id="yield-curve-chart" width="280" height="100"></canvas>
@@ -133,13 +152,13 @@
 
 				<div class="separator"></div>
 
-				<!-- RESTORED: Sentiment Velocity -->
+				<!-- VELOCITY -->
 				<div id="market-breadth">
 					<div class="section-title-small">VELOCITY</div>
 					<div class="velocity-track">
 						<div id="velocity-marker" class="velocity-marker"></div>
 					</div>
-					<div class="flex-row space-between" style="font-size:0.7rem; opacity:0.5; margin-top:4px;">
+					<div class="velocity-labels">
 						<span>Cooling</span>
 						<span>Heating</span>
 					</div>
@@ -147,7 +166,7 @@
 
 				<div class="separator"></div>
 
-				<!-- MOVED: Headlines (Right) -->
+				<!-- HEADLINES -->
 				<div id="headlines-section">
 					<div class="section-title-small">HEADLINES</div>
 					<div id="headlines-container">
@@ -157,6 +176,7 @@
 
 				<div class="separator"></div>
 
+				<!-- MODEL SELECT -->
 				<div class="control-group">
 					<span class="label-muted">Visual Model</span>
 					<select id="model-select" class="dropdown">
@@ -170,7 +190,7 @@
 			</div>
 		</div>
 
-		<!-- BOTTOM TIMELINE -->
+		<!-- TIMELINE -->
 		<div class="timeline-wrapper">
 			<div class="timeline-controls-row">
 				<button id="btn-play" class="btn-icon">▶</button>
@@ -178,7 +198,7 @@
 					<canvas id="timeline-canvas"></canvas>
 					<input type="range" id="timeline-slider" min="0" max="100" value="100" class="timeline-slider">
 				</div>
-				<!-- HIDDEN DATE PICKER (Critical for AppController logic) -->
+				<!-- Hidden Date Picker (Required by AppController) -->
 				<div style="width:0; height:0; overflow:hidden; opacity:0;">
 					<input type="text" id="date-picker">
 				</div>

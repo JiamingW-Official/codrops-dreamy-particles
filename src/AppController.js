@@ -206,6 +206,7 @@ export default class AppController {
     }
 
     updateUI(data, isClosed, requestedDateStr) {
+        console.log('[updateUI] CALLED with data:', data ? data.date : 'NONE');
         const statusEl = document.getElementById('market-status');
         if (statusEl) {
             statusEl.classList.toggle('hidden', !isClosed);
@@ -1100,6 +1101,9 @@ export default class AppController {
                 newsContainer.appendChild(p);
             });
         }
+
+        // AI Pattern Scan
+        this.runAIPatternScan(data);
     }
 
     // --- CHART SWAPPING LOGIC ---
