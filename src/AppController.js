@@ -2630,9 +2630,9 @@ export default class AppController {
         if (fg < 40 && s > -0.5 && s < 0.5) return 'hephaestus'; // Builders
 
         // 5. NEUTRAL / TRANSITION
-        if (volRatio < 0.6) return 'medusa'; // Frozen
+        if (volRatio < 0.6) return 'hypnos'; // Stagnation/Sleep
         if (volRatio < 0.8 && Math.abs(s) < 0.2) return 'chronos'; // Accumulation
-        if (rsi > 45 && rsi < 55) return 'janus'; // Indecision
+        if (rsi > 45 && rsi < 55) return 'hecate'; // Indecision/Crossroads
 
         // Default Smart Money
         return 'athena';
