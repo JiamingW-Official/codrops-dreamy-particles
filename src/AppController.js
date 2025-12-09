@@ -1015,6 +1015,37 @@ export default class AppController {
                 this.ui.timelineCurrent.textContent = data.date;
             }
         }
+
+        const valDow = document.getElementById('val-dow');
+        if (valDow) valDow.textContent = data.dowValue ? parseFloat(data.dowValue).toLocaleString(undefined, { maximumFractionDigits: 2 }) : '--';
+
+        const valDowChange = document.getElementById('val-dow-change');
+        if (valDowChange) {
+            const dc = data.dowChange || 0;
+            valDowChange.textContent = (dc > 0 ? '+' : '') + dc + '%';
+            valDowChange.className = 'change-pill ' + (dc >= 0 ? 'positive' : 'negative');
+        }
+
+        // Draw Charts
+        this.ui.currentDataCache = data; // Cache for switching
+        this.drawIndexChart(data);
+        this.drawYieldCurve(data); // New Function
+
+        // Headline Logic (moved to Right)
+        const newsContainer = document.getElementById('headlines-container');
+        if (newsContainer && data.headlines) {
+            newsContainer.innerHTML = '';
+            data.headlines.slice(0, 3).forEach(headline => { // Limit to 3
+                const isObj = typeof headline === 'object' && headline !== null;
+                const text = isObj ? headline.title : headline;
+                const link = isObj ? headline.link : '#';
+                const p = document.createElement('p');
+                p.style.margin = '0';
+                p.style.marginBottom = '6px';
+                p.innerHTML = `<a href="${link}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+                newsContainer.appendChild(p);
+            });
+        }
     }
 
     // --- CHART SWAPPING LOGIC ---
@@ -1026,56 +1057,103 @@ export default class AppController {
             });
         }
 
-        // Chart Navigation
-        this.activeChart = 'nasdaq'; // Default
+        // --- NEW: Chart Switching ---
         const charts = ['nasdaq', 'sp500', 'dow'];
 
         const setChart = (type) => {
             this.activeChart = type;
             // Update Title
+            const titleMap = { 'nasdaq': 'NASDAQ', 'sp500': 'S&P 500', 'dow': 'DOW JONES' };
             const titleEl = document.getElementById('chart-title');
-            if (titleEl) {
-                if (type === 'nasdaq') titleEl.textContent = 'NASDAQ';
-                if (type === 'sp500') titleEl.textContent = 'S&P 500';
-                if (type === 'dow') titleEl.textContent = 'DOW JONES';
-            }
+            if (titleEl) titleEl.textContent = titleMap[type];
 
-            // Highlight Rows
+            // Highlight Row
             ['row-nasdaq', 'row-sp500', 'row-dow'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.remove('active-row');
             });
-            const activeId = type === 'dow' ? 'row-dow' : (type === 'sp500' ? 'row-sp500' : 'row-nasdaq');
+            const activeId = 'row-' + type;
             const activeEl = document.getElementById(activeId);
             if (activeEl) activeEl.classList.add('active-row');
 
-            // Redraw
-            if (this.currentData) this.drawIndexChart(this.currentData);
-        };
-
-        // Click Listeners
-        const addClick = (id, type) => {
-            const el = document.getElementById(id);
-            if (el) el.addEventListener('click', () => setChart(type));
+            // Draw
+            if (this.ui.currentDataCache) this.drawIndexChart(this.ui.currentDataCache);
         }
-        addClick('row-nasdaq', 'nasdaq');
-        addClick('row-sp500', 'sp500');
-        addClick('row-dow', 'dow');
+
+        // List Clicks
+        document.getElementById('row-nasdaq')?.addEventListener('click', () => setChart('nasdaq'));
+        document.getElementById('row-sp500')?.addEventListener('click', () => setChart('sp500'));
+        document.getElementById('row-dow')?.addEventListener('click', () => setChart('dow'));
 
         // Arrows
-        const btnPrev = document.getElementById('btn-chart-prev');
-        const btnNext = document.getElementById('btn-chart-next');
+        document.getElementById('btn-chart-prev')?.addEventListener('click', () => {
+            let idx = charts.indexOf(this.activeChart);
+            idx = (idx - 1 + charts.length) % charts.length;
+            setChart(charts[idx]);
+        });
+        document.getElementById('btn-chart-next')?.addEventListener('click', () => {
+            let idx = charts.indexOf(this.activeChart);
+            idx = (idx + 1) % charts.length;
+            setChart(charts[idx]);
+        });
+    }
 
-        if (btnPrev) btnPrev.addEventListener('click', () => {
-            const idx = charts.indexOf(this.activeChart);
-            const newIdx = (idx - 1 + charts.length) % charts.length;
-            setChart(charts[newIdx]);
+    drawYieldCurve(data) {
+        const canvas = document.getElementById('yield-curve-chart');
+        if (!canvas || !data.yieldCurve) return;
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width;
+        const H = canvas.height;
+        ctx.clearRect(0, 0, W, H);
+
+        const points = data.yieldCurve; // Expects [{maturity:'3M', val:4.2}, ...]
+        if (!points || points.length < 2) return;
+
+        // Get Min/Max
+        const vals = points.map(p => p.val);
+        const minVal = Math.min(...vals) * 0.95;
+        const maxVal = Math.max(...vals) * 1.05;
+        const range = maxVal - minVal;
+
+        // Draw Line
+        ctx.beginPath();
+        points.forEach((p, i) => {
+            const x = (i / (points.length - 1)) * (W - 20) + 10; // Padding
+            const y = H - ((p.val - minVal) / range) * (H - 20) - 10;
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         });
-        if (btnNext) btnNext.addEventListener('click', () => {
-            const idx = charts.indexOf(this.activeChart);
-            const newIdx = (idx + 1) % charts.length;
-            setChart(charts[newIdx]);
+
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Draw Dots and Labels
+        ctx.fillStyle = '#00ffaa';
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'center';
+
+        points.forEach((p, i) => {
+            const x = (i / (points.length - 1)) * (W - 20) + 10;
+            const y = H - ((p.val - minVal) / range) * (H - 20) - 10;
+
+            // Dot
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Label (Maturity)
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.fillText(p.maturity, x, H - 2);
+            ctx.fillStyle = '#00ffaa'; // Reset
         });
+
+        // Inverted Curve Warning?
+        if (points[0].val > points[points.length - 1].val) {
+            ctx.fillStyle = 'rgba(255, 80, 80, 0.1)';
+            ctx.fillRect(0, 0, W, H);
+            ctx.fillStyle = '#ff5050';
+            ctx.fillText("INVERTED", W - 30, 15);
+        }
     }
 
     drawIndexChart(currentData) {
@@ -1084,11 +1162,18 @@ export default class AppController {
 
         const canvas = document.getElementById('market-chart');
         if (!canvas || !this.marketDataService.dataMap) return;
+
+        // Select Data based on activeChart
+        let valueKey = 'indexValue';
+        if (this.activeChart === 'sp500') valueKey = 'sp500Value';
+        if (this.activeChart === 'dow') valueKey = 'dowValue';
+
         const ctx = canvas.getContext('2d');
         const W = canvas.width;
         const H = canvas.height;
         ctx.clearRect(0, 0, W, H);
 
+        // ... (Existing Draw Logic adapted for valueKey) ...
         const dates = Object.keys(this.marketDataService.dataMap).sort();
         const endIdx = dates.indexOf(currentData.date);
         if (endIdx === -1) return;

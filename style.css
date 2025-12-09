@@ -641,128 +641,184 @@ body {
 .dashboard-grid {
   position: absolute;
   top: 60px;
-  /* Below Header */
-  left: 20px;
-  right: 20px;
-  bottom: 100px;
-  /* Above Timeline */
-  display: grid;
-  grid-template-columns: 320px 1fr 320px;
-  /* Symmetrical 320px */
-  gap: 20px;
-  pointer-events: none;
-  /* Allow click-through to canvas */
-}
 
-/* Enable pointer events on panels */
-.glass-panel,
-.panel-left,
-.panel-right {
-  pointer-events: auto;
-  background: rgba(10, 10, 12, 0.6);
-  /* Darker glass */
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  max-height: 100%;
-}
+  #sidebar-left,
+  #sidebar-right {
+    position: absolute;
+    top: 2rem;
+    width: 320px;
+    /* Slightly wider for data density */
+    bottom: 6rem;
+    /* Space for timeline */
+    display: flex;
+    flex-direction: column;
+    pointer-events: all;
+    z-index: 10;
+  }
 
-.panel-header {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: var(--text-muted);
-  margin-bottom: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 0.5rem;
-}
+  #sidebar-left {
+    left: 2rem;
+  }
 
-.panel-subheader {
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  color: var(--text-faint);
-  margin-bottom: 0.5rem;
-}
+  #sidebar-right {
+    right: 2rem;
+  }
 
-/* METRICS */
-.metric-group {
-  margin-bottom: 1.5rem;
-}
+  .glass-panel {
+    background: rgba(10, 10, 12, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    padding: 1.2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    /* Hide scrollbar */
+    scrollbar-width: none;
+  }
 
-.metric-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 0.5rem;
-}
+  .glass-panel::-webkit-scrollbar {
+    display: none;
+  }
 
-.data-row-compact {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.85rem;
-  margin-bottom: 0.3rem;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
-  padding-bottom: 2px;
-}
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.8rem;
+  }
 
-.value-mono {
-  font-family: 'Roboto Mono', monospace;
-  color: var(--text-main);
-}
+  .panel-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+  }
 
-/* WIDGETS */
-.widget-box {
-  margin-bottom: 1.5rem;
-}
+  .chart-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9em;
+  }
 
-.widget-title {
-  font-size: 0.6rem;
-  letter-spacing: 1px;
-  color: var(--text-muted);
-  margin-bottom: 0.5rem;
-  text-transform: uppercase;
-}
+  .control-arrow {
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--text-muted);
+    transition: color 0.2s;
+  }
 
-/* AI ANALYST */
-.ai-text {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 0.75rem;
-  line-height: 1.4;
-  color: #e0e0e0;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 0.8rem;
-  border-radius: 6px;
-  border-left: 2px solid var(--color-accent);
-}
+  .control-arrow:hover {
+    color: var(--text-main);
+  }
 
-/* --- DYNAMIC TREEMAP (JS Calculated) --- */
-.sector-treemap-container {
-  display: block;
-  position: relative;
-  /* Anchor for absolute cells */
-  width: 100%;
-  height: 200px;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  margin-top: var(--space-sm);
-}
+  /* Compact List */
+  .market-data-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
 
-.sector-cell {
-  position: absolute;
-  /* JS sets top/left/width/height */
-  background: rgba(255, 255, 255, 0.05);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--text-muted);
+  .data-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+  }
+
+  .data-row.clickable {
+    cursor: pointer;
+  }
+
+  .data-row.clickable:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .data-row.active-row {
+    background: rgba(255, 255, 255, 0.1);
+    border-left: 2px solid var(--color-accent);
+  }
+
+  .label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-main);
+  }
+
+  .value {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--text-main);
+  }
+
+  /* Compact Data Group */
+  .data-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .data-row-compact {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+  }
+
+  .value-small {
+    font-family: 'Space Mono', monospace;
+    font-weight: 500;
+  }
+
+  .separator {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 1rem 0;
+  }
+
+  /* New Right Sidebar Sections */
+  .section-title-small {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+  }
+
+  #yield-curve-chart {
+    width: 100%;
+    height: 120px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+
+  #headlines-container p {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    border-left: 2px solid rgba(255, 255, 255, 0.1);
+    padding-left: 8px;
+    color: var(--text-faint);
+  }
+
+  #headlines-container a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  #headlines-container a:hover {
+    color: var(--color-accent);
+  }
+
   overflow: hidden;
   border: 1px solid rgba(0, 0, 0, 0.3);
   /* Distinct borders */

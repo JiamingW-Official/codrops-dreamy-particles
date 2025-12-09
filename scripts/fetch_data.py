@@ -145,9 +145,10 @@ def fetch_market_data():
     
     # Fetch Data
     # 10 Major Sectors + Indices + Macro
+    # 10 Major Sectors + Indices + Macro
     tickers = [
-        "QQQ", "^GSPC", "^IXIC", "^DJI", # Indices (Added Dow)
-        "^VIX", "^TNX", "^FVX", "DX-Y.NYB", # Volatility, 10Y, 5Y, Dollar Index
+        "^IXIC", "^GSPC", "^DJI", # Indices
+        "^VIX", "^IRX", "^FVX", "^TNX", "^TYX", "DX-Y.NYB", # Volatility, 3M, 5Y, 10Y, 30Y, Dollar Index
         "NB", # Bonds (fallback)
         "XLE", "XLF", "XLK", "XLV", "XLI", "XLY", "XLP", "XLU", "XLB", "XLRE", # Sectors
         "GC=F", "CL=F" # Commodities
@@ -166,8 +167,10 @@ def fetch_market_data():
     dow = data['^DJI'].copy() # NEW
     
     vix = data['^VIX'].copy()
-    tnx = data['^TNX'].copy() # 10Y
+    y3m = data['^IRX'].copy() # 13 Week
     fvx = data['^FVX'].copy() # 5Y
+    tnx = data['^TNX'].copy() # 10Y
+    tyx = data['^TYX'].copy() # 30Y
     dxy = data['DX-Y.NYB'].copy() # Dollar
     gold = data['GC=F'].copy()
     oil = data['CL=F'].copy()
@@ -181,8 +184,10 @@ def fetch_market_data():
     vix = vix.reindex(nasdaq.index, method='ffill')
     
     # Macro
-    tnx = tnx.reindex(nasdaq.index, method='ffill')
+    y3m = y3m.reindex(nasdaq.index, method='ffill')
     fvx = fvx.reindex(nasdaq.index, method='ffill')
+    tnx = tnx.reindex(nasdaq.index, method='ffill')
+    tyx = tyx.reindex(nasdaq.index, method='ffill')
     dxy = dxy.reindex(nasdaq.index, method='ffill')
     
     # Commodities
@@ -506,9 +511,21 @@ def fetch_market_data():
         dow_close = float(dow.loc[date]['Close']) if not pd.isna(dow.loc[date]['Close']) else 0.0
         sp500_val = float(sp500.loc[date]['Close']) if not pd.isna(sp500.loc[date]['Close']) else 0.0
         dxy_val = float(dxy.loc[date]['Close']) if date in dxy.index and not pd.isna(dxy.loc[date]['Close']) else 0.0
-        tnx_val = float(tnx.loc[date]['Close']) if date in tnx.index and not pd.isna(tnx.loc[date]['Close']) else 0.0
-        fvx_val = float(fvx.loc[date]['Close']) if date in fvx.index and not pd.isna(fvx.loc[date]['Close']) else 0.0
         
+        # Yields
+        y3m_val = float(y3m.loc[date]['Close']) if date in y3m.index and not pd.isna(y3m.loc[date]['Close']) else 0.0
+        y5y_val = float(fvx.loc[date]['Close']) if date in fvx.index and not pd.isna(fvx.loc[date]['Close']) else 0.0
+        y10y_val = float(tnx.loc[date]['Close']) if date in tnx.index and not pd.isna(tnx.loc[date]['Close']) else 0.0
+        y30y_val = float(tyx.loc[date]['Close']) if date in tyx.index and not pd.isna(tyx.loc[date]['Close']) else 0.0
+
+        # Construct Curve Object for UI
+        yield_curve = [
+            {"maturity": "3M", "val": round(y3m_val, 2)},
+            {"maturity": "5Y", "val": round(y5y_val, 2)},
+            {"maturity": "10Y", "val": round(y10y_val, 2)},
+            {"maturity": "30Y", "val": round(y30y_val, 2)}
+        ]
+
         # Checks
         if dow_close <= 1.0: dow_close = 0.0 
         if sp500_val <= 1.0: sp500_val = 0.0
@@ -540,9 +557,10 @@ def fetch_market_data():
             'vix': round(vix_val, 2),
             'fearGreedIndex': fear_greed_idx, 
             'volumeRatio': round(volume_ratio, 2),
-            'tenYearYield': round(tnx_val, 2),
-            'fiveYearYield': round(fvx_val, 2),
-            'yieldCurve': round(tnx_val - fvx_val, 2), # Slope
+            'tenYearYield': round(y10y_val, 2),
+            'fiveYearYield': round(y5y_val, 2),
+            'yieldCurve': yield_curve, # New Array Format
+            'yieldSpread': round(y10y_val - y3m_val, 2), # 10Y-3M Spread (Recession Indicator)
             'dollarIndex': round(dxy_val, 2),
             'marketGap': round(market_gap, 2),
             'intradayRange': round(intraday_range, 2),
