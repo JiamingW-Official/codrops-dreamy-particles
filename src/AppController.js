@@ -2606,55 +2606,79 @@ export default class AppController {
 
     determineRulingGod(data) {
         if (!data) return null;
+
+        // Extract Metrics
         const fg = data.fearGreedIndex || 50;
         const vix = data.vix || 20;
         const s = data.marketChangePercent || 0;
         const volRatio = data.volumeRatio || 1.0;
         const rsi = data.rsi || 50;
-        const gap = data.marketGap || 0;
+        const gap = Math.abs(data.marketGap || 0);
+        const dayHigh = data.dayHigh || 0;
+        const yearHigh = data.yearHigh || dayHigh;
+        const yearLow = data.yearLow || data.dayLow;
+        const close = data.indexValue || 0;
+        const range = data.intradayRange || 0;
 
-        // 1. EXTREME GREED / MANIA
-        if (fg >= 80) return 'zeus';
-        if (fg >= 70 && rsi > 75) return 'dionysus';
+        // --- 1. THE POWER (BULL) ---
 
-        // 2. BULLISH STRENGTH
-        if (s > 1.5 && volRatio > 1.2) return 'hermes';
-        if (s > 0.5 && fg < 60 && gap > 0.5) return 'apollo'; // Recovery
+        // ZEUS: All Time High / Dominance
+        // Trigger: Close is within 2% of Year High OR Extreme Momentum
+        if (close >= yearHigh * 0.98 || (s > 1.0 && fg > 75)) return 'zeus';
 
-        // 3. EXTREME FEAR / CRASH
-        if (fg <= 15) return 'hades';
-        if (s < -2.0 && volRatio > 1.5) return 'poseidon'; // Crash wave
+        // DIONYSUS: Mania / Irrational Exuberance
+        // Trigger: Extreme Greed + Overbought (disconnected from reality)
+        if (fg > 80 && rsi > 70) return 'dionysus';
 
-        // 4. BEARISH STRUCTURE
-        if (vix > 28 && Math.abs(s) < 1.0) return 'ares'; // Volatile Chop
-        if (fg < 40 && s > -0.5 && s < 0.5) return 'hephaestus'; // Builders
+        // HERMES: Velocity / Speed
+        // Trigger: High Volume + Big Move (Money moving fast)
+        if (volRatio > 1.5 && Math.abs(s) > 1.5) return 'hermes';
 
-        // 5. NEUTRAL / TRANSITION
-        if (volRatio < 0.6) return 'hypnos'; // Stagnation/Sleep
-        if (volRatio < 0.8 && Math.abs(s) < 0.2) return 'chronos'; // Accumulation
-        if (rsi > 45 && rsi < 55) return 'hecate'; // Indecision/Crossroads
+        // APOLLO: Recovery / Healing
+        // Trigger: Big Green Day (>1%) coming from a low RSI base (<45) OR VIX dropping fast
+        if (s > 1.0 && rsi < 50) return 'apollo';
 
-        // 6. SEASONAL ZODIAC (The Theory of Cyclic Time)
-        // If no specific condition is triggered, the Market Spirit follows the Seasons.
-        // This ensures all 12 Archetypes are represented in the Cycle of the Year.
-        const dateObj = new Date(data.date);
-        const month = dateObj.getMonth(); // 0 (Jan) - 11 (Dec)
 
-        const zodiac = [
-            'hypnos',     // Jan: Post-holiday slumber
-            'chronos',    // Feb: The long wait
-            'hephaestus', // Mar: Building for Spring
-            'apollo',     // Apr: Recovery/Light
-            'hermes',     // May: "Sell in May" velocity
-            'zeus',       // Jun: Summer peak
-            'dionysus',   // Jul: Mid-summer madness
-            'athena',     // Aug: Strategic re-evaluation
-            'hecate',     // Sep: The Crossroads (historically volatile)
-            'ares',       // Oct: The Month of Crashes (War)
-            'poseidon',   // Nov: Deep waters
-            'hades'       // Dec: Tax loss/Death of year
-        ];
+        // --- 2. THE CHAOS (BEAR / CRASH) ---
 
-        return zodiac[month];
+        // HADES: Capitulation / The Bottom
+        // Trigger: Extreme Fear.
+        if (fg < 15) return 'hades';
+
+        // POSEIDON: Liquidation Cascade (The Wave)
+        // Trigger: Deep Red Day (< -2%) with High Volume (Panic selling)
+        if (s < -1.8 && volRatio > 1.3) return 'poseidon';
+
+        // ARES: The Battlefield / Chop
+        // Trigger: High VIX (War) + High Intraday Range (Fighting) but Price went nowhere (Close ~ Open)
+        // OR just High Volatility without direction
+        if (vix > 28 && range > 1.5) return 'ares';
+
+
+        // --- 3. THE MYSTERY (TRANSITION / PIVOT) ---
+
+        // HECATE: The Crossroads / Indecision
+        // Trigger: Doji-like day (Small change) but Elevated Anxiety (VIX > 20)
+        // Standing between Bull and Bear
+        if (Math.abs(s) < 0.3 && vix > 20) return 'hecate';
+
+        // HYPNOS: Dormancy / Sleep
+        // Trigger: Dead Volume. Market is sleeping.
+        if (volRatio < 0.6) return 'hypnos';
+
+
+        // --- 4. THE STRUCTURE (BASE / TIME) ---
+
+        // CHRONOS: Time / The Grind
+        // Trigger: Low Volatility (VIX < 14). Time passing slowly. 
+        if (vix < 14) return 'chronos';
+
+        // HEPHAESTUS: Forging the Support
+        // Trigger: Price is near Lows, but Volume is steady. Building the base.
+        if (close <= yearLow * 1.05) return 'hephaestus';
+
+        // ATHENA: Wisdom / Strategy (Default Smart Money)
+        // Trigger: Calm uptrend or Neutral stability
+        return 'athena';
     }
 }
