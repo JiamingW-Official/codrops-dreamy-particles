@@ -139,47 +139,55 @@ def fetch_rss_headlines(date_str, mood_query):
 def fetch_market_data():
     logging.info("Starting PhD-Level Data Pipeline...")
     
-    # Define date range: Last 180 days -> Future (to catch current date)
-    # We need extra history for Moving Averages (125 days for Momentum)
-    output_days = 360
-    buffer_days = 300 # Increased to ensure >125 trading days
-    end_date = datetime.now()
-    start_date = end_date - timedelta(days=450) # Adjusted for buffer and output days
+    # Use relative period to avoid environment time mismatch (e.g. system thinks it's 2025)
+    # Fetching 2 years ensures we have enough buffer for 200-day MA
+    # We will then iterate over the ACTUALLY RETURNED dates.
     
     # Fetch Data
     # 10 Major Sectors + Indices + Macro
-    tickers = ["^IXIC", "^GSPC", "^VIX", "^TNX", 
-               "XLK", "XLF", "XLV", "XLY", "XLP", "XLE", "XLI", "XLB", "XLC", "XLU",
-               "GC=F", "CL=F"] # Gold and Oil
+    tickers = [
+        "QQQ", "^GSPC", "^IXIC", # Indices
+        "^VIX", "^TNX", # Volatility & Rates
+        "NB", # Bonds (fallback/proxy, actually TNX mainly used)
+        "XLE", "XLF", "XLK", "XLV", "XLI", "XLY", "XLP", "XLU", "XLB", "XLRE", # Sectors
+        "GC=F", "CL=F" # Commodities
+    ]
     
-    logging.info("Downloading Market Data...")
-    data = yf.download(tickers, start=start_date, end=end_date, group_by='ticker', progress=False)
-    
-    # Forward Fill to handle data gaps (robustness)
-    data = data.ffill()
+    logging.info("Downloading Market Data (Last 2 Years)...")
+    try:
+        data = yf.download(tickers, period="2y", group_by='ticker', progress=False)
+    except Exception as e:
+        logging.error(f"Failed to download data: {e}")
+        return
 
-    # Flatten Data
-    nasdaq = data['^IXIC']
-    sp500 = data['^GSPC']
-    vix = data['^VIX']
-    tnx = data['^TNX'] # 10 Year Treasury Yield
-    gold = data['GC=F']
-    oil = data['CL=F']
+    # Extract DataFrames
+    nasdaq = data['^IXIC'].copy()
+    sp500 = data['^GSPC'].copy()
+    vix = data['^VIX'].copy()
+    tnx = data['^TNX'].copy()
+    gold = data['GC=F'].copy()
+    oil = data['CL=F'].copy()
     
-    # Sectors
+    try:
+         # Fill NaN in macro data to avoid gaps
+         tnx.fillna(method='ffill', inplace=True)
+         gold.fillna(method='ffill', inplace=True)
+         oil.fillna(method='ffill', inplace=True)
+    except: pass
+    
     sectors = {
-        "XLK": data['XLK'], # Tech
-        "XLF": data['XLF'], # Financials
-        "XLV": data['XLV'], # Health
-        "XLY": data['XLY'], # Consumer Disc
-        "XLP": data['XLP'], # Consumer Staples
-        "XLE": data['XLE'], # Energy
-        "XLI": data['XLI'], # Industrial
-        "XLB": data['XLB'], # Materials
-        "XLC": data['XLC'], # Communication
-        "XLU": data['XLU']  # Utilities
+        "XLE": data['XLE'].copy(),
+        "XLF": data['XLF'].copy(), 
+        "XLK": data['XLK'].copy(),
+        "XLV": data['XLV'].copy(),
+        "XLI": data['XLI'].copy(), 
+        "XLY": data['XLY'].copy(),
+        "XLP": data['XLP'].copy(), 
+        "XLU": data['XLU'].copy(),
+        "XLB": data['XLB'].copy(), 
+        "XLRE": data['XLRE'].copy()
     }
-    
+
     market_data = {}
     
     # Pre-calculate Indicators
@@ -208,20 +216,26 @@ def fetch_market_data():
     rs = avg_gain / avg_loss
     rsi_series = 100 - (100 / (1 + rs))
 
-    # Iterate through days using Nasdaq index as base
+    # Iterate through days using THE ACTUAL DOWNLOADED INDEX
+    # This fixes the "Future 2025" bug
     dates = nasdaq.index
     total_days = len(dates)
     
-    # Determine start date for OUTPUT (exclude buffer)
-    output_start_date = (end_date - timedelta(days=output_days)).strftime("%Y-%m-%d")
+    # Output roughly last 300 days of valid data
+    start_idx = max(0, total_days - 300)
+    
+    logging.info(f"Processing {total_days} valid trading days. Outputting last {total_days - start_idx} days.")
 
-    logging.info(f"Processing {total_days} days (Buffer included)... Output starts > {output_start_date}")
+    # We need full history for MAs, but loop can start later? 
+    # Actually, loop iterates all for ease, we just skip saving early ones?
+    # No, iteration logic below depends on i, so let's iterate all but only save last 300.
+
 
     for i, date in enumerate(dates):
         date_str = date.strftime("%Y-%m-%d")
         
         # Skip buffer days (only output requested range)
-        if date_str < output_start_date:
+        if i < start_idx:
             continue
         
         # Skip if data is missing
