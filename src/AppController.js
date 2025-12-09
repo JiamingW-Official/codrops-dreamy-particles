@@ -836,11 +836,12 @@ export default class AppController {
 
         // 1. Main NASDAQ Display (Top Left)
         if (document.getElementById('val-index')) {
-            document.getElementById('val-index').textContent = data.indexValue.toLocaleString(undefined, { maximumFractionDigits: 2 });
+            const val = data.indexValue !== undefined ? data.indexValue : 0;
+            document.getElementById('val-index').textContent = val.toLocaleString(undefined, { maximumFractionDigits: 2 });
             const valChange = document.getElementById('val-change');
             if (valChange) {
                 // Rounding to 2 decimal places
-                const change = parseFloat(data.marketChangePercent).toFixed(2);
+                const change = parseFloat(data.marketChangePercent || 0).toFixed(2);
                 valChange.textContent = (data.marketChangePercent > 0 ? '+' : '') + change + '%';
                 valChange.className = 'change-pill ' + (data.marketChangePercent > 0 ? 'positive' : 'negative');
             }
@@ -848,10 +849,11 @@ export default class AppController {
 
         // 2. S&P 500 (Main)
         if (document.getElementById('val-sp500')) {
-            document.getElementById('val-sp500').textContent = data.sp500Value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+            const val = data.sp500Value !== undefined ? data.sp500Value : 0;
+            document.getElementById('val-sp500').textContent = val.toLocaleString(undefined, { maximumFractionDigits: 2 });
             const spChange = document.getElementById('val-sp500-change');
             if (spChange) {
-                const change = parseFloat(data.sp500Change).toFixed(2);
+                const change = parseFloat(data.sp500Change || 0).toFixed(2);
                 spChange.textContent = (data.sp500Change > 0 ? '+' : '') + change + '%';
                 spChange.className = 'change-pill ' + (data.sp500Change > 0 ? 'positive' : 'negative');
             }
