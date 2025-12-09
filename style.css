@@ -28,15 +28,16 @@ body {
 }
 
 /* --- CINEMATIC UI LAYER --- */
-/* Liquid Dashboard Layout */
 .ui-layer {
-  display: grid;
-  grid-template-columns: 320px 1fr 320px;
-  grid-template-rows: auto 1fr auto;
-  gap: 1rem;
-  padding: 2rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
-  /* Let clicks pass through empty space */
+  z-index: 10;
+  display: block;
+  /* Disable Grid, using Absolute layout */
 }
 
 /* Enable pointer events on panels */
@@ -47,8 +48,10 @@ body {
 }
 
 .header {
-  grid-column: 1;
-  margin-bottom: 2rem;
+  position: absolute;
+  top: 2rem;
+  left: 3rem;
+  z-index: 20;
 }
 
 .market-hero {
