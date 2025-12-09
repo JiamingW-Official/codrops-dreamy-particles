@@ -138,6 +138,11 @@ export default class GPGPU {
             this.uniforms.velocityUniforms.uOriginalPosition.value = newPositionTexture;
         }
 
+        // CRITICAL: Update Events/Interaction Raycaster to new mesh
+        if (this.events) {
+            this.events.updateGeometry(newMesh);
+        }
+
         // Clean up temp sampler if needed (GPGPUUtils doesn't have dispose, but it's just arrays)
         tempUtils.sampler = null;
         tempUtils.mesh = null;

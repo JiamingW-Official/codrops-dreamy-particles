@@ -134,4 +134,26 @@ export default class GPGPUEvents {
         if (this.uniforms.velocityUniforms.uMouseSpeed) this.uniforms.velocityUniforms.uMouseSpeed.value = this.mouseSpeed;
         if (this.uniforms.velocityUniforms.uTapIntensity) this.uniforms.velocityUniforms.uTapIntensity.value = this.tapIntensity;
     }
+
+    updateGeometry(newMesh) {
+        if (!newMesh) return;
+
+        console.log("GPGPUEvents: Updating Geometry for Interaction");
+        this.mesh = newMesh;
+
+        if (newMesh.geometry) {
+            this.geometry = newMesh.geometry;
+        } else {
+            console.warn("GPGPUEvents: New Mesh has no geometry, using dummy BoxGeometry.");
+            this.geometry = new THREE.BoxGeometry(1, 1, 1);
+        }
+
+        // Re-setup mouse interactions with new geometry
+        // Dispose old BVH if exists (optimization)
+        if (this.geometry.boundsTree) {
+            this.geometry.boundsTree = null;
+        }
+
+        this.setupMouse();
+    }
 }

@@ -52,8 +52,8 @@ export default class PostProcessing {
 
 
         this.params = {
-            threshold: 0.25, // Increased from 0.058 for clarity (cuts haze)
-            strength: 2.0,   // Increased from 1.2 for more 'pop'
+            threshold: 0.25, // High clarity
+            strength: 1.5,   // Reduced from 2.0 (Balanced Impact)
             radius: 0.1,     // Slight radius for better falloff
             directionX: 1.5,
             directionY: 1,

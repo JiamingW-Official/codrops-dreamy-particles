@@ -219,7 +219,7 @@ export default class Mask extends Handler {
         );
       }
 
-      gsap.to(this.params, { minAlpha: oldAlpha, duration: 0.5, delay: 0.2 });
+      gsap.to(this.params, { minAlpha: oldAlpha, duration: 0.5, delay: 0.0 }); // Immediate fade in
 
       // Notify Debug
       console.log(`[Mask] Switched to ${modelKey}`);
