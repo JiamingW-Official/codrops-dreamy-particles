@@ -2172,9 +2172,8 @@ export default class AppController {
 
                 this.audioHandler.setMood(soundMood);
 
-                // Panic Mode: Distortion from VIX
                 if (data.vix && typeof this.audioHandler.setDistortionLevel === 'function') {
-                    this.audioHandler.setDistortionLevel(data.vix);
+                    this.audioHandler.setDistortionLevel(parseFloat(data.vix));
                 }
             }
             fgDisplay.textContent = fgText;

@@ -148,6 +148,8 @@ export default class AudioHandler extends EventEmitter {
             targetVol = t * t * 0.8;
         }
 
+        console.log(`[AudioHandler] VIX: ${vix}, Distortion Vol: ${targetVol.toFixed(3)}`);
+
         const now = this.context.currentTime;
         this.distortionGain.gain.setTargetAtTime(targetVol, now, 0.5);
     }
