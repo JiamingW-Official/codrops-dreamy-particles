@@ -187,10 +187,12 @@ export default class AppController {
     }
 
     setupEventListeners() {
-        this.ui.btnToday.addEventListener('click', () => {
-            this.stopPlay();
-            this.picker.setDate(new Date(), true);
-        });
+        if (this.ui.btnToday) {
+            this.ui.btnToday.addEventListener('click', () => {
+                this.stopPlay();
+                this.picker.setDate(new Date(), true);
+            });
+        }
     }
 
     loadDate(date) {
@@ -792,6 +794,7 @@ export default class AppController {
     // --- REPLACED: updateUI with new calls ---
     updateUI(data, isClosed, requestedDateStr) {
         // ... (Keeping standard parts) ...
+        const statusEl = document.getElementById('market-status');
         if (statusEl) {
             statusEl.classList.toggle('hidden', !isClosed);
             if (isClosed) statusEl.textContent = `Market Closed on ${requestedDateStr}. Data from ${data.date}`;
