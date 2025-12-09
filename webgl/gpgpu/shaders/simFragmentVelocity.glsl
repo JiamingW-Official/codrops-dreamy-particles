@@ -22,11 +22,7 @@ void main() {
 
 	velocity *= uForce; // Velocity relaxation
 
-    // Audio Heartbeat (Bass Inflate) - SNAPPY
-    if (uAudioBass > 0.45) {
-        vec3 pulseDir = normalize(position);
-        velocity += pulseDir * (uAudioBass * 0.004); // Stronger kick, but short-lived due to high damping
-    }
+
 
 
 	// Particle attraction to shape force

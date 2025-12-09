@@ -19,9 +19,10 @@ void main() {
 	newpos.xyz = color.xyz;
     
     // Audio Vibration (Visual Only)
-    // Radial pulse mimicking the original physics push
+    // Radial pulse mimicking the original physics push - VISUAL ONLY
     vec3 direction = normalize(newpos);
-    float pulse = uAudioBass * 0.1; // Adjust intensity as needed
+    float bass = smoothstep(0.4, 0.9, uAudioBass); // Threshold to keep it tight
+    float pulse = bass * 0.25; // Visual kick amount
     newpos += direction * pulse;
 
 	vPosition = newpos;

@@ -4503,12 +4503,6 @@ void main() {
 
 	velocity *= uForce; 
 
-    
-    if (uAudioBass > 0.45) {
-        vec3 pulseDir = normalize(position);
-        velocity += pulseDir * (uAudioBass * 0.004); 
-    }
-
 	
 
 	vec3 direction = normalize( original - position );
@@ -4582,7 +4576,8 @@ void main() {
     
     
     vec3 direction = normalize(newpos);
-    float pulse = uAudioBass * 0.1; 
+    float bass = smoothstep(0.4, 0.9, uAudioBass); 
+    float pulse = bass * 0.25; 
     newpos += direction * pulse;
 
 	vPosition = newpos;
