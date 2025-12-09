@@ -59,10 +59,10 @@ export default class Camera extends Handler {
     this.controls = new PointerLockControls(this.cameraTarget, this.canvas);
     this.controls.pointerSpeed = 1.5; // Increased sensitivity
 
-    // Click to lock
-    this.canvas.addEventListener('click', () => {
-      this.controls.lock();
-    });
+    // Click to lock - DISABLED for Dashboard usage
+    // this.canvas.addEventListener('click', () => {
+    //   this.controls.lock();
+    // });
 
     const onKeyDown = (event) => {
       switch (event.code) {
