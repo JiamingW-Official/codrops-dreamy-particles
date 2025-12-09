@@ -22,6 +22,12 @@ void main() {
 
 	velocity *= uForce; // Velocity relaxation
 
+    // Audio Heartbeat (Bass Inflate)
+    if (uAudioBass > 0.1) {
+        vec3 pulseDir = normalize(position);
+        velocity += pulseDir * (uAudioBass * 0.008); 
+    }
+
 
 	// Particle attraction to shape force
 

@@ -1,9 +1,11 @@
 import MarketDataService from './MarketDataService.js';
 import Mask from '../webgl/Mask.js';
+import AudioHandler from '../webgl/utils/AudioHandler.js';
 import flatpickr from 'flatpickr';
 
 export default class AppController {
     constructor() {
+        this.audioHandler = AudioHandler.getInstance();
         this.marketDataService = new MarketDataService();
         this.mask = null;
         this.picker = null;
@@ -2158,6 +2160,18 @@ export default class AppController {
             else if (fgIdx <= 55) { fgText = `${fgIdx} · Neutral`; fgClr = "#ffffff"; }
             else if (fgIdx <= 75) { fgText = `${fgIdx} · Greed`; fgClr = "#50ffaa"; }
             else { fgText = `${fgIdx} · Extreme Greed`; fgClr = "#00ffaa"; }
+
+            // --- AUDIO REACTIVITY ---
+            if (this.audioHandler && typeof this.audioHandler.setMood === 'function') {
+                let soundMood = 'neutral';
+                if (fgIdx <= 25) soundMood = 'extreme_fear';
+                else if (fgIdx <= 45) soundMood = 'fear';
+                else if (fgIdx <= 55) soundMood = 'neutral';
+                else if (fgIdx <= 75) soundMood = 'greed';
+                else soundMood = 'extreme_greed';
+
+                this.audioHandler.setMood(soundMood);
+            }
             fgDisplay.textContent = fgText;
             fgDisplay.style.color = fgClr;
         }
