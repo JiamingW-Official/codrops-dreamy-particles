@@ -9,9 +9,9 @@
 	<title>GPGPU Shining Mask - Mask</title>
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
-  <script type="module" crossorigin src="/codrops-dreamy-particles/assets/index-55bbb1af.js"></script>
-  <link rel="modulepreload" crossorigin href="/codrops-dreamy-particles/assets/GPGPU-53fd2f2d.js">
-  <link rel="stylesheet" href="/codrops-dreamy-particles/assets/GPGPU-a1cac5bb.css">
+  <script type="module" crossorigin src="/codrops-dreamy-particles/assets/index-5a2412ea.js"></script>
+  <link rel="modulepreload" crossorigin href="/codrops-dreamy-particles/assets/GPGPU-a4caf82c.js">
+  <link rel="stylesheet" href="/codrops-dreamy-particles/assets/GPGPU-085085bb.css">
 </head>
 
 <body class="is-loading">
@@ -27,6 +27,13 @@
 				<span class="search-trigger-text">Search...</span>
 				<span class="search-trigger-shortcut">⌘K</span>
 			</button>
+			<div class="date-navigation">
+				<button id="btn-date-prev" class="date-nav-btn" title="Previous Day">‹</button>
+				<div id="date-display" class="date-display">
+					<span id="date-text">--</span>
+				</div>
+				<button id="btn-date-next" class="date-nav-btn" title="Next Day">›</button>
+			</div>
 			<div id="market-status" class="market-status hidden">Market Closed</div>
 		</div>
 
@@ -123,6 +130,34 @@
 						<span class="value-small" id="val-dxy">--</span>
 					</div>
 				</div>
+
+				<div class="separator"></div>
+
+				<!-- GOD INFORMATION -->
+				<div class="data-group" id="god-info-section">
+					<div class="god-header">
+						<span class="god-name" id="god-name">--</span>
+						<span class="god-title" id="god-title">--</span>
+					</div>
+					<div class="god-content">
+						<div class="god-section">
+							<span class="label-muted">Significance Today</span>
+							<div class="god-text" id="god-significance">--</div>
+						</div>
+						<div class="god-section">
+							<span class="label-muted">Why This God</span>
+							<div class="god-text" id="god-why">--</div>
+						</div>
+						<div class="god-section">
+							<span class="label-muted">Day Summary</span>
+							<div class="god-text" id="god-summary">--</div>
+						</div>
+						<div class="god-section">
+							<span class="label-muted">About</span>
+							<div class="god-text" id="god-about">--</div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 
@@ -177,19 +212,6 @@
 					</div>
 				</div>
 
-				<div class="separator"></div>
-
-				<!-- MODEL SELECT -->
-				<div class="control-group">
-					<span class="label-muted">Visual Model</span>
-					<select id="model-select" class="dropdown">
-						<option value="mask">Classic Mask</option>
-						<option value="venecia">Venecia</option>
-						<option value="cyborg">Cyborg</option>
-						<option value="samurai">Samurai</option>
-						<option value="subway">Subway</option>
-					</select>
-				</div>
 			</div>
 		</div>
 
