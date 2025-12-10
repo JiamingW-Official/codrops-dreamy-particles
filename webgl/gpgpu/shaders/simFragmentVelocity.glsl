@@ -12,6 +12,8 @@ uniform sampler2D uWebcamTexture;
 uniform float uWebcamEnabled;
 uniform float uTime;
 uniform float uAttraction; // New uniform
+uniform vec3 uWordRingPosition; // WordRing center position for delicate interaction
+uniform float uWordRingRadius; // WordRing radius for interaction detection
 
 
 void main() {
@@ -52,6 +54,24 @@ void main() {
 		// Tap force scales more with intensity for stronger ripple
 		float tapForce = uTapIntensity * (0.02 + uTapIntensity * 0.015); // Non-linear scaling
 		velocity += pushDirection * distanceFactor * (0.07 * uMouseSpeed + tapForce); 
+	}
+
+	// WordRing interaction - tiny range but strong effect at the edge of words
+	// Check multiple points along the ring circumference for precise edge detection
+	float wordRingDistance = distance(position, uWordRingPosition);
+	
+	// Very small, sharp interaction radius - just the edge of the words (tiny range)
+	float wordRingEdgeRadius = uWordRingRadius * 1.05; // Very close to ring radius (just the edge)
+	float wordRingInteractionRadius = uWordRingRadius * 1.08; // Much smaller radius for tiny range
+	
+	// Check if particle is near the ring edge (sharp, tiny brush)
+	if (wordRingDistance > wordRingEdgeRadius * 0.98 && wordRingDistance < wordRingInteractionRadius) {
+		// Only interact at the very edge - sharp and precise, tiny range
+		vec3 pushDirection = normalize(position - uWordRingPosition);
+		float distanceFactor = 1.0 - ((wordRingDistance - wordRingEdgeRadius * 0.98) / (wordRingInteractionRadius - wordRingEdgeRadius * 0.98));
+		distanceFactor = distanceFactor * distanceFactor; // Smooth falloff
+		// Tiny range but strong effect - powerful push at the very edge
+		velocity += pushDirection * distanceFactor * 0.12; // Strong force but tiny range
 	}
 
     // Webcam Interaction - Consolidated into particles with more obvious effect

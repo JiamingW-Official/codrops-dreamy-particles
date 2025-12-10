@@ -31,21 +31,17 @@ void main() {
 
 	float velocityAlpha = clamp(length(velocity.r), uMinAlpha, uMaxAlpha);
     
-    // Audio Influence - Constant midpoint, variable amplitude range
-    // Keep same midpoint for all conditions, only increase the range of variation
-    float audioMidpoint = 0.0; // Constant midpoint (no base offset for alpha)
+    // Audio Influence - Restored to original brightness
+    // Base audio influence (same as before)
+    velocityAlpha += uAudioHigh * 0.2;
+    velocityAlpha += uAudioBass * 0.4; // Add Bass Flash
+    velocityAlpha += uAudioMid * 0.15; // Mid boost
     
-    // Variable amplitude range - increases with intensity but keeps same midpoint
-    float baseRange = 0.2; // Base range for normal conditions
-    float intensityRange = uMarketIntensity * 0.3; // Additional range from intensity
-    float extremeFearRange = uExtremeFear * 0.5; // Additional range in extreme fear
-    float audioRange = baseRange + intensityRange + extremeFearRange;
-    
-    // Apply: midpoint - range/2 + (signal * range) - keeps midpoint constant, increases variation
-    // This ensures the midpoint stays the same while range increases
-    velocityAlpha += audioMidpoint - audioRange * 0.5 + (uAudioHigh * audioRange * 0.35);
-    velocityAlpha += audioMidpoint - audioRange * 0.5 + (uAudioBass * audioRange * 0.6); // Stronger bass flash
-    velocityAlpha += audioMidpoint - audioRange * 0.5 + (uAudioMid * audioRange * 0.25); // Mid boost
+    // EXTREME FEAR: Additional boost on top of base
+    float extremeFearBoost = uExtremeFear * 1.5; // 1.5x multiplier in extreme fear
+    velocityAlpha += uAudioHigh * (0.2 * extremeFearBoost);
+    velocityAlpha += uAudioBass * (0.4 * extremeFearBoost);
+    velocityAlpha += uAudioMid * (0.15 * extremeFearBoost);
     
     // Hover Highlighting - Smaller, more delicate brush with same highlight intensity
     // Check if mouse is valid (not at origin or far away)

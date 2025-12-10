@@ -72,6 +72,10 @@ export default class GPGPU {
         // Webcam Uniforms
         this.uniforms.velocityUniforms.uWebcamTexture = { value: new THREE.Texture() };
         this.uniforms.velocityUniforms.uWebcamEnabled = { value: 0 };
+        
+        // WordRing Uniforms for Delicate Particle Interaction
+        this.uniforms.velocityUniforms.uWordRingPosition = { value: new THREE.Vector3(0, 0, 0) };
+        this.uniforms.velocityUniforms.uWordRingRadius = { value: 1.2 };
 
         this.gpgpuCompute.init();
     }
@@ -104,6 +108,10 @@ export default class GPGPU {
                 // Webcam Uniforms for Visual Effects
                 uWebcamTexture: { value: new THREE.Texture() },
                 uWebcamEnabled: { value: 0 },
+                
+                // WordRing Uniforms for Delicate Particle Interaction
+                uWordRingPosition: { value: new THREE.Vector3(0, 0, 0) },
+                uWordRingRadius: { value: 1.2 },
             },
             vertexShader,
             fragmentShader,

@@ -57,7 +57,8 @@ export default class AppController {
         this.ui.timelineCurrent = document.getElementById('timeline-current');
         this.ui.timelineCanvas = document.getElementById('timeline-canvas');
         this.ui.btnPlay = document.getElementById('btn-play');
-        this.ui.modelSelect = document.getElementById('model-select');
+        // Model select removed - no longer needed
+        // this.ui.modelSelect = document.getElementById('model-select');
         this.isPlaying = false;
         this.playInterval = null;
 
@@ -83,11 +84,12 @@ export default class AppController {
             }
         }
 
-        if (this.ui.modelSelect) {
-            this.ui.modelSelect.addEventListener('change', (e) => {
-                if (this.mask) this.mask.changeModel(e.target.value);
-            });
-        }
+        // Model selection removed - no longer needed
+        // if (this.ui.modelSelect) {
+        //     this.ui.modelSelect.addEventListener('change', (e) => {
+        //         if (this.mask) this.mask.changeModel(e.target.value);
+        //     });
+        // }
 
         console.log('[AppController] About to call setupEventListeners');
         this.setupEventListeners();

@@ -3,6 +3,7 @@ import Handler from './abstract/Handler.js';
 import * as THREE from 'three';
 import GPGPU from './gpgpu/GPGPU.js'
 import KeywordCloud from './KeywordCloud.js';
+import WordRing from './WordRing.js';
 import gsap from 'gsap';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
@@ -58,31 +59,113 @@ export default class Mask extends Handler {
 
   init() {
     this.setupMask();
+    // setupGPGPU will be called after model is loaded in setupMask
     this.setupGPGPU();
-    this.setupDebug();
+    // setupDebug needs GPGPU to be initialized, so delay it
+    setTimeout(() => {
+      if (this.gpgpu) {
+        this.setupDebug();
+      }
+    }, 100);
   }
 
 
   setupMask() {
-    const modelName = this.currentModelName || 'mask';
-    const modelResource = this.resources.models[modelName];
+    console.log('Mask: setupMask called - Model rendering disabled');
+    // Model rendering disabled - only WordRing will be shown
+    // const modelName = this.currentModelName || 'mask';
+    // const modelResource = this.resources.models[modelName];
 
-    let mask;
-    if (!modelResource) {
-      console.error(`Model ${modelName} not found! Using fallback.`);
-      const geo = new THREE.BoxGeometry(1, 1, 1);
-      const mat = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
-      mask = new THREE.Mesh(geo, mat);
-    } else {
-      mask = this.resolveMesh(modelResource.scene);
-    }
-    this.model = mask;
+    // let mask;
+    // if (!modelResource) {
+    //   console.error(`Model ${modelName} not found! Using fallback.`);
+    //   const geo = new THREE.BoxGeometry(1, 1, 1);
+    //   const mat = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
+    //   mask = new THREE.Mesh(geo, mat);
+    // } else {
+    //   mask = this.resolveMesh(modelResource.scene);
+    // }
+    // this.model = mask;
+    
+    // Create a dummy model object for positioning purposes (not added to scene)
+    this.model = { position: new THREE.Vector3(0, 0, 0) };
+
+    // GPGPU and model rendering disabled - only WordRing will be shown
+    // if (!this.gpgpu) {
+    //   if (this.model && this.model.geometry) {
+    //     this.setupGPGPU();
+    //     // Setup debug after GPGPU is ready
+    //     if (this.debug && this.debug.active) {
+    //       setTimeout(() => {
+    //         this.setupDebug();
+    //       }, 50);
+    //     }
+    //   } else {
+    //     // Model not ready yet, will be initialized when model loads
+    //     console.log('Mask: Model loaded but no geometry yet, GPGPU will initialize on first update');
+    //   }
+    // }
 
     // PhD Vis: Keyword Cloud
     if (!this.keywordCloud) this.keywordCloud = new KeywordCloud();
+    
+    // Initialize WordRing (test feature) - simple 3D text that spins
+    this.wordRing = null;
+    console.log('Mask: About to call initWordRing...');
+    this.initWordRing().catch(err => {
+      console.error('Mask: WordRing initialization error:', err);
+      console.error('Mask: Error details:', err.message, err.stack);
+    });
 
-    // Kick off background preloads so switches are instant.
-    setTimeout(() => this.preloadPantheonModels(), 300);
+    // Model preloading disabled - no longer needed
+    // setTimeout(() => this.preloadPantheonModels(), 300);
+  }
+
+  async initWordRing() {
+    try {
+      console.log('Mask: Initializing WordRing...');
+      console.log('Mask: Scene exists?', !!this.scene);
+      console.log('Mask: Mouse exists?', !!this.mouse);
+      console.log('Mask: Model exists?', !!this.model);
+      
+      // Get model center position (default to origin, will update when model loads)
+      const modelPosition = this.model ? this.model.position.clone() : new THREE.Vector3(0, 0, 0);
+      console.log('Mask: Creating WordRing at position:', modelPosition);
+      
+      if (!this.scene) {
+        console.error('Mask: Scene is not available for WordRing, retrying in 500ms...');
+        setTimeout(() => this.initWordRing(), 500);
+        return;
+      }
+      
+      if (!this.mouse) {
+        console.error('Mask: Mouse is not available for WordRing, retrying in 500ms...');
+        setTimeout(() => this.initWordRing(), 500);
+        return;
+      }
+      
+      const AudioHandler = (await import('./utils/AudioHandler.js')).default;
+      const audioHandler = AudioHandler.getInstance();
+      // Pass the current model mesh if available
+      const modelMesh = this.currentModelMesh || null;
+      this.wordRing = new WordRing(this.scene, this.mouse, modelPosition, this.gpgpu, audioHandler, this.camera, modelMesh);
+      console.log('Mask: WordRing created, calling init()...');
+      await this.wordRing.init();
+      console.log('Mask: WordRing initialized successfully!');
+      
+      // Update position after a short delay to ensure model is positioned
+      setTimeout(() => {
+        if (this.model && this.wordRing) {
+          const pos = this.model.position.clone();
+          console.log('Mask: Updating WordRing position to:', pos);
+          this.wordRing.setModelPosition(pos);
+        }
+      }, 500);
+    } catch (error) {
+      console.error('Mask: WordRing initialization failed:', error);
+      console.error('Mask: Error message:', error.message);
+      console.error('Mask: Error stack:', error.stack);
+    }
   }
 
   setupCameraPosition() {
@@ -92,10 +175,10 @@ export default class Mask extends Handler {
   setupGPGPU() {
     // Ensure model exists and has geometry before initializing GPGPU
     if (!this.model || !this.model.geometry) {
-      console.error("Mask: Model not ready for GPGPU initialization, using fallback");
-      const geo = new THREE.BoxGeometry(1, 1, 1);
-      const mat = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
-      this.model = new THREE.Mesh(geo, mat);
+      console.warn("Mask: Model not ready for GPGPU initialization, will retry when model loads");
+      // Don't create fallback - wait for actual model to load
+      // The model will be set up properly in setupMask()
+      return;
     }
 
     // Scale particle grid based on viewport to avoid overloading weaker GPUs.
@@ -118,6 +201,12 @@ export default class Mask extends Handler {
   }
 
   setupDebug() {
+    // Safety check - GPGPU must be initialized
+    if (!this.gpgpu || !this.gpgpu.material || !this.gpgpu.material.uniforms) {
+      console.warn('Mask: setupDebug called before GPGPU is ready, skipping');
+      return;
+    }
+    
     if (this.debug.active) {
       if (this.particlesFolder) {
         this.particlesFolder.destroy();
@@ -223,6 +312,20 @@ export default class Mask extends Handler {
       const sampling = this.getSamplingCache(modelKey, mesh);
       this.updateGPGPUGeometry(mesh, sampling);
       this.currentModelName = modelKey;
+      // Store the current mesh for WordRing collision detection
+      this.currentModelMesh = mesh;
+      
+      // Update WordRing position when model switches
+      // DO NOT pass the mesh reference to prevent any modifications
+      if (this.wordRing && mesh) {
+        // Get the mesh's world position
+        const worldPos = new THREE.Vector3();
+        mesh.getWorldPosition(worldPos);
+        this.wordRing.setModelPosition(worldPos);
+        // DO NOT update model mesh reference - collision detection is disabled
+        // this.wordRing.setModelMesh(mesh);
+        console.log('Mask: Updated WordRing position for model switch to', modelKey);
+      }
 
       // 4. Transition IN (Snap Formation)
       // Ultra-fast snap-in: HIGH attraction pulls fast, LOW force stops fast
@@ -299,6 +402,21 @@ export default class Mask extends Handler {
   }
 
   updateGPGPUGeometry(mesh, sampling) {
+    // Initialize GPGPU if it doesn't exist yet
+    if (!this.gpgpu) {
+      console.log('Mask: GPGPU not initialized, setting up now with mesh:', mesh);
+      // Set the model temporarily so setupGPGPU can use it
+      const oldModel = this.model;
+      this.model = mesh;
+      this.setupGPGPU();
+      // Restore old model if setup failed
+      if (!this.gpgpu) {
+        this.model = oldModel;
+        console.warn('Mask: GPGPU initialization failed');
+        return;
+      }
+    }
+    
     if (!this.gpgpu) return;
 
     // We need to generate a new Texture from the geometry
@@ -313,10 +431,6 @@ export default class Mask extends Handler {
       // Silently handle - updateTarget is optional
       console.debug("GPGPU.updateTarget not implemented - using standard update");
     }
-  }
-
-  setupMask() {
-    // ... existing ...
   }
 
   // Replace changeModel with alias
@@ -369,6 +483,13 @@ export default class Mask extends Handler {
   updateVisualization(data) {
     if (!data) return;
     this.currentData = data;
+    
+    // Update WordRing words based on market data
+    if (this.wordRing && data.date) {
+      this.wordRing.updateWordsForDate(data.date, data).catch(err => {
+        console.error('Mask: Error updating WordRing words:', err);
+      });
+    }
 
     const s = data.marketChangePercent || 0;
     const vix = data.vix || 20;
@@ -579,12 +700,21 @@ export default class Mask extends Handler {
 
   // onUpdate loop (called from Experience.update)
   update() {
+    // Model and GPGPU rendering disabled - only WordRing will be shown
     // 1. GPGPU Compute
     if (this.gpgpu) {
+      // Update WordRing position for particle interaction
+      if (this.wordRing && this.wordRing.group && this.gpgpu.uniforms && this.gpgpu.uniforms.velocityUniforms) {
+        const wordRingWorldPos = new THREE.Vector3();
+        this.wordRing.group.getWorldPosition(wordRingWorldPos);
+        this.gpgpu.uniforms.velocityUniforms.uWordRingPosition.value.copy(wordRingWorldPos);
+        this.gpgpu.uniforms.velocityUniforms.uWordRingRadius.value = this.wordRing.radius;
+      }
+      
       this.gpgpu.compute();
 
       // 2. Continuous Physics Modulation (Pulse/Noise)
-      if (this.currentData && this.gpgpu.material && this.gpgpu.uniforms.velocityUniforms) {
+      if (this.currentData && this.gpgpu.material && this.gpgpu.uniforms && this.gpgpu.uniforms.velocityUniforms) {
         const time = performance.now() * 0.001;
         const vix = this.currentData.vix || 20;
 
@@ -625,6 +755,15 @@ export default class Mask extends Handler {
     // 3. Update Keywords
     if (this.keywordCloud && this.experience.time) {
       this.keywordCloud.update(this.experience.time.elapsed / 1000);
+    }
+    
+    // 4. Update WordRing (test feature)
+    if (this.wordRing) {
+      this.wordRing.update();
+      // Keep word ring centered on model
+      if (this.model) {
+        this.wordRing.setModelPosition(this.model.position);
+      }
     }
   }
 }
