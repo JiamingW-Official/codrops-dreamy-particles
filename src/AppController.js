@@ -17,7 +17,10 @@ export default class AppController {
             valSentiment: document.getElementById('val-mood-state'),
             valFearGreed: document.getElementById('risk-val'),
             valVix: document.getElementById('val-vix'),
-            headlinesContainer: document.getElementById('headlines-container')
+            headlinesContainer: document.getElementById('headlines-container'),
+            dateText: document.getElementById('date-text'),
+            btnDatePrev: document.getElementById('btn-date-prev'),
+            btnDateNext: document.getElementById('btn-date-next')
         };
 
         this.init();
@@ -48,9 +51,21 @@ export default class AppController {
             onChange: (selectedDates) => {
                 if (selectedDates.length > 0) {
                     this.loadDate(selectedDates[0]);
+                    this.updateDateDisplay(selectedDates[0]);
                 }
             }
         });
+
+        // Store sorted valid dates for navigation
+        this.validDates = validDates.sort();
+
+        // Setup date navigation buttons
+        if (this.ui.btnDatePrev) {
+            this.ui.btnDatePrev.addEventListener('click', () => this.navigateDate(-1));
+        }
+        if (this.ui.btnDateNext) {
+            this.ui.btnDateNext.addEventListener('click', () => this.navigateDate(1));
+        }
 
         this.ui.timelineSlider = document.getElementById('timeline-slider');
         this.ui.timelineStart = document.getElementById('timeline-start');
@@ -74,8 +89,10 @@ export default class AppController {
                 const idx = parseInt(e.target.value);
                 const dateKey = validDates.sort()[idx];
                 if (dateKey) {
-                    this.picker.setDate(new Date(dateKey + 'T00:00:00'), false);
-                    this.loadDate(new Date(dateKey + 'T00:00:00'));
+                    const date = new Date(dateKey + 'T00:00:00');
+                    this.picker.setDate(date, false);
+                    this.loadDate(date);
+                    this.updateDateDisplay(date);
                 }
             });
 
@@ -1204,6 +1221,7 @@ export default class AppController {
         const date = new Date(dateKey + 'T00:00:00');
         this.picker.setDate(date, false);
         this.loadDate(date);
+        this.updateDateDisplay(date);
 
         // Update timeline slider
         const validDates = Object.keys(this.marketDataService.dataMap || {}).sort();
@@ -1211,6 +1229,53 @@ export default class AppController {
         if (idx >= 0 && this.ui.timelineSlider) {
             this.ui.timelineSlider.value = idx;
         }
+    }
+
+    navigateDate(direction) {
+        // direction: -1 for previous, 1 for next
+        if (!this.validDates || this.validDates.length === 0) return;
+
+        const currentDate = this.picker.selectedDates[0];
+        if (!currentDate) return;
+
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(currentDate.getDate()).padStart(2, '0');
+        const currentDateKey = `${year}-${month}-${day}`;
+
+        const currentIndex = this.validDates.indexOf(currentDateKey);
+        if (currentIndex === -1) return;
+
+        const newIndex = currentIndex + direction;
+        if (newIndex < 0 || newIndex >= this.validDates.length) return;
+
+        const newDateKey = this.validDates[newIndex];
+        const newDate = new Date(newDateKey + 'T00:00:00');
+        
+        this.picker.setDate(newDate, false);
+        this.loadDate(newDate);
+        this.updateDateDisplay(newDate);
+
+        // Update timeline slider
+        if (this.ui.timelineSlider) {
+            this.ui.timelineSlider.value = newIndex;
+        }
+    }
+
+    updateDateDisplay(date) {
+        if (!this.ui.dateText || !date) return;
+
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const dateKey = `${year}-${month}-${day}`;
+
+        // Format: "Dec 05, 2024" or similar readable format
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const monthName = monthNames[date.getMonth()];
+        const formattedDate = `${monthName} ${day}, ${year}`;
+
+        this.ui.dateText.textContent = formattedDate;
     }
 
     loadDate(date) {
@@ -1221,6 +1286,7 @@ export default class AppController {
         const data = this.marketDataService.getDataForDate(date);
         this.updateUI(data, (!data || data.regime === "Data Missing"), originalDateStr);
         this.updateVisuals(data);
+        this.updateDateDisplay(date);
     }
 
     updateUI(data, isClosed, requestedDateStr) {
@@ -2151,6 +2217,56 @@ export default class AppController {
         const regimeEl = document.getElementById('val-regime');
         if (regimeEl) regimeEl.textContent = "CNN Fear & Greed Index";
 
+        // Determine ruling god for this day (needed for both model switching and UI display)
+        const rulingGod = this.determineRulingGod(data);
+
+        // --- PANTHEON MODEL SWITCHING ---
+        if (!this.mask && Mask && typeof Mask.getInstance === 'function') {
+            this.mask = Mask.getInstance();
+        }
+
+        if (this.mask && typeof this.mask.switchModel === 'function' && rulingGod) {
+            this.mask.switchModel(rulingGod);
+
+            // Display God Name in UI (reusing Sentiment Box for now, or append)
+            if (this.ui.valSentiment) {
+                this.ui.valSentiment.textContent = rulingGod.toUpperCase();
+                this.ui.valSentiment.style.color = "#FFD700"; // Gold color for Gods
+            }
+
+            // Dynamic Bloom based on God/Mood
+            // Each God represents a market psychological state
+            if (this.postProcessing) {
+                let bloomSettings = { strength: 1.0, threshold: 0.25, radius: 0.1 }; // Default
+
+                switch (rulingGod) {
+                    case 'zeus': // Power (ATH) - MAX GLOW
+                        bloomSettings = { strength: 2.5, threshold: 0.1, radius: 0.2 };
+                        break;
+                    case 'dionysus': // Mania - Hazy, Strong
+                        bloomSettings = { strength: 2.0, threshold: 0.15, radius: 0.3 };
+                        break;
+                    case 'hades': // Fear/Crash - Dim, Sharp
+                    case 'poseidon': // Liquidation
+                        bloomSettings = { strength: 0.6, threshold: 0.4, radius: 0.05 };
+                        break;
+                    case 'hypnos': // Sleep/Boring - Low
+                    case 'chronos': // Time
+                        bloomSettings = { strength: 0.8, threshold: 0.3, radius: 0.0 };
+                        break;
+                    case 'ares': // War/Vol - Sharp, Medium
+                        bloomSettings = { strength: 1.5, threshold: 0.3, radius: 0.05 };
+                        break;
+                    case 'apollo': // Healing - Soft
+                    case 'athena': // Wisdom
+                        bloomSettings = { strength: 1.2, threshold: 0.2, radius: 0.25 };
+                        break;
+                }
+
+                this.postProcessing.setBloomParams(bloomSettings);
+            }
+        }
+
         // Fear & Greed Index Display (Left Sidebar) - Show number AND label
         const fgDisplay = document.getElementById('val-fear-greed');
         if (fgDisplay && data.fearGreedIndex !== undefined) {
@@ -2179,56 +2295,6 @@ export default class AppController {
                 }
             }
 
-            // --- PANTHEON MODEL SWITCHING ---
-            if (!this.mask && Mask && typeof Mask.getInstance === 'function') {
-                this.mask = Mask.getInstance();
-            }
-
-            if (this.mask && typeof this.mask.switchModel === 'function') {
-                const rulingGod = this.determineRulingGod(data);
-                if (rulingGod) {
-                    this.mask.switchModel(rulingGod);
-
-                    // Display God Name in UI (reusing Sentiment Box for now, or append)
-                    if (this.ui.valSentiment) {
-                        this.ui.valSentiment.textContent = rulingGod.toUpperCase();
-                        this.ui.valSentiment.style.color = "#FFD700"; // Gold color for Gods
-                    }
-
-                    // Dynamic Bloom based on God/Mood
-                    // Each God represents a market psychological state
-                    if (this.postProcessing) {
-                        let bloomSettings = { strength: 1.0, threshold: 0.25, radius: 0.1 }; // Default
-
-                        switch (rulingGod) {
-                            case 'zeus': // Power (ATH) - MAX GLOW
-                                bloomSettings = { strength: 2.5, threshold: 0.1, radius: 0.2 };
-                                break;
-                            case 'dionysus': // Mania - Hazy, Strong
-                                bloomSettings = { strength: 2.0, threshold: 0.15, radius: 0.3 };
-                                break;
-                            case 'hades': // Fear/Crash - Dim, Sharp
-                            case 'poseidon': // Liquidation
-                                bloomSettings = { strength: 0.6, threshold: 0.4, radius: 0.05 };
-                                break;
-                            case 'hypnos': // Sleep/Boring - Low
-                            case 'chronos': // Time
-                                bloomSettings = { strength: 0.8, threshold: 0.3, radius: 0.0 };
-                                break;
-                            case 'ares': // War/Vol - Sharp, Medium
-                                bloomSettings = { strength: 1.5, threshold: 0.3, radius: 0.05 };
-                                break;
-                            case 'apollo': // Healing - Soft
-                            case 'athena': // Wisdom
-                                bloomSettings = { strength: 1.2, threshold: 0.2, radius: 0.25 };
-                                break;
-                        }
-
-                        this.postProcessing.setBloomParams(bloomSettings);
-                    }
-                }
-            }
-
             fgDisplay.textContent = fgText;
             fgDisplay.style.color = fgClr;
         }
@@ -2244,6 +2310,10 @@ export default class AppController {
             const dxy = parseFloat(data.dollarIndex);
             document.getElementById('val-dxy').textContent = !isNaN(dxy) ? dxy.toFixed(2) : '--';
         }
+
+        // Update God Information Section
+        this.updateGodInformation(data, rulingGod);
+
         // Dow Jones Row
         if (document.getElementById('val-dow')) {
             const dv = parseFloat(data.dowValue);
@@ -2718,5 +2788,151 @@ export default class AppController {
         // ATHENA: Wisdom / Strategy (Default Smart Money)
         // Trigger: Calm uptrend or Neutral stability
         return 'athena';
+    }
+
+    getGodInformation(godName, marketData) {
+        const godInfo = {
+            zeus: {
+                name: 'ZEUS',
+                title: 'King of the Gods',
+                significance: 'Zeus represents absolute power and market dominance. When Zeus rules, the market reaches new heights, showing unshakeable confidence and strength.',
+                why: marketData ? `The market is near all-time highs (${((marketData.indexValue / marketData.yearHigh) * 100).toFixed(1)}% of year high) with extreme momentum. This is a day of power and dominance.` : 'Market is at peak strength and dominance.',
+                about: 'In Greek mythology, Zeus is the ruler of Mount Olympus and the god of sky and thunder. He represents ultimate authority, power, and the ability to shape destiny. In market terms, Zeus days are marked by peak performance, all-time highs, and unshakeable bullish sentiment.',
+                context: 'Zeus days occur when markets reach new heights, showing the power of collective confidence and momentum. These are days when the market gods favor the bulls.'
+            },
+            dionysus: {
+                name: 'DIONYSUS',
+                title: 'God of Ecstasy & Excess',
+                significance: 'Dionysus embodies irrational exuberance and market mania. When he rules, euphoria takes over, often disconnected from fundamental reality.',
+                why: marketData ? `Extreme greed (Fear & Greed: ${marketData.fearGreedIndex}) combined with overbought conditions. The market is in a state of euphoric excess.` : 'Market shows signs of irrational exuberance.',
+                about: 'Dionysus is the god of wine, festivity, and ecstatic celebration. He represents the abandonment of reason in favor of pure emotion and excess. In markets, Dionysus days are marked by euphoric buying, FOMO (Fear Of Missing Out), and potential bubbles.',
+                context: 'These are dangerous days—while they feel amazing, they often precede corrections. The party can\'t last forever, but while it does, the revelry is intense.'
+            },
+            hermes: {
+                name: 'HERMES',
+                title: 'Messenger of the Gods',
+                significance: 'Hermes represents speed, velocity, and rapid movement. When he rules, money moves fast and markets react with lightning speed.',
+                why: marketData ? `High volume (${(marketData.volumeRatio * 100).toFixed(0)}% of average) combined with a ${marketData.marketChangePercent > 0 ? 'strong rally' : 'sharp decline'} of ${Math.abs(marketData.marketChangePercent).toFixed(2)}%. Money is moving at incredible speed.` : 'High velocity trading and rapid market movements.',
+                about: 'Hermes is the swift messenger of the gods, known for his speed and agility. He represents communication, commerce, and rapid change. In markets, Hermes days are marked by high volume, fast price movements, and the rapid flow of capital.',
+                context: 'These are dynamic days where information spreads quickly and markets react instantly. Speed is everything—both opportunity and risk move fast.'
+            },
+            apollo: {
+                name: 'APOLLO',
+                title: 'God of Healing & Light',
+                significance: 'Apollo brings recovery and healing to wounded markets. When he rules, markets rise from lows, showing resilience and renewal.',
+                why: marketData ? `Strong recovery (${marketData.marketChangePercent > 0 ? '+' : ''}${marketData.marketChangePercent.toFixed(2)}%) from oversold conditions. The market is healing and finding its strength again.` : 'Market is in recovery mode, healing from previous weakness.',
+                about: 'Apollo is the god of light, healing, prophecy, and music. He brings clarity after darkness and healing after injury. In markets, Apollo days represent recovery rallies, bounce-backs from oversold conditions, and the return of optimism.',
+                context: 'These are hopeful days when markets find their footing after decline. Apollo brings the light that follows the darkness, showing that recovery is possible.'
+            },
+            hades: {
+                name: 'HADES',
+                title: 'God of the Underworld',
+                significance: 'Hades represents the depths of fear and capitulation. When he rules, markets reach extreme fear, often marking potential turning points.',
+                why: marketData ? `Extreme fear (Fear & Greed: ${marketData.fearGreedIndex}). The market has reached the depths of despair, where capitulation often occurs.` : 'Market is in extreme fear territory.',
+                about: 'Hades rules the underworld, the realm of the dead. He represents the deepest fears, the unknown, and transformation through darkness. In markets, Hades days are marked by extreme fear, panic selling, and the darkest moments before potential dawn.',
+                context: 'These are the darkest days, but they often mark turning points. When fear reaches its peak, opportunity may be near—though it requires courage to see it.'
+            },
+            poseidon: {
+                name: 'POSEIDON',
+                title: 'God of the Seas',
+                significance: 'Poseidon brings waves of liquidation and cascading selloffs. When he rules, panic selling creates powerful downward waves.',
+                why: marketData ? `Deep decline (${marketData.marketChangePercent.toFixed(2)}%) with high volume (${(marketData.volumeRatio * 100).toFixed(0)}% of average). A cascade of selling is washing through the market.` : 'Market is experiencing a liquidation cascade.',
+                about: 'Poseidon controls the oceans, creating powerful waves and storms. He represents the unstoppable force of nature and the power of cascading events. In markets, Poseidon days are marked by panic selling, liquidation cascades, and the overwhelming force of fear.',
+                context: 'These are turbulent days when selling feeds on itself, creating waves of panic. Like the ocean, these forces are powerful but eventually subside.'
+            },
+            ares: {
+                name: 'ARES',
+                title: 'God of War',
+                significance: 'Ares represents conflict, volatility, and battle. When he rules, markets are a battlefield with high volatility but unclear direction.',
+                why: marketData ? `High volatility (VIX: ${marketData.vix.toFixed(1)}) with wide intraday range (${marketData.intradayRange.toFixed(2)}%). The market is a battlefield with no clear winner.` : 'High volatility and market conflict.',
+                about: 'Ares is the god of war, representing conflict, battle, and the chaos of combat. He embodies aggression, volatility, and the struggle for dominance. In markets, Ares days are marked by high VIX, wide price swings, and the uncertainty of battle.',
+                context: 'These are chaotic days where bulls and bears fight fiercely. Direction is unclear, and volatility reigns supreme. It\'s a war zone.'
+            },
+            hecate: {
+                name: 'HECATE',
+                title: 'Goddess of Crossroads',
+                significance: 'Hecate stands at the crossroads of decision. When she rules, markets are indecisive, standing between bull and bear.',
+                why: marketData ? `Small price change (${marketData.marketChangePercent > 0 ? '+' : ''}${marketData.marketChangePercent.toFixed(2)}%) but elevated anxiety (VIX: ${marketData.vix.toFixed(1)}). The market stands at a crossroads.` : 'Market is at a critical decision point.',
+                about: 'Hecate is the goddess of crossroads, magic, and transitions. She represents moments of choice, uncertainty, and the threshold between states. In markets, Hecate days are marked by indecision, small moves with high anxiety, and the tension of pending decisions.',
+                context: 'These are pivotal days when the market stands between directions. The path forward is unclear, and the next move will determine the trend.'
+            },
+            hypnos: {
+                name: 'HYPNOS',
+                title: 'God of Sleep',
+                significance: 'Hypnos brings dormancy and low activity. When he rules, markets are sleeping, with minimal participation and movement.',
+                why: marketData ? `Very low volume (${(marketData.volumeRatio * 100).toFixed(0)}% of average). The market is in a state of dormancy, waiting to awaken.` : 'Market is in a dormant, low-activity state.',
+                about: 'Hypnos is the god of sleep, representing rest, dormancy, and the pause between actions. He brings peace but also stagnation. In markets, Hypnos days are marked by low volume, minimal movement, and a market that seems to be waiting.',
+                context: 'These are quiet days when the market rests. While peaceful, they often precede significant moves when the market awakens.'
+            },
+            chronos: {
+                name: 'CHRONOS',
+                title: 'God of Time',
+                significance: 'Chronos represents the slow passage of time and steady grinding. When he rules, markets move slowly and methodically.',
+                why: marketData ? `Low volatility (VIX: ${marketData.vix.toFixed(1)}). Time is passing slowly, and the market is grinding methodically forward.` : 'Market is in a low-volatility, time-passing state.',
+                about: 'Chronos is the personification of time itself, representing the slow, inexorable passage of moments. He embodies patience, persistence, and the gradual accumulation of change. In markets, Chronos days are marked by low volatility, steady trends, and the slow work of time.',
+                context: 'These are steady days when markets move methodically. Change happens slowly, but it is constant and reliable.'
+            },
+            hephaestus: {
+                name: 'HEPHAESTUS',
+                title: 'God of the Forge',
+                significance: 'Hephaestus builds foundations and support. When he rules, markets are forging a base, building strength from lows.',
+                why: marketData ? `Price near lows (${((marketData.indexValue / marketData.yearLow) * 100).toFixed(1)}% above year low) with steady volume. The market is forging a foundation.` : 'Market is building support near lows.',
+                about: 'Hephaestus is the god of the forge, craftsmanship, and creation. He builds with fire and skill, creating foundations that last. In markets, Hephaestus days are marked by price action near lows, steady accumulation, and the building of support bases.',
+                context: 'These are foundational days when the market builds strength from weakness. Like a blacksmith, the market is forging a base for future growth.'
+            },
+            athena: {
+                name: 'ATHENA',
+                title: 'Goddess of Wisdom',
+                significance: 'Athena represents strategic thinking and calculated moves. When she rules, markets move with wisdom and measured action.',
+                why: marketData ? `Calm and strategic market conditions. The market is moving with wisdom and measured action, showing the hand of smart money.` : 'Market is in a state of strategic, wise movement.',
+                about: 'Athena is the goddess of wisdom, strategy, and warfare. She represents intelligent action, calculated decisions, and the power of knowledge. In markets, Athena days are marked by calm trends, strategic positioning, and the influence of informed capital.',
+                context: 'These are wise days when markets move with purpose and strategy. Smart money is at work, building positions thoughtfully and methodically.'
+            }
+        };
+
+        return godInfo[godName.toLowerCase()] || godInfo.athena;
+    }
+
+    updateGodInformation(marketData, godName) {
+        if (!godName) return;
+
+        const godInfo = this.getGodInformation(godName, marketData);
+
+        // Update god name
+        const godNameEl = document.getElementById('god-name');
+        if (godNameEl) {
+            godNameEl.textContent = godInfo.name;
+        }
+
+        // Update god title
+        const godTitleEl = document.getElementById('god-title');
+        if (godTitleEl) {
+            godTitleEl.textContent = godInfo.title;
+        }
+
+        // Update significance
+        const godSignificanceEl = document.getElementById('god-significance');
+        if (godSignificanceEl) {
+            godSignificanceEl.textContent = godInfo.significance;
+        }
+
+        // Update why
+        const godWhyEl = document.getElementById('god-why');
+        if (godWhyEl) {
+            godWhyEl.textContent = godInfo.why;
+        }
+
+        // Update summary (combine significance and context)
+        const godSummaryEl = document.getElementById('god-summary');
+        if (godSummaryEl) {
+            const summary = `${godInfo.significance} ${godInfo.context}`;
+            godSummaryEl.textContent = summary;
+        }
+
+        // Update about
+        const godAboutEl = document.getElementById('god-about');
+        if (godAboutEl) {
+            godAboutEl.textContent = godInfo.about;
+        }
     }
 }

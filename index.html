@@ -24,6 +24,13 @@
 				<span class="search-trigger-text">Search...</span>
 				<span class="search-trigger-shortcut">⌘K</span>
 			</button>
+			<div class="date-navigation">
+				<button id="btn-date-prev" class="date-nav-btn" title="Previous Day">‹</button>
+				<div id="date-display" class="date-display">
+					<span id="date-text">--</span>
+				</div>
+				<button id="btn-date-next" class="date-nav-btn" title="Next Day">›</button>
+			</div>
 			<div id="market-status" class="market-status hidden">Market Closed</div>
 		</div>
 
@@ -118,6 +125,34 @@
 					<div class="data-row-compact">
 						<span class="label-muted">Dollar (DXY)</span>
 						<span class="value-small" id="val-dxy">--</span>
+					</div>
+				</div>
+
+				<div class="separator"></div>
+
+				<!-- GOD INFORMATION -->
+				<div class="data-group" id="god-info-section">
+					<div class="god-header">
+						<span class="god-name" id="god-name">--</span>
+						<span class="god-title" id="god-title">--</span>
+					</div>
+					<div class="god-content">
+						<div class="god-section">
+							<span class="label-muted">Significance Today</span>
+							<div class="god-text" id="god-significance">--</div>
+						</div>
+						<div class="god-section">
+							<span class="label-muted">Why This God</span>
+							<div class="god-text" id="god-why">--</div>
+						</div>
+						<div class="god-section">
+							<span class="label-muted">Day Summary</span>
+							<div class="god-text" id="god-summary">--</div>
+						</div>
+						<div class="god-section">
+							<span class="label-muted">About</span>
+							<div class="god-text" id="god-about">--</div>
+						</div>
 					</div>
 				</div>
 			</div>
