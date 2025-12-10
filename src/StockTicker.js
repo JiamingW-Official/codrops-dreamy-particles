@@ -117,8 +117,8 @@ export default class StockTicker {
 
         stockItems.forEach(item => this.content.appendChild(item));
 
-        // Restart animation
-        this.content.style.animation = 'ticker-scroll 60s linear infinite';
+        // Restart animation with faster speed
+        this.content.style.animation = 'ticker-scroll 30s linear infinite';
     }
 
     updateDate(date, marketData) {
