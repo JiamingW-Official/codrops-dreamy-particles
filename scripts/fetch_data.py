@@ -144,19 +144,24 @@ def fetch_market_data():
     # We will then iterate over the ACTUALLY RETURNED dates.
     
     # Fetch Data
-    # 10 Major Sectors + Indices + Macro
-    # 10 Major Sectors + Indices + Macro
+    # 10 Major Sectors + Indices + Macro + Top Tech Stocks
+    # 10 Major Sectors + Indices + Macro + Top Tech Stocks
     tickers = [
         "^IXIC", "^GSPC", "^DJI", # Indices
         "^VIX", "^IRX", "^FVX", "^TNX", "^TYX", "DX-Y.NYB", # Volatility, 3M, 5Y, 10Y, 30Y, Dollar Index
         "NB", # Bonds (fallback)
         "XLE", "XLF", "XLK", "XLV", "XLI", "XLY", "XLP", "XLU", "XLB", "XLRE", # Sectors
-        "GC=F", "CL=F" # Commodities
+        "GC=F", "CL=F", # Commodities
+        # Top 20 Tech Stocks (MAG 7 + others)
+        "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", # MAG 7
+        "AMD", "INTC", "ORCL", "CRM", "ADBE", "NFLX", "AVGO", "QCOM", "CSCO", # Additional tech
+        "NOW", "PANW", "SNPS", "CRWD" # More tech stocks
     ]
     
     logging.info("Downloading Market Data (Last 2 Years)...")
     try:
-        data = yf.download(tickers, period="2y", group_by='ticker', progress=False)
+        # Use interval='1d' for daily data and ensure we get accurate close prices
+        data = yf.download(tickers, period="2y", interval='1d', group_by='ticker', progress=False, auto_adjust=False, prepost=False)
     except Exception as e:
         logging.error(f"Failed to download data: {e}")
         return
@@ -202,6 +207,29 @@ def fetch_market_data():
         df = df.reindex(nasdaq.index, method='ffill')
         df = df.bfill() # Backward fill start if needed
         sectors[s] = df
+    
+    # Extract stock data with better handling
+    stock_symbols = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", 
+                     "AMD", "INTC", "ORCL", "CRM", "ADBE", "NFLX", "AVGO", "QCOM", "CSCO",
+                     "NOW", "PANW", "SNPS", "CRWD"]
+    stocks = {}
+    for symbol in stock_symbols:
+        if symbol in data:
+            try:
+                df = data[symbol].copy()
+                # Ensure we have Close column
+                if 'Close' not in df.columns:
+                    logging.warning(f"Stock {symbol} missing Close column")
+                    continue
+                # Align stock to master index but don't forward fill prices (use actual trading days only)
+                # Only forward fill for missing dates within the same trading session
+                df = df.reindex(nasdaq.index)
+                # Don't use forward fill for prices - only use actual trading day data
+                stocks[symbol] = df
+                logging.debug(f"Loaded {symbol}: {len(df)} days, price range: {df['Close'].min():.2f} - {df['Close'].max():.2f}")
+            except Exception as e:
+                logging.warning(f"Failed to process stock {symbol}: {e}")
+                continue
 
     market_data = {}
     
@@ -545,6 +573,50 @@ def fetch_market_data():
                     sp500_change = ((sp500_val - prev_sp) / prev_sp) * 100
             except: pass
 
+        # Extract stock prices and changes with better accuracy
+        stock_prices = {}
+        for symbol in stock_symbols:
+            if symbol in stocks:
+                try:
+                    stock_df = stocks[symbol]
+                    
+                    # Check if date exists in the dataframe
+                    if date not in stock_df.index:
+                        continue
+                    
+                    stock_row = stock_df.loc[date]
+                    stock_close = float(stock_row['Close'])
+                    
+                    # Validate the price is reasonable (not NaN, not zero)
+                    if pd.isna(stock_close) or stock_close <= 0:
+                        continue
+                    
+                    stock_change_pct = 0.0
+                    stock_change_abs = 0.0
+                    
+                    # Calculate change from previous trading day
+                    if i > 0:
+                        try:
+                            prev_date = dates[i-1]
+                            if prev_date in stock_df.index:
+                                prev_row = stock_df.loc[prev_date]
+                                prev_close = float(prev_row['Close'])
+                                
+                                if not pd.isna(prev_close) and prev_close > 0:
+                                    stock_change_pct = ((stock_close - prev_close) / prev_close) * 100
+                                    stock_change_abs = stock_close - prev_close
+                        except (KeyError, ValueError, TypeError, IndexError) as e:
+                            pass
+                    
+                    stock_prices[symbol] = {
+                        'price': round(stock_close, 2),
+                        'changePercent': round(stock_change_pct, 2),
+                        'change': round(stock_change_abs, 2)
+                    }
+                except (KeyError, ValueError, TypeError, IndexError) as e:
+                    # Stock data not available for this date
+                    pass
+
         market_data[date_str] = {
             'date': date_str,
             'indexValue': round(close_price, 2),
@@ -577,7 +649,8 @@ def fetch_market_data():
             'moodState': mood_state,
             'regime': regime,
             'headlines': headlines,
-            'poeticWords': []  # Will be generated by generate_poetic_words.py
+            'poeticWords': [],  # Will be generated by generate_poetic_words.py
+            'stockPrices': stock_prices  # Real stock prices and changes
         }
         
         print(f"[{i+1}/{total_days}] {date_str}: {mood_state} ({regime}) | FG:{fear_greed_idx}")

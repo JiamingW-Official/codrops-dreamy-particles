@@ -1,6 +1,7 @@
 import MarketDataService from './MarketDataService.js';
 import Mask from '../webgl/Mask.js';
 import AudioHandler from '../webgl/utils/AudioHandler.js';
+import StockTicker from './StockTicker.js';
 import flatpickr from 'flatpickr';
 
 export default class AppController {
@@ -9,6 +10,7 @@ export default class AppController {
         this.marketDataService = new MarketDataService();
         this.mask = null;
         this.picker = null;
+        this.stockTicker = null;
 
         this.ui = {
             datePickerInput: document.getElementById('date-picker'),
@@ -33,6 +35,9 @@ export default class AppController {
         if (validDates.length === 0) {
             console.error("Critical: No market data found for calendar.");
         }
+
+        // Initialize Stock Ticker
+        this.stockTicker = new StockTicker(this.marketDataService);
 
         this.picker = flatpickr(this.ui.datePickerInput, {
             dateFormat: "Y-m-d",
@@ -1287,6 +1292,11 @@ export default class AppController {
         this.updateUI(data, (!data || data.regime === "Data Missing"), originalDateStr);
         this.updateVisuals(data);
         this.updateDateDisplay(date);
+        
+        // Update stock ticker
+        if (this.stockTicker) {
+            this.stockTicker.updateDate(date, data);
+        }
     }
 
     updateUI(data, isClosed, requestedDateStr) {
